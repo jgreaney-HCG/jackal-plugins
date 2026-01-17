@@ -79,9 +79,9 @@ The key insight: **design plans tell you where you're going; implementation plan
 
 ---
 
-## Phase 3: Execution (`/execute-implementation-plan @plan-phase.md`)
+## Phase 3: Execution (`/execute-implementation-plan @plan-directory/`)
 
-**What you provide:** Path to the implementation plan phase(s) to execute.
+**What you provide:** Path to the implementation plan directory (not a single phase file — pass the directory so all phases execute).
 
 **What happens:**
 

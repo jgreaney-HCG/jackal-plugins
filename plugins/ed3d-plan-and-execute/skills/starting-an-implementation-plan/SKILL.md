@@ -153,7 +153,7 @@ The execute-implementation-plan command will implement the plan task-by-task wit
 |---------|-----|
 | Invoking execute-implementation-plan directly | Provide copy-paste instructions instead |
 | Not warning user to copy command before /clear | Always warn: "Copy this BEFORE running /clear" |
-| Not specifying full path to plan | Include exact path with phase_01.md |
+| Not specifying full path to plan | Include directory path (not phase_01.md — pass the directory so all phases execute) |
 | Forgetting to mention /clear | Always tell user to /clear before execute |
 
 ## Integration with Workflow

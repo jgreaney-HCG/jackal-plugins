@@ -1,5 +1,12 @@
 # Changelog
 
+## ed3d-plan-and-execute 1.3.2
+
+Fixes execution handoff to pass plan directory instead of single phase file.
+
+**Fixed:**
+- Execute-implementation-plan instructions now pass the plan directory (e.g., `@docs/implementation-plans/YYYY-MM-DD-feature/`) instead of a single phase file — prevents agent from only implementing the first phase
+
 ## ed3d-plan-and-execute 1.3.1
 
 Improves resolution of Definition of Done in design plans.
