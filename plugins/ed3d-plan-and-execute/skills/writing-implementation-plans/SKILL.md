@@ -223,15 +223,28 @@ The design plan distinguishes between infrastructure phases (verified operationa
 - Phase ends with passing tests
 - Tests prove the behavior works
 
-**Subcomponent task grouping.** Design plans structure phases as subcomponents: types → implementation → tests. When writing tasks for a subcomponent:
+**Subcomponent task grouping.** Design plans structure phases as subcomponents: types → implementation → tests. When writing tasks for a subcomponent, wrap them in subcomponent markers (see "Task and Subcomponent Markers" section):
 
-```
-Task 1: TokenPayload type and TokenConfig
-Task 2: TokenService implementation
-Task 3: TokenService tests
+```markdown
+<!-- START_SUBCOMPONENT_A (tasks 1-3) -->
+<!-- START_TASK_1 -->
+### Task 1: TokenPayload type and TokenConfig
+...
+<!-- END_TASK_1 -->
+
+<!-- START_TASK_2 -->
+### Task 2: TokenService implementation
+...
+<!-- END_TASK_2 -->
+
+<!-- START_TASK_3 -->
+### Task 3: TokenService tests
+...
+<!-- END_TASK_3 -->
+<!-- END_SUBCOMPONENT_A -->
 ```
 
-The execution agent will group these tasks and verify after all complete. The tests task proves the subcomponent works.
+The execution agent uses these markers to identify related tasks. The tests task proves the subcomponent works.
 
 **Read the design plan's "Done when" section.** If it says "build succeeds," don't invent unit tests. If it says "tests pass for X," ensure tasks produce those tests.
 
@@ -256,6 +269,61 @@ The execution agent will group these tasks and verify after all complete. The te
 
 ---
 ```
+
+## Task and Subcomponent Markers
+
+**Wrap every task and subcomponent in HTML comment markers** to enable efficient parsing during execution.
+
+### Task Markers
+
+Every task MUST be wrapped:
+
+```markdown
+<!-- START_TASK_1 -->
+### Task 1: [Task Name]
+...task content...
+<!-- END_TASK_1 -->
+
+<!-- START_TASK_2 -->
+### Task 2: [Task Name]
+...task content...
+<!-- END_TASK_2 -->
+```
+
+### Subcomponent Markers
+
+When tasks form a logical subcomponent (e.g., types → implementation → tests), wrap the group:
+
+```markdown
+<!-- START_SUBCOMPONENT_A (tasks 3-5) -->
+<!-- START_TASK_3 -->
+### Task 3: TokenService types
+...
+<!-- END_TASK_3 -->
+
+<!-- START_TASK_4 -->
+### Task 4: TokenService implementation
+...
+<!-- END_TASK_4 -->
+
+<!-- START_TASK_5 -->
+### Task 5: TokenService tests
+...
+<!-- END_TASK_5 -->
+<!-- END_SUBCOMPONENT_A -->
+```
+
+**Key rules:**
+- Tasks are numbered: `START_TASK_1`, `START_TASK_2`, etc.
+- Subcomponents use letters: `START_SUBCOMPONENT_A`, `START_SUBCOMPONENT_B`, etc.
+- Subcomponent markers MUST include which tasks they contain: `(tasks 3-5)`
+- Tasks inside subcomponents still have their own markers
+- Standalone tasks (not in a subcomponent) just have task markers
+
+**Why markers:**
+- Execution can grep for `START_TASK_` to list all tasks without reading full content
+- Execution can extract just the relevant section to pass to task-implementor
+- Reduces context usage during execution (especially with experimental workflow)
 
 ## Phase-by-Phase Implementation
 
@@ -380,6 +448,7 @@ Announce: "All [N] phase files written to `docs/implementation-plans/YYYY-MM-DD-
 ### Infrastructure Task Template
 
 ```markdown
+<!-- START_TASK_N -->
 ### Task N: [Infrastructure Component]
 
 **Files:**
@@ -404,11 +473,13 @@ Expected: Builds without errors
 git add package.json tsconfig.json
 git commit -m "chore: initialize project structure"
 ```
+<!-- END_TASK_N -->
 ```
 
 ### Functionality Task Template
 
 ```markdown
+<!-- START_TASK_N -->
 ### Task N: [Component Name]
 
 **Files:**
@@ -447,6 +518,7 @@ Expected: PASS
 git add tests/path/test.py src/path/file.py
 git commit -m "feat: add specific feature"
 ```
+<!-- END_TASK_N -->
 ```
 
 **CRITICAL: Every code example must be immediately executable.**

@@ -1,5 +1,17 @@
 # Changelog
 
+## ed3d-plan-and-execute 1.4.1
+
+Adds experimental execution workflow and task markers. (1.4.0 was a buggy mis-push.)
+
+**New:**
+- **Task and subcomponent markers** in implementation plans: `<!-- START_TASK_N -->`, `<!-- END_TASK_N -->`, `<!-- START_SUBCOMPONENT_A (tasks 3-5) -->`, etc.
+- **Experimental execution skill** (`executing-an-implementation-plan-experimental`) with just-in-time phase loading, context windows for subagents, and marker-based extraction
+- **Experimental command** (`/execute-implementation-plan-experimental`) to invoke the experimental workflow
+
+**Changed:**
+- `writing-implementation-plans` now generates markers in all task templates (backwards compatible — old execution skill ignores them)
+
 ## ed3d-plan-and-execute 1.3.3
 
 Fixes execution handoff to use absolute paths, preventing wrong-directory issues after /clear.
