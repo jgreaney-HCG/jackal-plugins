@@ -327,36 +327,103 @@ When tasks form a logical subcomponent (e.g., types → implementation → tests
 
 **Workflow depends on review mode selected above.**
 
-**Step 0: Create task tracker**
+**Step 0: Create granular task tracker with dependencies**
 
-After verifying scope (≤8 phases), use TaskCreate to create a todo list with one item per phase (or TodoWrite in older Claude Code versions):
+After verifying scope (≤8 phases), use TaskCreate to create granular sub-tasks for EACH phase. This structure survives context compaction.
+
+**CRITICAL: Include absolute paths and set up dependencies.**
+
+Before creating tasks, capture absolute paths:
+- `DESIGN_PATH`: Absolute path to design plan (e.g., `/Users/ed/project/docs/design-plans/2025-01-24-feature.md`)
+- `PLAN_DIR`: Absolute path to implementation plan directory (e.g., `/Users/ed/project/docs/implementation-plans/2025-01-24-feature/`)
+
+**For each phase N, create these tasks with dependencies:**
 
 ```markdown
-- [ ] Phase 1: [Phase Name]
-- [ ] Phase 2: [Phase Name]
-- [ ] Phase 3: [Phase Name]
-...
+- [ ] Phase NA: Read [Phase Name] from {DESIGN_PATH}
+      → blocked by: Phase (N-1)D (or nothing if N=1)
+- [ ] Phase NB: Investigate codebase for Phase N
+      → blocked by: Phase NA
+- [ ] Phase NC: Research external deps (Phase N)
+      → blocked by: Phase NB
+- [ ] Phase ND: Write {PLAN_DIR}/phase_0N.md
+      → blocked by: Phase NC
 ```
 
-Use TaskUpdate to mark each phase as in_progress when working on it, completed when written to disk (or TodoWrite in older versions).
+**After all phase tasks, create finalization task:**
+
+```markdown
+- [ ] Finalization: Run code-reviewer over all phase files, fix ALL issues including minor ones
+      → blocked by: all Phase *D tasks
+```
+
+**Example for a 3-phase design at `/Users/ed/project/docs/design-plans/2025-01-24-oauth.md`:**
+
+```
+TaskCreate: "Phase 1A: Read Token Types from /Users/ed/project/docs/design-plans/2025-01-24-oauth.md"
+TaskCreate: "Phase 1B: Investigate codebase for Phase 1"
+  → TaskUpdate: addBlockedBy: [1A]
+TaskCreate: "Phase 1C: Research external deps (Phase 1)"
+  → TaskUpdate: addBlockedBy: [1B]
+TaskCreate: "Phase 1D: Write /Users/ed/project/docs/implementation-plans/2025-01-24-oauth/phase_01.md"
+  → TaskUpdate: addBlockedBy: [1C]
+
+TaskCreate: "Phase 2A: Read Token Service from /Users/ed/project/docs/design-plans/2025-01-24-oauth.md"
+  → TaskUpdate: addBlockedBy: [1D]
+TaskCreate: "Phase 2B: Investigate codebase for Phase 2"
+  → TaskUpdate: addBlockedBy: [2A]
+TaskCreate: "Phase 2C: Research external deps (Phase 2)"
+  → TaskUpdate: addBlockedBy: [2B]
+TaskCreate: "Phase 2D: Write /Users/ed/project/docs/implementation-plans/2025-01-24-oauth/phase_02.md"
+  → TaskUpdate: addBlockedBy: [2C]
+
+TaskCreate: "Phase 3A: Read Session Manager from /Users/ed/project/docs/design-plans/2025-01-24-oauth.md"
+  → TaskUpdate: addBlockedBy: [2D]
+TaskCreate: "Phase 3B: Investigate codebase for Phase 3"
+  → TaskUpdate: addBlockedBy: [3A]
+TaskCreate: "Phase 3C: Research external deps (Phase 3)"
+  → TaskUpdate: addBlockedBy: [3B]
+TaskCreate: "Phase 3D: Write /Users/ed/project/docs/implementation-plans/2025-01-24-oauth/phase_03.md"
+  → TaskUpdate: addBlockedBy: [3C]
+
+TaskCreate: "Finalization: Run code-reviewer over all phase files, fix ALL issues including minor ones"
+  → TaskUpdate: addBlockedBy: [1D, 2D, 3D]
+```
+
+**Why absolute paths in task descriptions:** After compaction, the task list is all that remains. Absolute paths ensure you know exactly which files to read/write without relying on context.
+
+**Why dependencies:** Tasks show `[blocked by #X, #Y]` in the task list, making execution order explicit and preventing out-of-order work.
+
+Use TaskUpdate to mark each sub-task as in_progress when starting, completed when done.
 
 ---
 
 ### If user chose "Review each phase interactively before writing":
 
-**Workflow for EACH phase:**
+**Workflow for EACH phase (using granular task tracking):**
 
-1. **Use TaskUpdate to mark phase as in_progress**
-2. **Read design phase** from original plan
-3. **Verify codebase state** for files mentioned in this phase:
+1. **Task NA: Read design phase**
+   - Mark task NA as in_progress
+   - Extract the `<!-- START_PHASE_N -->` section from design plan
+   - Mark task NA as completed
+
+2. **Task NB: Verify codebase state**
+   - Mark task NB as in_progress
    - Dispatch codebase-investigator with design assumptions for this phase
    - Review investigator findings for discrepancies
-4. **Research external dependencies** if phase involves them (see Section 4):
+   - Mark task NB as completed
+
+3. **Task NC: Research external dependencies** (if phase involves them)
+   - Mark task NC as in_progress
    - Dispatch internet-researcher for docs/standards/API patterns
    - Escalate to remote-code-researcher if docs are insufficient
    - Document findings for inclusion in phase output
-5. **Write implementation tasks** for this phase (in memory, not to file) based on actual codebase state and external research
-6. **Present to user** - Output the complete phase plan in your message text:
+   - Mark task NC as completed
+   - (Skip if no external deps - still mark completed with note "N/A")
+
+4. **Write implementation tasks** for this phase (in memory, not to file) based on actual codebase state and external research
+
+5. **Present to user** - Output the complete phase plan in your message text:
 
 ```markdown
 **Phase [N]: [Phase Name]**
@@ -407,29 +474,43 @@ Use TaskUpdate to mark each phase as in_progress when working on it, completed w
 - "Needs revision - [describe changes]"
 - "Other"
 
-7. **If approved:**
+7. **Task ND: Write phase file (if approved)**
+   - Mark task ND as in_progress
    - Write to `docs/implementation-plans/YYYY-MM-DD-<feature-name>/phase_##.md`
    - Plan document contains ONLY the implementation tasks (no verification findings)
-   - Use TaskUpdate to mark phase as completed, continue to next phase
-8. **If needs revision:** Keep as in_progress, revise based on feedback, present again
+   - Mark task ND as completed, continue to next phase
+
+8. **If needs revision:** Revise based on feedback, present again (do NOT mark ND as in_progress until approved)
 
 ---
 
 ### If user chose "Write all phases to disk, I'll review afterwards":
 
-**Workflow for EACH phase:**
+**Workflow for EACH phase (using granular task tracking):**
 
-1. **Use TaskUpdate to mark phase as in_progress**
-2. **Read design phase** from original plan
-3. **Verify codebase state** for files mentioned in this phase:
+1. **Task NA: Read design phase**
+   - Mark task NA as in_progress
+   - Extract the `<!-- START_PHASE_N -->` section from design plan
+   - Mark task NA as completed
+
+2. **Task NB: Verify codebase state**
+   - Mark task NB as in_progress
    - Dispatch codebase-investigator with design assumptions for this phase
    - Review investigator findings for discrepancies
-4. **Research external dependencies** if phase involves them (see Section 4):
+   - Mark task NB as completed
+
+3. **Task NC: Research external dependencies** (if phase involves them)
+   - Mark task NC as in_progress
    - Dispatch internet-researcher for docs/standards/API patterns
    - Escalate to remote-code-researcher if docs are insufficient
-5. **Write implementation tasks** for this phase based on actual codebase state and external research
-6. **Write directly to disk** at `docs/implementation-plans/YYYY-MM-DD-<feature-name>/phase_##.md`
-7. **Use TaskUpdate to mark phase as completed**, continue to next phase
+   - Mark task NC as completed
+   - (Skip if no external deps - still mark completed with note "N/A")
+
+4. **Task ND: Write phase file**
+   - Mark task ND as in_progress
+   - Write implementation tasks based on actual codebase state and external research
+   - Write directly to disk at `docs/implementation-plans/YYYY-MM-DD-<feature-name>/phase_##.md`
+   - Mark task ND as completed, continue to next phase
 
 **Do NOT emit phase content to the user before writing.** This conserves tokens.
 
@@ -564,6 +645,10 @@ These are violations of the skill requirements:
 | "Functionality phase but design forgot tests" | Surface to user. Functionality needs tests. Design gap, not your call to skip. |
 | "Plan looks complete, skip validation" | Always validate. Gaps found now are cheaper than gaps found during execution. |
 | "Validation is overkill for simple plans" | Simple plans validate quickly. Complex plans need it more. Always validate. |
+| "Finalization task is done, minor issues can wait" | NO. Task says "fix ALL issues including minor ones." Not done until zero issues. |
+| "I'll skip creating granular tasks, one per phase is enough" | Granular tasks survive compaction. Create NA, NB, NC, ND per phase + Finalization. |
+| "Dependencies are obvious, don't need addBlockedBy" | Task list shows blocked status. Set dependencies explicitly with TaskUpdate. |
+| "Relative paths are fine in task descriptions" | After compaction, context is lost. Use absolute paths so tasks are self-contained. |
 | "I know how this library works from training" | Research it. APIs change. Use internet-researcher for docs, remote-code-researcher for internals. |
 | "Docs are probably accurate enough" | Usually yes. But if extending/customizing library behavior, verify with source code. |
 | "I'll clone the repo to check the docs" | No. Use internet-researcher for docs. Only clone (remote-code-researcher) for source code investigation. |
@@ -619,19 +704,20 @@ Which approach should I take?
 **Before starting:**
 - [ ] Count phases - refuse if >8
 - [ ] Ask user for review mode (batch vs interactive)
-- [ ] Create task list with TaskCreate for all phases
+- [ ] Capture absolute paths: DESIGN_PATH and PLAN_DIR
+- [ ] Create granular task list with TaskCreate (NA, NB, NC, ND per phase + Finalization)
+- [ ] Set up dependencies with TaskUpdate addBlockedBy (see Step 0)
+- [ ] Task descriptions include absolute paths (not relative)
 
-**For each phase:**
-- [ ] Use TaskUpdate to mark phase as in_progress
-- [ ] Dispatch codebase-investigator with design assumptions for this phase
-- [ ] **If phase involves external dependencies:** Research them (internet-researcher first, escalate to remote-code-researcher if needed)
+**For each phase (tasks NA through ND):**
+- [ ] **Task NA:** Mark in_progress, read `<!-- START_PHASE_N -->` from design, mark completed
+- [ ] **Task NB:** Mark in_progress, dispatch codebase-investigator, review findings, mark completed
+- [ ] **Task NC:** Mark in_progress, research external deps if needed (or mark completed with "N/A"), mark completed
 - [ ] Write complete tasks with exact paths and code based on investigator and research findings
 - [ ] **If interactive mode:** Output complete phase plan, use AskUserQuestion for approval
-- [ ] **If batch mode:** Skip user presentation, write directly to disk
-- [ ] Write plan to `docs/implementation-plans/YYYY-MM-DD-<feature-name>/phase_##.md`
-- [ ] Use TaskUpdate to mark phase as completed
+- [ ] **Task ND:** Mark in_progress, write to absolute path in task description, mark completed
 
-**For each task:**
+**For each task in the plan:**
 - [ ] Exact file paths with line numbers for modifications
 - [ ] Complete code - zero TODOs, zero unresolved questions in comments
 - [ ] Every code example runs immediately without implementation decisions
@@ -639,20 +725,25 @@ Which approach should I take?
 - [ ] Exact commands with expected output
 - [ ] No conditional instructions ("if exists", "if needed")
 
-**After all phases written:**
-- [ ] Validate implementation plan against design plan (see below)
-- [ ] Fix any gaps identified
-- [ ] Offer execution choice
+**Finalization (after all phase ND tasks completed):**
+- [ ] Mark Finalization task as in_progress
+- [ ] Dispatch code-reviewer to validate plan against design
+- [ ] Fix ALL issues including Minor ones
+- [ ] Re-run code-reviewer until APPROVED with zero issues
+- [ ] Mark Finalization task as completed
+- [ ] Proceed to execution handoff
 
-## Plan Validation
+## Plan Validation (Finalization Task)
 
-**After all phases are written to disk, validate the implementation plan against the design plan.**
+**This is a tracked task: "Finalization: Run code-reviewer over all phase files, fix ALL issues including minor ones"**
 
-Dispatch code-reviewer to evaluate coverage and alignment:
+After all phase D tasks are completed, mark the Finalization task as in_progress.
+
+### Step 1: Dispatch code-reviewer
 
 ```
 <invoke name="Task">
-<parameter name="subagent_type">ed3d-ed3d-plan-and-execute:code-reviewer</parameter>
+<parameter name="subagent_type">ed3d-plan-and-execute:code-reviewer</parameter>
 <parameter name="description">Validating implementation plan against design</parameter>
 <parameter name="prompt">
   Review the implementation plan for completeness and alignment with the design.
@@ -694,13 +785,30 @@ Dispatch code-reviewer to evaluate coverage and alignment:
 </invoke>
 ```
 
-**If reviewer returns NEEDS_REVISION:**
+### Step 2: Fix ALL issues (including minor ones)
 
-1. Review the gaps and misalignments identified
-2. Update the relevant phase files to address issues
-3. Re-run validation until APPROVED
+**CRITICAL: You MUST fix ALL issues, including Minor ones.**
 
-**If reviewer returns APPROVED:**
+Do NOT rationalize skipping minor issues. Do NOT mark Finalization as completed until ALL issues are resolved.
+
+**If reviewer returns NEEDS_REVISION or reports ANY issues:**
+
+1. Review the gaps, misalignments, and issues identified
+2. Fix ALL of them - Critical, Important, AND Minor
+3. Update the relevant phase files
+4. Re-run code-reviewer validation
+5. Repeat until reviewer returns APPROVED with zero issues
+
+**Common rationalizations to REJECT:**
+- "Minor issues can be fixed during execution" - NO. Fix them now.
+- "This minor issue is just a style preference" - NO. Fix it.
+- "We can address this later" - NO. The task says "fix ALL issues including minor ones."
+
+### Step 3: Complete finalization
+
+**Only when code-reviewer returns APPROVED with zero issues:**
+
+Mark the Finalization task as completed.
 
 Proceed to execution handoff.
 

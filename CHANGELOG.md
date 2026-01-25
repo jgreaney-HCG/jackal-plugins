@@ -1,5 +1,33 @@
 # Changelog
 
+## ed3d-plan-and-execute 1.6.0
+
+Adds granular task tracking to implementation plan writing to survive context compaction.
+
+**New in `writing-implementation-plans`:**
+- **Granular per-phase tasks:** Instead of one task per phase, now creates sub-tasks for each step:
+  - Phase NA: Read [Phase Name] from {absolute design path}
+  - Phase NB: Dispatch codebase-investigator to verify current state
+  - Phase NC: Research external dependencies (if applicable)
+  - Phase ND: Write {absolute output path}/phase_0N.md
+- **Task dependencies:** Tasks use addBlockedBy to enforce execution order (NA→NB→NC→ND, then next phase)
+- **Absolute paths in task descriptions:** Design file and output file paths are absolute, so tasks remain actionable after compaction
+- **Finalization task:** Explicitly states "fix ALL issues including minor ones" — model cannot rationalize skipping minor issues
+- **Plan validation as tracked task:** Must complete with zero issues before handoff
+
+**New in `writing-design-plans`:**
+- **Phase markers:** Design plans now require `<!-- START_PHASE_N -->` / `<!-- END_PHASE_N -->` markers around each implementation phase, enabling granular parsing
+
+**New in `starting-an-implementation-plan`:**
+- **Orchestration tasks with dependencies:** Tracks Branch setup → Create implementation plan → Re-read skill → Execution handoff with explicit blocking
+- **Restore context step:** Re-reads skill before handoff to restore instructions post-compaction
+- **Terminology clarification:** Renamed "Phase 1/2/3" to descriptive names (Branch Setup, Planning, Execution Handoff) to avoid confusion with implementation plan phases
+
+**Fixed:**
+- Code reviewer step was being forgotten after compaction — now tracked as explicit Finalization task
+- Minor issues were being skipped — task text now makes fixing them mandatory
+- Tasks were not showing dependencies — now use addBlockedBy for proper blocking
+
 ## ed3d-plan-and-execute 1.5.1
 
 Updates task tracking references for compatibility with new Claude Code task system.
