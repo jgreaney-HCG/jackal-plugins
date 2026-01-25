@@ -1,5 +1,13 @@
 # Changelog
 
+## ed3d-plan-and-execute 1.6.2
+
+Fixes "Re-read skill" task dependency ordering.
+
+**Fixed:**
+- "Re-read skill" task must be re-pointed to Finalization task after granular tasks are created (was incorrectly blocked by "Create implementation plan")
+- Added "After Planning: Update Dependencies" step to ensure correct task ordering
+
 ## ed3d-plan-and-execute 1.6.1
 
 Fixes task tracking to include dependencies and absolute paths.
@@ -7,8 +15,6 @@ Fixes task tracking to include dependencies and absolute paths.
 **Fixed:**
 - Tasks now use addBlockedBy to enforce execution order (NA→NB→NC→ND, then next phase)
 - Task descriptions include absolute paths for design file and output file, so tasks remain actionable after compaction
-- "Re-read skill" task must be re-pointed to Finalization task after granular tasks are created (not blocked by "Create implementation plan")
-- Added "After Planning: Update Dependencies" step to ensure correct task ordering
 
 ## ed3d-plan-and-execute 1.6.0
 
