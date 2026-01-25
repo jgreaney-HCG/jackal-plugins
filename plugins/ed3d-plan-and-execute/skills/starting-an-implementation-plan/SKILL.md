@@ -37,23 +37,23 @@ This skill has three steps:
 2. **Planning:** Create detailed implementation plan
 3. **Execution Handoff:** Direct user to execute the plan
 
-**Step 0: Create orchestration task tracker with dependencies**
+**Step 0: Create orchestration task tracker**
 
-Use TaskCreate to track the orchestration steps, then set up dependencies:
+Use TaskCreate to track the orchestration steps:
 
 ```
 TaskCreate: "Branch setup"
 TaskCreate: "Create implementation plan"
   → TaskUpdate: addBlockedBy: [Branch setup]
 TaskCreate: "Re-read starting-an-implementation-plan skill (restore context)"
-  → TaskUpdate: addBlockedBy: [Create implementation plan]
+  → (DO NOT set blockedBy yet - will be updated after granular tasks are created)
 TaskCreate: "Execution handoff"
   → TaskUpdate: addBlockedBy: [Re-read skill]
 ```
 
-The "Create implementation plan" task wraps the granular tasks created by writing-implementation-plans. The "Re-read skill" step ensures context is restored after potential compaction before handoff.
+**CRITICAL: The "Re-read skill" task must be re-pointed AFTER writing-implementation-plans creates the Finalization task.** See "After Planning: Update Dependencies" below.
 
-**Note:** The granular phase tasks (1A, 1B, 1C, 1D, etc.) created by writing-implementation-plans will also block on "Create implementation plan" being marked in_progress, and the Finalization task must complete before "Create implementation plan" can be marked completed.
+The "Create implementation plan" task wraps the granular tasks created by writing-implementation-plans. The "Re-read skill" step ensures context is restored after potential compaction before handoff.
 
 ### Branch Setup
 
@@ -134,6 +134,29 @@ The writing-implementation-plans skill will:
 **Output:** Complete implementation plan written to files, on appropriate branch.
 
 Mark "Create implementation plan" task as completed.
+
+### After Planning: Update Dependencies
+
+**CRITICAL: Update the "Re-read skill" task to be blocked by Finalization.**
+
+The granular tasks are now created. Find the Finalization task ID and update dependencies:
+
+```
+TaskUpdate: "Re-read starting-an-implementation-plan skill"
+  → addBlockedBy: [Finalization task ID]
+```
+
+This ensures the task list shows the correct order:
+```
+✔ #1 Branch setup
+✔ #2 Create implementation plan
+✔ #5 Phase 1A: Read [Phase Name] from /path/to/design.md
+✔ #6 Phase 1B: Investigate codebase for Phase 1
+...
+✔ #N Finalization: Run code-reviewer...
+◻ #3 Re-read skill › blocked by #N
+◻ #4 Execution handoff › blocked by #3
+```
 
 ### Restore Context (Before Handoff)
 
@@ -231,6 +254,7 @@ Mark "Execution handoff" task as completed.
 | Forgetting to mention /clear | Always tell user to /clear before execute |
 | Skipping "Re-read skill" step before handoff | Always re-read this skill to restore context post-compaction |
 | Not creating orchestration tasks at start | Create Branch setup, Planning, Re-read, Handoff tasks in Step 0 |
+| Not re-pointing "Re-read skill" after planning | Must update addBlockedBy to Finalization task, not "Create implementation plan" |
 
 ## Integration with Workflow
 
@@ -258,7 +282,11 @@ Starting Implementation Plan (this skill)
     -> Creates Finalization task (code review, fix ALL issues)
     -> Write to docs/implementation-plans/
 
-  -> Restore Context [tracked task]
+  -> After Planning: Update Dependencies
+    -> Re-point "Re-read skill" to be blocked by Finalization task
+    -> Ensures correct execution order in task list
+
+  -> Restore Context [tracked task, blocked by Finalization]
     -> Re-read this skill file
     -> Ensures handoff instructions are accurate post-compaction
 
