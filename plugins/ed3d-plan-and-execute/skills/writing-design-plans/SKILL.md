@@ -176,15 +176,17 @@ See "After Writing: Generating Summary and Glossary" below for the extraction pr
 | Phase Type | Done When | Examples |
 |------------|-----------|----------|
 | Infrastructure/scaffolding | Operational success | Project installs, builds, runs, deploys |
-| Functionality/behavior | Tests pass for new behavior | Unit tests, integration tests, E2E tests |
+| Functionality/behavior | Tests pass that verify the ACs this phase covers | Unit tests, integration tests, E2E tests |
 
-**The rule:** If a phase adds code that implements behavior, that phase includes tests proving the behavior works. Tests are a deliverable of the phase, not a separate "testing phase" later.
+**The rule:** If a phase implements functionality, it must include tests that verify the specific acceptance criteria it claims to cover. Tests are a deliverable of the phase, not a separate "testing phase" later.
 
-**Don't over-engineer infrastructure verification.** You don't need unit tests for package.json. "npm install succeeds" is sufficient verification for a dependency setup phase.
+**Tying tests to ACs:** A functionality phase lists which ACs it covers (e.g., AC1.1, AC1.3, AC2.1). The phase is not "done" until tests exist that verify each of those specific cases. This creates traceability: AC → phase → test.
 
-**Do require tests for functionality.** Any code that does something needs tests that prove it does that thing. These tests are part of the phase, not deferred.
+**Don't over-engineer infrastructure verification.** You don't need unit tests for package.json. "npm install succeeds" is sufficient verification for a dependency setup phase. Infrastructure phases typically don't list ACs—their verification is operational.
 
-**Tests can evolve.** A test written in Phase 2 may be modified in Phase 4 as requirements expand. This is expected. The constraint is that Phase 2 ends with passing tests for what Phase 2 delivers.
+**Do require tests for functionality.** Any code that does something needs tests that prove it does that thing. These tests must map to specific ACs, not just "test the code." If a phase covers AC1.3 ("Invalid password returns 401"), a test must verify exactly that.
+
+**Tests can evolve.** A test written in Phase 2 may be modified in Phase 4 as requirements expand. This is expected. The constraint is that Phase 2 ends with passing tests for the ACs Phase 2 claims to cover.
 
 **Structure phases as subcomponents.** A phase may contain multiple logical subcomponents. List them at the component level — the implementation plan will break these into tasks.
 

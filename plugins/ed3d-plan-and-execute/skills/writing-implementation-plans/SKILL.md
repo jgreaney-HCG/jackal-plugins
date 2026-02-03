@@ -217,11 +217,13 @@ The design plan distinguishes between infrastructure phases (verified operationa
 - Don't force TDD on scaffolding
 - Verification = operational success
 - "npm install succeeds" is valid verification
+- Typically don't reference ACs (no behavior to verify)
 
 **Functionality tasks** (code that does something):
 - Tests are deliverables alongside code
-- Phase ends with passing tests
-- Tests prove the behavior works
+- Each task lists which ACs it verifies (e.g., "Verifies: AC1.1, AC1.3")
+- Tests must verify those specific AC cases, not just "test the code"
+- Phase ends with passing tests for all ACs listed in the phase's AC Coverage
 
 **Subcomponent task grouping.** Design plans structure phases as subcomponents: types → implementation → tests. When writing tasks for a subcomponent, wrap them in subcomponent markers (see "Task and Subcomponent Markers" section):
 
@@ -601,60 +603,46 @@ git commit -m "chore: initialize project structure"
 <!-- START_TASK_N -->
 ### Task N: [Component Name]
 
+**Verifies:** AC1.1, AC1.3 (list specific AC cases this task tests)
+
 **Files:**
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
+- Test: `tests/exact/path/to/test.py` (unit|integration|e2e)
 
-**Step 1: Write the failing test**
+**Implementation:**
+[Describe what to implement - contracts, behavior, key logic. Include code for complex/non-obvious implementations.]
 
-```python
-def test_specific_behavior():
-    result = function(input)
-    assert result == expected
-```
+**Testing:**
+Tests must verify each AC listed above:
+- AC1.1: [brief description of what test should verify]
+- AC1.3: [brief description of what test should verify]
 
-**Step 2: Run test to verify it fails**
+Follow project testing patterns. Task-implementor generates actual test code at execution time.
 
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
+**Verification:**
+Run: `[test command]`
+Expected: All tests pass
 
-**Step 3: Write minimal implementation**
-
-```python
-def function(input):
-    return expected
-```
-
-**Step 4: Run test to verify it passes**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
-
-**Step 5: Commit**
-
-```bash
-git add tests/path/test.py src/path/file.py
-git commit -m "feat: add specific feature"
-```
+**Commit:** `feat: [description]`
 <!-- END_TASK_N -->
 ```
 
-**CRITICAL: Every code example must be immediately executable.**
+**Key principles for functionality tasks:**
 
-Code comments saying "TODO", "FIXME", or describing solutions not yet implemented = plan failure.
+1. **List ACs explicitly.** Every functionality task specifies which AC cases it verifies in the "Verifies" field.
 
-**NEVER write:**
-```python
-# Solution: Use admin credentials or pre-created bootstrap M2M app
-const client = getManagementClient(); // implement this somehow
-```
+2. **Describe tests, don't write test code.** The AC text is the spec (e.g., "AC1.3: Invalid password returns 401"). Task-implementor generates test code at execution time with fresh codebase context.
 
-**ALWAYS write:**
-Either provide the complete working code, OR split into a prior task that establishes the dependency.
+3. **Include implementation code when non-obvious.** If implementation is complex or project-specific patterns apply, include the code. If it's straightforward given the AC description, describe it.
 
-**If you find yourself writing "Solution: X or Y" when neither X nor Y exists:**
-STOP. Create a task BEFORE this one that implements the solution.
+4. **Specify test type and location.** Unit, integration, or e2e? Which file? This ensures consistency across phases.
+
+**Why no test code in plans:**
+- Test code needs actual function signatures from the implementation
+- Project testing patterns discovered at execution time
+- AC text like "Invalid password returns 401" is already a clear test spec
+- Task-implementor has fresher context than implementation planner
 
 **If you find yourself writing "this won't compile until Phase N+1":**
 STOP. You are describing something that belongs in the current phase. _Every phase must be executable with all tests passing when the phase completes._
