@@ -1,5 +1,12 @@
 # Changelog
 
+## ed3d-plan-and-execute 1.9.6
+
+Requires verbatim task names to prevent instruction loss.
+
+**Fixed:**
+- `writing-implementation-plans`: Task names must be copied VERBATIM, not paraphrased — phrases like "and activate relevant skills" trigger behavior post-compaction
+
 ## ed3d-plan-and-execute 1.9.5
 
 Dynamic skill activation replaces hardcoded requirements.
