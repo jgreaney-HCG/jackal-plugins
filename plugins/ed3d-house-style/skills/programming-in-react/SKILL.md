@@ -1,6 +1,7 @@
 ---
 name: programming-in-react
 description: Use when writing or modifying React components, planning React features, or working with .jsx/.tsx files - provides modern React patterns with TypeScript, hooks usage, component composition, and common pitfalls to avoid
+user-invocable: false
 ---
 
 # Programming in React

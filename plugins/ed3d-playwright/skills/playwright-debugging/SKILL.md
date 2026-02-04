@@ -1,6 +1,7 @@
 ---
 name: playwright-debugging
 description: Use when Playwright scripts fail, tests are flaky, selectors stop working, or timeouts occur - provides systematic debugging approach for browser automation issues
+user-invocable: false
 ---
 
 # Playwright Debugging

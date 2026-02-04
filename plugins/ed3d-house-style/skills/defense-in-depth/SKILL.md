@@ -1,6 +1,7 @@
 ---
 name: defense-in-depth
 description: Use when invalid data causes failures deep in execution - validates at every layer data passes through to make bugs structurally impossible rather than temporarily fixed
+user-invocable: false
 ---
 
 # Defense-in-Depth Validation

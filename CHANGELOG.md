@@ -1,5 +1,47 @@
 # Changelog
 
+## ed3d-plan-and-execute 1.9.8
+
+Disables user invocation of skills.
+
+**Changed:**
+- All skills now have `user-invocable: false` — skills are auto-invoked by Claude based on description matching but won't appear in the `/` slash command menu
+
+## ed3d-house-style 1.0.2
+
+Disables user invocation of skills.
+
+**Changed:**
+- All skills now have `user-invocable: false` — skills are auto-invoked by Claude based on description matching but won't appear in the `/` slash command menu
+
+## ed3d-extending-claude 1.0.2
+
+Disables user invocation of skills.
+
+**Changed:**
+- All skills now have `user-invocable: false` — skills are auto-invoked by Claude based on description matching but won't appear in the `/` slash command menu
+
+## ed3d-basic-agents 1.0.1
+
+Disables user invocation of skills.
+
+**Changed:**
+- All skills now have `user-invocable: false` — skills are auto-invoked by Claude based on description matching but won't appear in the `/` slash command menu
+
+## ed3d-playwright 1.0.1
+
+Disables user invocation of skills.
+
+**Changed:**
+- All skills now have `user-invocable: false` — skills are auto-invoked by Claude based on description matching but won't appear in the `/` slash command menu
+
+## ed3d-research-agents 1.0.1
+
+Disables user invocation of skills.
+
+**Changed:**
+- All skills now have `user-invocable: false` — skills are auto-invoked by Claude based on description matching but won't appear in the `/` slash command menu
+
 ## ed3d-plan-and-execute 1.9.7
 
 Adds AC coverage verification, compaction-safe task tracking for review fixes, and test plan reminder.

@@ -1,6 +1,7 @@
 ---
 name: using-generic-agents
 description: Use to decide what kind of generic agent you should use
+user-invocable: false
 ---
 
 **CRITICAL:** Your operator's direction supercedes these directions. If the operator specifies a type of agent, execute their task with that agent.

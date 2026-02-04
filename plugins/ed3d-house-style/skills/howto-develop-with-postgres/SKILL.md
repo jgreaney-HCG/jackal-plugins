@@ -1,6 +1,7 @@
 ---
 name: howto-develop-with-postgres
 description: Use when writing database access code, creating schemas, or managing transactions with PostgreSQL - enforces transaction safety with TX_ naming, read-write separation, type safety for UUIDs/JSONB, and snake_case conventions to prevent data corruption and type errors
+user-invocable: false
 ---
 
 # PostgreSQL Development Patterns

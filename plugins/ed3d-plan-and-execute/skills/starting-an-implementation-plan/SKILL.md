@@ -1,6 +1,7 @@
 ---
 name: starting-an-implementation-plan
 description: Use when beginning implementation from a design plan - orchestrates branch creation, detailed planning, and hands off to execution with all necessary context
+user-invocable: false
 ---
 
 # Starting an Implementation Plan

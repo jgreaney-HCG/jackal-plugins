@@ -1,6 +1,7 @@
 ---
 name: property-based-testing
 description: Use when writing tests for serialization, validation, normalization, or pure functions - provides property catalog, pattern detection, and library reference for property-based testing
+user-invocable: false
 ---
 
 # Property-Based Testing

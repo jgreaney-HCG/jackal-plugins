@@ -1,6 +1,7 @@
 ---
 name: writing-for-a-technical-audience
 description: Use when writing documentation, guides, API references, or technical content for developers - enforces clarity, conciseness, and authenticity while avoiding AI writing patterns that signal inauthenticity
+user-invocable: false
 ---
 
 # Writing for a Technical Audience

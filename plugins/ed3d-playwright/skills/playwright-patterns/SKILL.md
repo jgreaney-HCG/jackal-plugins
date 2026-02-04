@@ -1,6 +1,7 @@
 ---
 name: playwright-patterns
 description: Use when writing Playwright automation code, building web scrapers, or creating E2E tests - provides best practices for selector strategies, waiting patterns, and robust automation that minimizes flakiness
+user-invocable: false
 ---
 
 # Playwright Automation Patterns

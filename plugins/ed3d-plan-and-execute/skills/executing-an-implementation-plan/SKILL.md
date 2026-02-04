@@ -1,6 +1,7 @@
 ---
 name: executing-an-implementation-plan
 description: Use when executing implementation plans with independent tasks in the current session - dispatches fresh subagent for each task, reviews once per phase, loads phases just-in-time to minimize context usage
+user-invocable: false
 ---
 
 # Executing an Implementation Plan
