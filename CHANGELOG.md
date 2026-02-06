@@ -1,5 +1,14 @@
 # Changelog
 
+## [ed3d-hook-skill-reinforcement] 1.0.1, [ed3d-plan-and-execute] 1.10.1, [ed3d-basic-agents] 1.0.2, [ed3d-extending-claude] 1.0.3
+
+Remove stale `<available_skills>` XML tag references that no longer match how Claude Code injects skill lists.
+
+**Fixed:**
+- Replaced all references to `<available_skills>` with format-agnostic language ("your available skills shown in your system context") across hooks, skills, and agent prompts
+- Hook reminder now uses emphatic "MUST" / "Do NOT skip" phrasing for stronger compliance
+- Added warning comment in CLAUDE_MD_TESTING.md example to prevent re-introducing the stale tag
+
 ## ed3d-plan-and-execute 1.10.0
 
 Scoped acceptance criteria for cross-plan uniqueness.
