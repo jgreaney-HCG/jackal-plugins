@@ -1,0 +1,17 @@
+{
+    "name": "jackal-hook-claudemd-reminder",
+    "description": "A PostToolUse hook that reminds to invoke project-claude-librarian before committing when git status or git log reveals changes that may warrant CLAUDE.md updates.",
+    "version": "1.0.0",
+    "author": {
+        "name": "Jack Greaney",
+        "email": "jgreaney@hcg.com"
+    },
+    "homepage": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "repository": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "license": "UNLICENSED",
+    "keywords": [
+        "hooks",
+        "documentation",
+        "claude-md"
+    ]
+}

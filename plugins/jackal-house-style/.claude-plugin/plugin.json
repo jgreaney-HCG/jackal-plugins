@@ -1,0 +1,20 @@
+{
+    "name": "jackal-house-style",
+    "description": "House style for writing code and documentation (forked from ed3d-house-style)",
+    "version": "1.0.2",
+    "author": {
+        "name": "Jack Greaney",
+        "email": "jgreaney@hcg.com"
+    },
+    "homepage": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "repository": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "license": "UNLICENSED",
+    "keywords": [
+        "skills",
+        "tdd",
+        "debugging",
+        "collaboration",
+        "best-practices",
+        "workflows"
+    ]
+}

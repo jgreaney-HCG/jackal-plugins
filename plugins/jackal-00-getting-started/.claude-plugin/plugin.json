@@ -1,0 +1,17 @@
+{
+    "name": "jackal-00-getting-started",
+    "description": "Getting started guide and onboarding for jackal-plugins",
+    "version": "1.0.0",
+    "author": {
+        "name": "Jack Greaney",
+        "email": "jgreaney@hcg.com"
+    },
+    "homepage": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "repository": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "license": "MIT",
+    "keywords": [
+        "getting-started",
+        "onboarding",
+        "documentation"
+    ]
+}

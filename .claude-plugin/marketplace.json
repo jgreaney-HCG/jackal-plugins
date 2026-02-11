@@ -1,73 +1,73 @@
 {
     "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-    "name": "ed3d-plugins",
+    "name": "jackal-plugins",
     "version": "2.0.0",
-    "description": "Unified marketplace for ed3d's Claude Code development toolkit",
+    "description": "Unified marketplace for Claude Code development toolkit (forked from ed3d-plugins)",
     "owner": {
-        "name": "Ed",
-        "email": "ed@ed3d.net"
+        "name": "Jack Greaney",
+        "email": "jgreaney@hcg.com"
     },
     "plugins": [
         {
-            "name": "ed3d-00-getting-started",
-            "description": "Getting started guide and onboarding for ed3d-plugins",
+            "name": "jackal-00-getting-started",
+            "description": "Getting started guide and onboarding for jackal-plugins",
             "version": "1.0.0",
-            "source": "./plugins/ed3d-00-getting-started",
+            "source": "./plugins/jackal-00-getting-started",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             }
         },
         {
-            "name": "ed3d-plan-and-execute",
+            "name": "jackal-plan-and-execute",
             "description": "Planning and execution workflows for Claude Code. Based on obra/superpowers.",
             "version": "1.10.1",
-            "source": "./plugins/ed3d-plan-and-execute",
+            "source": "./plugins/jackal-plan-and-execute",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             }
         },
         {
-            "name": "ed3d-house-style",
-            "description": "ed3d's house style for software development",
+            "name": "jackal-house-style",
+            "description": "House style for software development (forked from ed3d-house-style)",
             "version": "1.0.2",
-            "source": "./plugins/ed3d-house-style",
+            "source": "./plugins/jackal-house-style",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             }
         },
         {
-            "name": "ed3d-basic-agents",
+            "name": "jackal-basic-agents",
             "description": "Core agents for general-purpose tasks. Other plugins expect this to exist.",
             "version": "1.0.2",
-            "source": "./plugins/ed3d-basic-agents",
+            "source": "./plugins/jackal-basic-agents",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             },
             "license": "UNLICENSED"
         },
         {
-            "name": "ed3d-research-agents",
+            "name": "jackal-research-agents",
             "description": "Agents used for research across multiple data sources.",
             "version": "1.0.1",
-            "source": "./plugins/ed3d-research-agents",
+            "source": "./plugins/jackal-research-agents",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             },
             "license": "UNLICENSED"
         },
         {
-            "name": "ed3d-extending-claude",
+            "name": "jackal-extending-claude",
             "description": "Knowledge skills for extending Claude Code: creating plugins, commands, agents, skills, hooks, and MCP servers",
             "version": "1.0.3",
-            "source": "./plugins/ed3d-extending-claude",
+            "source": "./plugins/jackal-extending-claude",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             },
             "license": "UNLICENSED",
             "keywords": [
@@ -79,13 +79,13 @@
             ]
         },
         {
-            "name": "ed3d-hook-skill-reinforcement",
+            "name": "jackal-hook-skill-reinforcement",
             "description": "EXPERIMENTAL. A UserPromptSubmit hook that directs the model to consider and activate useful skills.",
             "version": "1.0.1",
-            "source": "./plugins/ed3d-hook-skill-reinforcement",
+            "source": "./plugins/jackal-hook-skill-reinforcement",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             },
             "license": "UNLICENSED",
             "keywords": [
@@ -93,13 +93,13 @@
             ]
         },
         {
-            "name": "ed3d-hook-claudemd-reminder",
+            "name": "jackal-hook-claudemd-reminder",
             "description": "A PostToolUse hook that reminds to invoke project-claude-librarian before committing when git status or git log reveals changes that may warrant CLAUDE.md updates.",
             "version": "1.0.0",
-            "source": "./plugins/ed3d-hook-claudemd-reminder",
+            "source": "./plugins/jackal-hook-claudemd-reminder",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             },
             "license": "UNLICENSED",
             "keywords": [
@@ -109,13 +109,13 @@
             ]
         },
         {
-            "name": "ed3d-playwright",
+            "name": "jackal-playwright",
             "description": "Playwright automation toolkit with MCP integration, specialized agent for browser control, and best practice skills",
             "version": "1.0.1",
-            "source": "./plugins/ed3d-playwright",
+            "source": "./plugins/jackal-playwright",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             },
             "license": "UNLICENSED",
             "keywords": [

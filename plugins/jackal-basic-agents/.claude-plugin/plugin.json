@@ -1,0 +1,14 @@
+{
+    "name": "jackal-basic-agents",
+    "description": "Core agents for general-purpose tasks. Other plugins expect this to exist.",
+    "version": "1.0.2",
+    "author": {
+        "name": "Jack Greaney",
+        "email": "jgreaney@hcg.com"
+    },
+    "homepage": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "repository": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "license": "UNLICENSED",
+    "keywords": [
+    ]
+}

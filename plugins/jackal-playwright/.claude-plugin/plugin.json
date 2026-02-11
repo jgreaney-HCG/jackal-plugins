@@ -1,0 +1,27 @@
+{
+  "name": "jackal-playwright",
+  "version": "1.0.1",
+  "description": "Playwright automation toolkit with MCP integration, specialized agent for browser control, and best practice skills",
+  "author": {
+    "name": "Jack Greaney",
+    "email": "jgreaney@hcg.com"
+  },
+  "homepage": "https://github.com/jgreaney-HCG/jackal-plugins",
+  "repository": "https://github.com/jgreaney-HCG/jackal-plugins",
+  "license": "UNLICENSED",
+  "keywords": [
+    "playwright",
+    "browser-automation",
+    "testing",
+    "e2e"
+  ],
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+    "name": "jackal-research-agents",
+    "description": "Agents used for research across multiple data sources. Other plugins expect this one to be enabled.",
+    "version": "1.0.1",
+    "author": {
+        "name": "Jack Greaney",
+        "email": "jgreaney@hcg.com"
+    },
+    "homepage": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "repository": "https://github.com/jgreaney-HCG/jackal-plugins",
+    "license": "UNLICENSED",
+    "keywords": [
+    ]
+}
