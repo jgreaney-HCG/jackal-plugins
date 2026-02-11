@@ -1,6 +1,7 @@
 # ed3d-plugins
 
 Claude Code plugins for design, implementation, and development workflows.
+trivial change
 
 ## Conventions
 
