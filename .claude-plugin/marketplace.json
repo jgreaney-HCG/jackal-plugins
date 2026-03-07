@@ -1,11 +1,11 @@
 {
     "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-    "name": "ed3d-plugins",
+    "name": "jackal-plugins",
     "version": "2.0.0",
-    "description": "Unified marketplace for ed3d's Claude Code development toolkit",
+    "description": "Unified marketplace for Claude Code development toolkit (forked from ed3d-plugins)",
     "owner": {
-        "name": "Ed",
-        "email": "ed@ed3d.net"
+        "name": "Jack Greaney",
+        "email": "jgreaney@hcg.com"
     },
     "plugins": [
         {

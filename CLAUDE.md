@@ -1,6 +1,6 @@
-# ed3d-plugins
+# jackal-plugins
 
-Claude Code plugins for design, implementation, and development workflows.
+Claude Code plugins for design, implementation, and development workflows (forked from ed3d-plugins).
 
 ## Conventions
 
