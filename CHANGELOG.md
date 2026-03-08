@@ -2,10 +2,14 @@
 
 ## [jackal-linear] 1.0.0
 
-Plugin scaffolding and Linear MCP server registration.
+Initial release of the jackal-linear plugin.
 
 **New:**
-- `plugins/jackal-linear` plugin directory with `.claude-plugin/plugin.json` registering the Linear MCP server via `mcp-remote`
+- `/start-from-linear [ISSUE-ID]` command: fetches Linear issue, sets it to In Progress, seeds the `starting-a-design-plan` workflow with issue context
+- `linear-workflow` skill: start mode (issue fetch + In Progress status) and finish mode (In Review on PR, Done on merge)
+- `writing-for-linear` skill: content standards for Linear comments, status-change updates, and issue descriptions
+- PostToolUse hook: detects `gh pr create` and `git merge` commands, injects Linear reminder when `.linear-issue` is present
+- Linear MCP server registered via `mcp-remote` pointing to `https://mcp.linear.app/mcp` (OAuth 2.1)
 
 ## ed3d-house-style 1.0.3
 
