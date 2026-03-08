@@ -1,5 +1,12 @@
 # Changelog
 
+## [jackal-linear] 1.0.0
+
+Plugin scaffolding and Linear MCP server registration.
+
+**New:**
+- `plugins/jackal-linear` plugin directory with `.claude-plugin/plugin.json` registering the Linear MCP server via `mcp-remote`
+
 ## ed3d-house-style 1.0.3
 
 Relax FCIS file classification to target only files with runtime behavior.
