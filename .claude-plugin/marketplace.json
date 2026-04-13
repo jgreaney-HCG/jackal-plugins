@@ -1,130 +1,34 @@
 {
     "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
     "name": "jackal-plugins",
-    "version": "2.0.0",
-    "description": "Unified marketplace for Claude Code development toolkit (forked from ed3d-plugins)",
+    "version": "2.1.0",
+    "description": "Jack Greaney's Claude Code plugins — hard forks of ed3d-house-style and ed3d-plan-and-execute, plus original jackal-* plugins. Install vanilla ed3d-* plugins from the @ed3d-plugins marketplace.",
     "owner": {
         "name": "Jack Greaney",
         "email": "jgreaney@hcg.com"
     },
     "plugins": [
         {
-            "name": "ed3d-00-getting-started",
-            "description": "Getting started guide and onboarding for ed3d-plugins",
-            "version": "1.0.0",
-            "source": "./plugins/ed3d-00-getting-started",
-            "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
-            }
-        },
-        {
-            "name": "ed3d-plan-and-execute",
-            "description": "Planning and execution workflows for Claude Code. Based on obra/superpowers.",
-            "version": "1.10.3",
-            "source": "./plugins/ed3d-plan-and-execute",
-            "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
-            }
-        },
-        {
             "name": "ed3d-house-style",
-            "description": "ed3d's house style for software development",
+            "description": "Jackal fork of ed3d house style — coding standards, TypeScript, React, Postgres, and testing patterns.",
             "version": "1.0.3",
             "source": "./plugins/ed3d-house-style",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
-            }
-        },
-        {
-            "name": "ed3d-basic-agents",
-            "description": "Core agents for general-purpose tasks. Other plugins expect this to exist.",
-            "version": "1.1.0",
-            "source": "./plugins/ed3d-basic-agents",
-            "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             },
             "license": "UNLICENSED"
         },
         {
-            "name": "ed3d-research-agents",
-            "description": "Agents used for research across multiple data sources.",
-            "version": "1.0.1",
-            "source": "./plugins/ed3d-research-agents",
+            "name": "ed3d-plan-and-execute",
+            "description": "Jackal fork of ed3d-plan-and-execute — planning and execution workflows for Claude Code.",
+            "version": "1.10.3",
+            "source": "./plugins/ed3d-plan-and-execute",
             "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
             },
             "license": "UNLICENSED"
-        },
-        {
-            "name": "ed3d-extending-claude",
-            "description": "Knowledge skills for extending Claude Code: creating plugins, commands, agents, skills, hooks, MCP servers, and marketplace management",
-            "version": "1.1.0",
-            "source": "./plugins/ed3d-extending-claude",
-            "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
-            },
-            "license": "UNLICENSED",
-            "keywords": [
-                "plugins",
-                "skills",
-                "documentation",
-                "reference",
-                "knowledge"
-            ]
-        },
-        {
-            "name": "ed3d-hook-skill-reinforcement",
-            "description": "EXPERIMENTAL. A UserPromptSubmit hook that directs the model to consider and activate useful skills.",
-            "version": "1.0.1",
-            "source": "./plugins/ed3d-hook-skill-reinforcement",
-            "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
-            },
-            "license": "UNLICENSED",
-            "keywords": [
-                "hooks"
-            ]
-        },
-        {
-            "name": "ed3d-hook-claudemd-reminder",
-            "description": "A PostToolUse hook that reminds to invoke project-claude-librarian before committing when git status or git log reveals changes that may warrant CLAUDE.md updates.",
-            "version": "1.0.0",
-            "source": "./plugins/ed3d-hook-claudemd-reminder",
-            "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
-            },
-            "license": "UNLICENSED",
-            "keywords": [
-                "hooks",
-                "documentation",
-                "claude-md"
-            ]
-        },
-        {
-            "name": "ed3d-playwright",
-            "description": "Playwright automation toolkit with MCP integration, specialized agent for browser control, and best practice skills",
-            "version": "1.0.1",
-            "source": "./plugins/ed3d-playwright",
-            "author": {
-                "name": "Ed",
-                "email": "ed@ed3d.net"
-            },
-            "license": "UNLICENSED",
-            "keywords": [
-                "playwright",
-                "browser-automation",
-                "testing",
-                "e2e",
-                "web-scraping"
-            ]
         },
         {
             "name": "jackal-supervisor",
@@ -153,13 +57,7 @@
                 "name": "Jack Greaney",
                 "email": "jgreaney@hcg.com"
             },
-            "license": "UNLICENSED",
-            "keywords": [
-                "linear",
-                "issue-tracking",
-                "workflow",
-                "mcp"
-            ]
+            "license": "UNLICENSED"
         }
     ]
 }
