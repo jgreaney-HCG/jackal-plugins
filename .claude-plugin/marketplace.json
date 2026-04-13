@@ -1,8 +1,8 @@
 {
     "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
     "name": "jackal-plugins",
-    "version": "2.1.0",
-    "description": "Jack Greaney's Claude Code plugins — hard forks of jackal-house-style and jackal-plan-and-execute, plus original jackal-* plugins. Install vanilla ed3d-* plugins from the @ed3d-plugins marketplace.",
+    "version": "2.2.0",
+    "description": "Jack Greaney's Claude Code plugins — hard forks of ed3d-house-style and ed3d-plan-and-execute, plus jackal-supervisor. Install vanilla ed3d-* plugins from the @ed3d-plugins marketplace.",
     "owner": {
         "name": "Jack Greaney",
         "email": "jgreaney@hcg.com"
@@ -47,17 +47,6 @@
                 "branching",
                 "jackal"
             ]
-        },
-        {
-            "name": "jackal-linear",
-            "description": "DEPRECATED. Integrated Linear issue tracking with the jackal-plan-and-execute workflow.",
-            "version": "1.1.0",
-            "source": "./plugins/jackal-linear",
-            "author": {
-                "name": "Jack Greaney",
-                "email": "jgreaney@hcg.com"
-            },
-            "license": "UNLICENSED"
         }
     ]
 }
