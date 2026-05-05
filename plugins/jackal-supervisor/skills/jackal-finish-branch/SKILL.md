@@ -1,160 +1,56 @@
 ---
 name: jackal-finish-branch
-description: Generic branch completion skill. Wraps jackal-plan-and-execute:finishing-a-development-branch with project-specific overrides read from the ## Jackal Config section in this project's CLAUDE.md — correct git remote, push command, test command, PR method, and TODO.md Resolved update.
+description: Complete a development branch with project-specific overrides (remote, test command, PR method) and TODO.md updates.
 user-invocable: true
 ---
 
 # Jackal Finish Branch
 
-Generic wrapper around `jackal-plan-and-execute:finishing-a-development-branch`.
-
-**Announce at start:** "I'm using jackal-finish-branch to complete this work."
+Wrapper around the `finish` skill with project-specific configuration.
 
 ---
 
 ## Step 0: Load Project Config
 
-Read the **## Jackal Config** section from the project's CLAUDE.md. Extract:
-
-| Variable | Key | Example (ATLAS) |
-|----------|-----|-----------------|
-| `$TEST_CMD` | `test_cmd` | `/Users/.../python -m pytest --tb=short -q` |
-| `$GIT_REMOTE` | `git_remote` | `atlas` |
-| `$PUSH_CMD` | `push_cmd` | `AWS_PROFILE=DataWarehouse-UAT git push atlas` |
-| `$PR_METHOD` | `pr_method` | `codecommit` or `github` |
-| `$UI_PATH` | `ui_path` | `market-analysis-tool/ui/` (blank if no UI) |
-| `$ISSUE_DOCS` | `issue_docs` | `docs/issues` |
-| `$REPO_ROOT` | `repo_root` | `/Users/.../ATLAS` |
-
----
+Read `## Jackal Config` from CLAUDE.md. Extract: `test_cmd`, `git_remote`, `push_cmd`, `pr_method`, `ui_path`, `issue_docs`, `repo_root`.
 
 ## Step 1: UI Verification Gate
 
-**Run before anything else** (only if `ui_path` is configured in Jackal Config).
+Only if `ui_path` is configured:
 
 ```bash
 git diff --name-only main..$(git branch --show-current) | grep -q "$UI_PATH"
 ```
 
-**If UI files are in the diff** — invoke `jackal-ui-verify` automatically using the Skill tool. Do not stop and ask the user.
+If UI files changed → invoke `jackal-ui-verify`. Block if it fails.
 
-```
-Skill("jackal-ui-verify")
-```
+## Step 2: Invoke Finish Skill
 
-- If `jackal-ui-verify` reports ✅ PASS → proceed to Step 2.
-- If `jackal-ui-verify` reports ❌ FAIL → stop. Report the specific failures to the user. Do not proceed until they are resolved.
+Use `Skill("jackal-plan-and-execute:finish")` with overrides:
+- Test command: `$TEST_CMD`
+- Push command: `$PUSH_CMD`
+- PR method: `$PR_METHOD`
 
-**If no UI files or no `ui_path` configured** — proceed directly to Step 2.
+### Autonomous Mode Override
 
----
+When called from the continuous execution loop:
+- Skip the 4-option menu
+- Merge locally (Option 1)
+- Use `$GIT_REMOTE` for pull
 
-## Step 2: Run ed3d Finishing Flow
+## Step 3: Post-Completion Updates
 
-**REQUIRED SUB-SKILL:** `jackal-plan-and-execute:finishing-a-development-branch`
+After the finish skill completes (Options 1 or 2):
 
-Announce: "I'm using finishing-a-development-branch with project overrides."
+1. Find issue: extract ISSUE_ID from branch name
+2. Update issue doc: Status → Done
+3. Update TODO.md: Active → Resolved, update "Last updated"
 
-Apply these overrides throughout the sub-skill:
+## Step 4: Jackal Config Review
 
-### Test command override
+Check if implementation revealed changes that should update Jackal Config:
+- New module that needs a module map entry?
+- Port change?
+- New service?
 
-Wherever the sub-skill runs tests, use `$TEST_CMD` from Jackal Config — not bare `pytest` or any other default.
-
-### Push override
-
-Replace the sub-skill's push command with `$PUSH_CMD`:
-
-```bash
-$PUSH_CMD $BRANCH
-```
-
-**If `pr_method` is `codecommit`** — do NOT run `gh pr create`. Output instead:
-```
-Branch pushed. To open a pull request:
-
-aws codecommit create-pull-request \
-  --title "[ISSUE_ID]: [title]" \
-  --targets "repositoryName=[repo-name],sourceReference=$BRANCH,destinationReference=main" \
-  --profile [aws-profile]
-
-Or visit the CodeCommit console.
-```
-
-**If `pr_method` is `github`** — run `gh pr create` as normal.
-
-### Pull override (Option 1 — merge locally)
-
-Before merging, pull from the configured remote:
-```bash
-git checkout main
-git pull $GIT_REMOTE main
-git merge $BRANCH
-```
-
----
-
-## Step 3: Post-Completion — Update TODO.md and Issue Doc
-
-Run this **after the ed3d sub-skill completes** for Options 1 (merge) or 2 (push/PR).
-
-**Skip for Options 3 (keep) and 4 (discard).**
-
-### 3a. Find the issue
-
-```bash
-BRANCH=$(git branch --show-current 2>/dev/null || git log -1 --format='%D' | grep -o 'feature/[^ ,]*' | head -1)
-ISSUE_ID=$(echo $BRANCH | grep -o "${ISSUE_PREFIX}-[0-9]*")
-ISSUE_DOC=$(ls $REPO_ROOT/$ISSUE_DOCS/${ISSUE_ID}*.md 2>/dev/null | head -1)
-TODAY=$(date +%Y-%m-%d)
-```
-
-### 3b. Update issue doc
-
-Set `**Status:** Done`. Use the Edit tool — change only that line.
-
-### 3c. Update TODO.md
-
-Using Read + Edit tools (surgical edits only — never rewrite the whole file):
-1. Remove the issue's row from the **Active** table
-2. Append to the **Resolved** section (below `<!-- RESOLVED_SECTION_START -->`):
-   ```
-   | PREFIX-XXX | [short title from issue doc] | YYYY-MM-DD |
-   ```
-3. Update "Last updated" at the top of the file — set to `Last updated: YYYY-MM-DD`, date only, no commentary
-
-**For Option 4 (Discard):** remove from Active, do NOT add to Resolved.
-
----
-
-## Step 4: Review Jackal Config for Updates
-
-After `project-claude-librarian` runs (invoked by the ed3d sub-skill), also review the **## Jackal Config** section:
-
-- Did implementation reveal a new module that should be in the module map?
-- Did a port change? Did the test command change?
-- Did a new service get added that needs a port entry?
-
-If yes, update `## Jackal Config` in `CLAUDE.md` and also update `~/.claude/port-registry.md` if ports changed.
-
----
-
-## What the ed3d Sub-Skill Handles (no changes needed)
-
-- Test verification gate (uses our `$TEST_CMD` override)
-- Base branch detection
-- 4-option menu (merge / push / keep / discard)
-- `project-claude-librarian` invocation for CLAUDE.md updates
-- Worktree removal (Options 1 and 4)
-- Human test plan reminder
-
----
-
-## Quick Reference
-
-| Step | Owner |
-|------|-------|
-| UI verify gate | `jackal-finish-branch` (Step 1) |
-| Tests, options, merge/push, librarian, cleanup | `finishing-a-development-branch` (Step 2) |
-| TODO.md + issue doc update | `jackal-finish-branch` (Step 3) |
-| Jackal Config review | `jackal-finish-branch` (Step 4) |
+If yes, update CLAUDE.md.

@@ -1,20 +1,17 @@
 {
     "name": "jackal-plan-and-execute",
-    "description": "Planning and execution workflows for Claude Code. Based on obra/superpowers.",
-    "version": "1.10.3",
+    "description": "Model-adaptive planning and execution harness. Sonnet implementors, conditional review, continuous backlog execution.",
+    "version": "2.0.0",
     "author": {
-        "name": "Ed",
-        "email": "ed@ed3d.net"
+        "name": "Jack Greaney",
+        "email": "jgreaney@hcg.com"
     },
     "license": "UNLICENSED",
     "keywords": [
-        "skills",
-        "tdd",
-        "debugging",
-        "collaboration",
-        "best-practices",
-        "workflows",
         "planning",
-        "execution"
+        "execution",
+        "code-review",
+        "orchestration",
+        "autonomous"
     ]
 }
