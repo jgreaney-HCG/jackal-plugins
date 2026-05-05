@@ -1,0 +1,225 @@
+---
+name: execute
+description: Executes implementation plans or drives continuous issue execution from a backlog. Model-adaptive — dispatches Sonnet implementors, reviews conditionally based on risk, and parallelizes independent work. Runs autonomously until genuinely stuck.
+user-invocable: true
+---
+
+# Execute
+
+Two modes:
+1. **Plan mode** — execute a specific implementation plan (phase files in a directory)
+2. **Backlog mode** — continuously pull and execute issues from TODO.md until stuck
+
+---
+
+## Mode 1: Execute an Implementation Plan
+
+**Input:** path to plan directory (contains `phase_NN.md` files)
+
+### Process
+
+1. List phase files, read headers only (first 10 lines each)
+2. For each phase sequentially:
+   a. Read the phase file
+   b. Dispatch `implementor` with the phase file path and working directory
+   c. Print the implementor's full report
+   d. Decide whether to review (see Review Routing below)
+3. After all phases: run final review, then hand off to `finish` skill
+
+### Review Routing
+
+After each phase completes, decide:
+
+| Condition | Action |
+|---|---|
+| Phase touches auth, payments, user data, or crypto | Full review |
+| Phase is the final phase | Full review |
+| Implementor's self-review flagged uncertainty | Full review |
+| Phase is pure infrastructure/config | Skip review |
+| All other phases | Skip per-phase review; catch issues in final review |
+
+**Final review is always mandatory.** It covers the full diff from plan start to completion.
+
+When review finds Critical or Important issues:
+1. Dispatch `implementor` with the issues list and instruction to fix
+2. Re-run review
+3. If same issues persist after 3 cycles → stop, report to human
+
+Minor issues from the final review: report them, don't block.
+
+---
+
+## Mode 2: Continuous Backlog Execution
+
+**Input:** none (reads from project's TODO.md)
+
+This is the autonomous orchestration loop. The orchestrator (you, running in the main conversation) drives issues to completion without human intervention, stopping only when genuinely stuck.
+
+### The Loop
+
+```
+while true:
+  1. Read TODO.md (stop at RESOLVED_SECTION_START)
+  2. Identify unblocked issues in Ready
+  3. Run conflict gate on candidates
+  4. Select issue(s) to work on
+  5. Execute issue (route by complexity)
+  6. Merge result
+  7. Report completion (one-liner)
+  8. Loop back to step 1
+```
+
+### Step 1: Read Backlog State
+
+```bash
+sed '/RESOLVED_SECTION_START/q' $REPO_ROOT/TODO.md
+```
+
+Parse: Active, Paused, Ready, Backlog, Blocked tables.
+
+### Step 2: Identify Unblocked Work
+
+Read each Ready issue's doc. Check its `Blocked by:` field.
+An issue is unblocked when all its blockers are in Resolved.
+
+### Step 3: Conflict Gate
+
+For each unblocked candidate:
+
+```bash
+for branch in $(git branch --list 'feature/*' | tr -d ' '); do
+  echo "=== $branch ==="
+  git diff --name-only main...$branch 2>/dev/null
+done
+```
+
+Compare active branch file sets against candidate's `In scope:` paths.
+- Same file touched → hard block
+- Same directory, different files → soft warning (proceed with note)
+- No overlap → clear
+
+### Step 4: Select Work
+
+If multiple candidates are unblocked and clear:
+- Check for independence (no shared files, no dependency between them)
+- If independent: dispatch in parallel (two implementors, two worktrees)
+- If dependent: execute highest-priority first
+
+### Step 5: Execute by Complexity
+
+Read the issue doc's `Complexity` field:
+
+**Simple** (≤1 day, bug fix, single concern):
+- Create worktree
+- Dispatch `implementor` directly with issue doc
+- No plan phase, no design phase
+- Review only if security-sensitive
+
+**Standard** (multi-file, clear ACs):
+- Create worktree
+- Dispatch `planner` with issue doc (it generates a mini design plan + phase files)
+- Execute phases sequentially (Mode 1 above)
+
+**Complex** (architectural decisions, ambiguous scope):
+- STOP. Report: "CG-XX is Complex — needs design decisions. Run /design to start."
+- Do not attempt autonomous execution of Complex issues.
+
+### Step 6: Merge and Update
+
+After issue passes review:
+1. Merge worktree branch to main
+2. Update issue doc: Status → Done
+3. Update TODO.md: move to Resolved, update "Last updated"
+4. Remove worktree
+
+### Step 7: Report
+
+Print one line:
+```
+✓ CG-XX merged. [brief what]. Starting CG-YY next (also dispatching CG-ZZ in parallel).
+```
+
+### Stop Conditions
+
+Stop the loop and report to human when:
+- No unblocked issues remain in Ready/Backlog
+- All unblocked issues are Complex
+- Conflict gate blocks all candidates
+- An issue fails review 3 times
+- A genuine ambiguity needs human decision (unclear AC, missing dependency, env issue)
+
+Report clearly:
+```
+Stopped: [reason]
+Completed this session: CG-X, CG-Y, CG-Z
+Next unblocked: CG-A (waiting for [what])
+Blocked: CG-B (conflict with [branch])
+```
+
+---
+
+## Parallel Dispatch
+
+When two issues are independent:
+
+```
+Dispatch in single message:
+  Agent(implementor): CG-XX in worktree A
+  Agent(implementor): CG-YY in worktree B
+```
+
+Both run concurrently. When both return:
+- Review each independently
+- Merge each to main (one at a time, re-run tests after each merge)
+- If merge conflict arises: merge the higher-priority one first, then rebase the other
+
+---
+
+## Worktree Management
+
+Every issue gets its own worktree:
+
+```bash
+ISSUE_ID="CG-XX"
+SLUG="kebab-title"
+MODULE="module-short"  # from issue doc Module field
+
+# Ensure .worktrees is gitignored
+grep -q "\.worktrees" .gitignore || echo ".worktrees/" >> .gitignore
+
+# Create (or reuse existing)
+if [ ! -d ".worktrees/${ISSUE_ID}-${SLUG}" ]; then
+  git worktree add .worktrees/${ISSUE_ID}-${SLUG} \
+    -b feature/${MODULE}/${ISSUE_ID}-${SLUG} main
+fi
+```
+
+Pass the worktree absolute path to every implementor dispatch.
+
+---
+
+## Context Strategy
+
+With 1M context window:
+- Never /clear between issues
+- Accumulated knowledge improves each subsequent dispatch
+- Phase files read just-in-time (not all upfront) to avoid noise
+- Implementor reports kept in context (orchestrator learns patterns)
+
+If context genuinely runs low (>600K tokens used), summarize completed work and continue. Don't clear.
+
+---
+
+## Integration with Supervisor
+
+The supervisor (jackal-supervisor agent or skills) handles:
+- Creating issues, managing backlog priority
+- Assigning work (conflict gate + worktree creation)
+- Pausing/resuming
+
+This skill handles:
+- Executing assigned work
+- Merging completed work
+- Updating TODO.md post-completion
+
+They can run together: supervisor assigns, execute runs. Or execute can self-serve from TODO.md in autonomous mode.
