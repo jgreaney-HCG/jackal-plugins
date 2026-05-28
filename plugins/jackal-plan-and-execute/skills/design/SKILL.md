@@ -30,12 +30,20 @@ Do not use Bash/Read/Grep to investigate the codebase yourself — dispatch `cod
 
 ---
 
-## Input
+## Inputs
 
-Accept any of:
+When invoked from `jackal-design-plan`, the wrapper passes:
+- `WORKTREE_PATH` — absolute path to the feature worktree (already created)
+- `BRANCH` — feature branch name
+- `ISSUE_ID` — issue identifier
+- `SLUG` — pre-determined slug
+
+When invoked directly, accept any of:
 - An issue ID (e.g., CG-14)
 - An issue doc path
 - A freeform description of what to build
+
+If `WORKTREE_PATH` is provided, **all git operations in this skill run from inside `$WORKTREE_PATH`** so the design document commits land on the feature branch, not main. If not provided, the design document commits to main as a planning artifact (legacy mode).
 
 ---
 
@@ -152,8 +160,10 @@ Create `docs/design-plans/YYYY-MM-DD-{slug}.md`:
 - Present ACs to user for validation before committing
 - Use the full scoped identifier format
 
-Commit the design doc:
+Commit the design doc. **Run from `$WORKTREE_PATH` if provided** so the commit lands on the feature branch:
+
 ```bash
+cd "${WORKTREE_PATH:-$REPO_ROOT}"
 git add docs/design-plans/
 git commit -m "docs: design plan for [slug]"
 ```
@@ -162,12 +172,12 @@ git commit -m "docs: design plan for [slug]"
 
 ```
 Design complete: docs/design-plans/[filename]
+Worktree: [WORKTREE_PATH if provided, else "(none — created at /plan time)"]
 
-Next: /plan docs/design-plans/[filename]
-(This generates the implementation plan and sets up the worktree.)
+Next: /jackal-impl-plan docs/design-plans/[filename]
 ```
 
-No /clear needed. The plan skill reads the design from disk.
+No /clear needed. `jackal-impl-plan` reads the `## Worktree` block from the issue doc and reuses the existing worktree.
 
 ---
 

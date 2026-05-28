@@ -82,7 +82,7 @@ Minor issues from the final review: report them, don't block.
 
 ## Mode 2: Continuous Backlog Execution
 
-**Input:** none (reads from project's TODO.md)
+**Input:** none (reads from the configured backlog backend — GitHub issues or TODO.md)
 
 This is the autonomous orchestration loop. The orchestrator (you, running in the main conversation) drives issues to completion without human intervention, stopping only when genuinely stuck.
 
@@ -90,7 +90,7 @@ This is the autonomous orchestration loop. The orchestrator (you, running in the
 
 ```
 while true:
-  1. Read TODO.md (stop at RESOLVED_SECTION_START)
+  1. Read backlog state (GH issues or TODO.md)
   2. Identify unblocked issues in Ready
   3. Run conflict gate on candidates
   4. Select issue(s) to work on
@@ -101,6 +101,27 @@ while true:
 ```
 
 ### Step 1: Read Backlog State
+
+Read `backend` from `## Jackal Config` in CLAUDE.md.
+
+**If `backend: github`:**
+
+```bash
+gh issue list --repo "$GH_REPO" \
+  --label "status:ready" \
+  --state open \
+  --json number,title,labels,body
+```
+
+For each candidate, parse the issue body for `Blocked by:`, `Module:`, `Complexity:`, and `In scope:` sections (the issue doc on disk is still the source for rich detail; GH issue body mirrors the same structure).
+
+Issues are grouped by label:
+- `status:ready` → eligible candidates
+- `status:in-progress` → currently active (don't double-pick)
+- `status:paused` / `status:blocked` → skip
+- closed → resolved
+
+**If `backend: todo-md`:**
 
 ```bash
 sed '/RESOLVED_SECTION_START/q' $REPO_ROOT/TODO.md
@@ -160,8 +181,12 @@ Read the issue doc's `Complexity` field:
 After issue passes review:
 1. Merge worktree branch to main
 2. Update issue doc: Status → Done
-3. Update TODO.md: move to Resolved, update "Last updated"
+3. Update backlog state:
+   - `backend: github` → `gh issue close $N --reason completed --comment "Merged: <commit>"` and remove `status:in-progress` label
+   - `backend: todo-md` → move to Resolved, update "Last updated"
 4. Remove worktree
+
+(In practice, this is delegated to `jackal-finish-branch`, which handles backend gating.)
 
 ### Step 7: Report
 

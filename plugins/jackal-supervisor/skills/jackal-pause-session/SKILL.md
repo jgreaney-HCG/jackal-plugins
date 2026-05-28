@@ -16,6 +16,8 @@ Records a clean checkpoint when you're stopping work mid-issue.
 
 Read the **## Jackal Config** section from the project's CLAUDE.md. Extract:
 - `repo_root`, `issue_prefix`, `issue_docs`
+- `backend` — `github` or `todo-md` (default: `todo-md`)
+- `gh_repo` — `owner/repo` (required when `backend: github`)
 
 ---
 
@@ -106,7 +108,33 @@ Edit `$ISSUE_DOCS/PREFIX-XXX-*.md`:
 
 ---
 
-## Step 5: Update TODO.md
+## Step 5: Update Backlog State
+
+**If `backend: github`:**
+
+```bash
+GH_ISSUE_NUM=$(echo "$ISSUE_ID" | grep -oE '[0-9]+$')
+NEW_LABEL="status:paused"   # or "status:blocked" if blocked
+OLD_LABEL="status:in-progress"
+
+gh issue edit "$GH_ISSUE_NUM" --repo "$GH_REPO" \
+  --add-label "$NEW_LABEL" \
+  --remove-label "$OLD_LABEL"
+
+gh issue comment "$GH_ISSUE_NUM" --repo "$GH_REPO" --body "$(cat <<EOF
+**Paused** — checkpoint recorded
+
+- Status: ${NEW_LABEL#status:}
+- Checkpoint: ${CHECKPOINT_STRING}
+- Branch: \`${BRANCH}\`
+- Worktree: \`${WORKTREE_PATH}\`
+
+To resume: ask the supervisor "resume ${ISSUE_ID}".
+EOF
+)"
+```
+
+**If `backend: todo-md`:**
 
 ```bash
 sed '/RESOLVED_SECTION_START/q' $REPO_ROOT/TODO.md
@@ -129,7 +157,13 @@ Update "Last updated" date — set to `Last updated: YYYY-MM-DD`, date only, no 
 
 ```bash
 cd $REPO_ROOT
-git add $ISSUE_DOCS/PREFIX-XXX-*.md TODO.md
+# backend=github: only the issue doc changed
+# backend=todo-md: TODO.md also changed
+if [ "$BACKEND" = "github" ]; then
+  git add $ISSUE_DOCS/PREFIX-XXX-*.md
+else
+  git add $ISSUE_DOCS/PREFIX-XXX-*.md TODO.md
+fi
 git commit -m "chore: pause PREFIX-XXX — checkpoint: [brief phrase]"
 ```
 

@@ -95,15 +95,18 @@ Working directory: [path]
 
 If the plugin isn't available, skip this step.
 
-### 6. Update TODO.md and Issue Doc
+### 6. Update Backlog State and Issue Doc
+
+Read `backend` from `## Jackal Config`. The wrapper (`jackal-finish-branch`) handles GitHub-side updates (labels, comment, close) for Options 1 and 2. This skill's job is local file updates only.
 
 For Options 1 and 2:
 - Issue doc: set Status → Done
-- TODO.md: remove from Active, append to Resolved with today's date
-- Update "Last updated" line
+- If `backend: todo-md`: remove from Active, append to Resolved with today's date, update "Last updated" line
+- If `backend: github`: skip TODO.md updates (GH is the source of truth — the wrapper closes the issue)
 
 For Option 4:
-- Remove from Active, don't add to Resolved
+- If `backend: todo-md`: remove from Active, don't add to Resolved
+- If `backend: github`: leave the issue open with `status:ready` (work was discarded — issue is still pending)
 
 ### 7. Clean Up Worktree
 

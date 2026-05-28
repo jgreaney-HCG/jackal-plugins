@@ -1,5 +1,41 @@
 # Changelog
 
+## [jackal-supervisor] 2.1.0
+
+Single-owner worktree creation and optional GitHub backend for backlog state.
+
+**New:**
+- `jackal-design-plan` now owns worktree creation. Creates the worktree, runs the conflict gate, and persists a `## Worktree` block (branch, path, created date) to the issue doc as the single source of truth.
+- GitHub backend support across `jackal-design-plan`, `jackal-impl-plan`, `jackal-pause-session`, and `jackal-finish-branch`. Opt in by setting `backend: github` and `gh_repo: owner/repo` in the project's Jackal Config.
+- Standard label set: `status:ready`, `status:in-progress`, `status:paused`, `status:blocked`. Wrappers add/remove labels and post structured comments at worktree assignment, pause/blocked checkpoints, and completion.
+
+**Changed:**
+- `jackal-impl-plan` step 3 reads the `## Worktree` block from the issue doc instead of re-deriving the path. Falls back to creating a worktree only for Standard issues that skipped `/jackal-design-plan`. Three explicit cases (block found + path exists / block found + path missing / no block) so the skill never silently bails.
+- `jackal-finish-branch` posts a completion comment with merge commit or PR URL, removes `status:in-progress`, and closes the issue on local merge (Option 1). PR-based finishes leave closing to GitHub via "Closes #N" in the PR body.
+- `jackal-pause-session` swaps `status:in-progress` for `status:paused` (or `status:blocked`) and posts the checkpoint as a comment when `backend: github`.
+
+**Fixed:**
+- "Could not find worktree" handoff failure between `/jackal-design-plan` and `/jackal-impl-plan` caused by both skills trying to create the worktree and re-derive its name from convention.
+
+## [jackal-plan-and-execute] 2.1.0
+
+Worktree input pass-through and GitHub backlog backend in execute/finish.
+
+**New:**
+- `plan` skill accepts `WORKTREE_PATH` from its wrapper — when provided, skips its own conflict gate + worktree creation. The wrapper is the single owner of worktree state.
+- `execute` Backlog mode reads from GitHub issues (`gh issue list --label status:ready --state open`) when `backend: github`. TODO.md remains the default and is fully supported.
+- `design` skill accepts `WORKTREE_PATH` and runs its design-doc commit from the worktree, so the design document lands on the feature branch instead of `main`.
+
+**Changed:**
+- `finish` skill step 6 gates TODO.md updates on `backend`. With `backend: github`, GitHub is the source of truth and the wrapper handles the close + comment.
+
+## [jackal-house-style] 1.0.4
+
+Make `bandit` and `semgrep` mandatory on every Python project.
+
+**Changed:**
+- `howto-code-in-python`: bandit and semgrep are required, not optional, and not interchangeable. Added a Security Scanning section with installation (`uv add --dev bandit semgrep`), `[tool.bandit]` config, run commands, suppression policy (line-local with reason — never repo-wide), and CI requirements. Updated the self-check, `pyproject.toml` example, and Red Flags to enforce both scanners on every commit.
+
 ## [jackal-linear] 1.0.0
 
 Initial release of the jackal-linear plugin.

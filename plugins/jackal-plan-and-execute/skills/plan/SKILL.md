@@ -19,15 +19,29 @@ Before starting, check for `.jackal/harness-guidance.md` in the repo root and re
 
 ## Delegation Rules
 
-This skill handles setup (conflict gate, worktree creation) and hands off artifact work to agents.
+This skill handles setup (conflict gate, worktree creation when not pre-supplied) and hands off artifact work to agents.
 
 | Do directly | Delegate |
 |---|---|
 | Conflict gate git commands | Phase file generation → `planner` agent |
-| Create worktree | |
+| Create worktree (only if `WORKTREE_PATH` not provided) | |
 | Pass plan dir + worktree to execute | |
 
 Do not read the codebase to understand patterns or research dependencies — the `planner` agent does that.
+
+---
+
+## Inputs from Wrapper
+
+When invoked from `jackal-impl-plan`, the wrapper passes:
+- `WORKTREE_PATH` — absolute path to an existing worktree
+- `BRANCH` — feature branch name
+- `DESIGN_PATH` — design plan or issue doc path
+- `TEST_CMD` — project test command
+
+If `WORKTREE_PATH` is provided, **skip steps 2 and 3** (conflict gate + worktree creation) — the wrapper has already done them. Go straight to step 4.
+
+If `WORKTREE_PATH` is not provided (skill invoked directly), run the full flow below.
 
 ---
 
