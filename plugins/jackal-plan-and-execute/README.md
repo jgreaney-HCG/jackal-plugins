@@ -21,7 +21,7 @@ Model-adaptive planning and execution harness for Claude Code.
 │  │ (Opus)   │  │ (Sonnet)  │  │ (Sonnet) │             │
 │  └──────────┘  └──────────┘  └──────────┘             │
 │                                                         │
-│  Coordination: git (worktrees, commits) + TODO.md       │
+│  Coordination: git (worktrees, commits) + GitHub issues │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -60,7 +60,7 @@ The main conversation (orchestrator) manages state and makes decisions. It **nev
 
 | Do directly (orchestrator) | Delegate to subagent |
 |---|---|
-| Read/write TODO.md and issue docs | Write code and tests → `implementor` |
+| Read/write backlog state and issue docs | Write code and tests → `implementor` |
 | Run conflict gate (git commands) | Generate phase files → `planner` |
 | Create/remove worktrees | Validate code against requirements → `reviewer` |
 | Route by complexity, decide whether to review | Investigate codebase patterns → `codebase-investigator` |
@@ -84,7 +84,7 @@ The main conversation (orchestrator) manages state and makes decisions. It **nev
 ```
 
 The orchestrator:
-1. Reads TODO.md
+1. Reads the backlog (GitHub issues by default, or TODO.md)
 2. Finds unblocked issues
 3. Runs conflict gate
 4. Dispatches work (parallel when independent)

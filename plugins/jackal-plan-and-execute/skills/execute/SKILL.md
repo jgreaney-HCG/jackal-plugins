@@ -8,7 +8,7 @@ user-invocable: true
 
 Two modes:
 1. **Plan mode** — execute a specific implementation plan (phase files in a directory)
-2. **Backlog mode** — continuously pull and execute issues from TODO.md until stuck
+2. **Backlog mode** — continuously pull and execute issues from the configured backlog backend (GitHub issues by default, or TODO.md) until stuck
 
 ---
 
@@ -30,7 +30,7 @@ The orchestrator manages state and makes routing decisions. It **never** writes 
 
 | Do directly | Delegate |
 |---|---|
-| Read/write TODO.md and issue docs | Code + tests → `implementor` |
+| Read/write backlog state and issue docs | Code + tests → `implementor` |
 | Run conflict gate git commands | Phase file generation → `planner` |
 | Create/remove worktrees | Code review → `reviewer` (via `review` skill) |
 | Decide whether and when to review | |
@@ -279,6 +279,6 @@ The supervisor (jackal-supervisor agent or skills) handles:
 This skill handles:
 - Executing assigned work
 - Merging completed work
-- Updating TODO.md post-completion
+- Updating backlog state post-completion
 
-They can run together: supervisor assigns, execute runs. Or execute can self-serve from TODO.md in autonomous mode.
+They can run together: supervisor assigns, execute runs. Or execute can self-serve from the backlog backend in autonomous mode.

@@ -1,6 +1,6 @@
 ---
 name: jackal-finish-branch
-description: Complete a development branch with project-specific overrides (remote, test command, PR method) and TODO.md updates.
+description: Complete a development branch with project-specific overrides (remote, test command, PR method) and backlog updates (GitHub issues by default, or TODO.md).
 user-invocable: true
 ---
 
@@ -14,7 +14,7 @@ Wrapper around the `finish` skill with project-specific configuration.
 
 Read `## Jackal Config` from CLAUDE.md. Extract:
 - `test_cmd`, `git_remote`, `push_cmd`, `pr_method`, `ui_path`, `issue_docs`, `repo_root`
-- `backend` — `github` or `todo-md` (default: `todo-md`)
+- `backend` — `github` or `todo-md` (default: `github`)
 - `gh_repo` — `owner/repo` (required when `backend: github`)
 
 ## Step 1: UI Verification Gate

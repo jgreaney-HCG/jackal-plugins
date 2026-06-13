@@ -1,5 +1,24 @@
 # Changelog
 
+## [jackal-supervisor] 2.2.0
+
+GitHub is now the default backlog backend.
+
+**Changed:**
+- `backend` defaults to `github` (was `todo-md`) across `jackal-design-plan`, `jackal-impl-plan`, `jackal-pause-session`, and `jackal-finish-branch`. Projects must set `backend: todo-md` explicitly to use the TODO.md flow; `gh_repo` is required for the default GitHub path.
+- `jackal-finish-branch` and `jackal-pause-session` skill descriptions reworded to present the GitHub backlog first, with TODO.md as the alternative.
+
+**Fixed:**
+- `jackal-pause-session` resume-checkpoint examples emitted the non-existent `/execute-implementation-plan` command (a stale ed3d-era name), so resuming into execution handed the user a dead command. They now use `/execute [plan-directory] [working-directory]` with the worktree passed as the working directory, so the resume command is runnable from the repo root.
+
+## [jackal-plan-and-execute] 2.2.0
+
+GitHub-first backlog narrative in execute and finish.
+
+**Changed:**
+- `execute` Backlog mode, delegation table, and supervisor-integration notes describe the backlog as GitHub issues by default (or TODO.md), instead of treating TODO.md as the primary mechanism. The explicit `backend: todo-md` branches are unchanged and fully supported.
+- README architecture diagram, delegation table, and Continuous Execution section reworded to GitHub-first. `commands/execute.md` and `commands/finish.md` descriptions follow suit.
+
 ## [jackal-supervisor] 2.1.0
 
 Single-owner worktree creation and optional GitHub backend for backlog state.

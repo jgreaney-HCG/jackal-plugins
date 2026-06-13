@@ -14,7 +14,7 @@ Wrapper that integrates the supervisor at entry/exit of the design phase. **This
 
 Read `## Jackal Config` from CLAUDE.md. Extract:
 - `repo_root`, `issue_prefix`, `issue_docs`, `design_plans`, `modules`
-- `backend` — `github` or `todo-md` (default: `todo-md` for back-compat)
+- `backend` — `github` or `todo-md` (default: `github`)
 - `gh_repo` — `owner/repo` (required when `backend: github`)
 
 ## Step 1: Resolve Input

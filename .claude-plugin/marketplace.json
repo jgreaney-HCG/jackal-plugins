@@ -22,7 +22,7 @@
         {
             "name": "jackal-plan-and-execute",
             "description": "Model-adaptive planning and execution harness. Sonnet implementors, conditional review, continuous backlog execution.",
-            "version": "2.1.0",
+            "version": "2.2.0",
             "source": "./plugins/jackal-plan-and-execute",
             "author": {
                 "name": "Jack Greaney",
@@ -33,7 +33,7 @@
         {
             "name": "jackal-supervisor",
             "description": "Project supervisor — backlog management, conflict gates, complexity routing, and lifecycle orchestration.",
-            "version": "2.1.0",
+            "version": "2.2.0",
             "source": "./plugins/jackal-supervisor",
             "author": {
                 "name": "Jack Greaney",

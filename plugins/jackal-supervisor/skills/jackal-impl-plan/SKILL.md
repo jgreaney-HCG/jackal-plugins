@@ -16,7 +16,7 @@ Wrapper that adds supervisor integration around the `plan` skill.
 
 Read `## Jackal Config` from CLAUDE.md. Extract:
 - `repo_root`, `issue_prefix`, `issue_docs`, `design_plans`, `impl_plans`, `modules`, `test_cmd`
-- `backend` — `github` or `todo-md` (default: `todo-md`)
+- `backend` — `github` or `todo-md` (default: `github`)
 - `gh_repo` — `owner/repo` (required when `backend: github`)
 
 ## Step 1: Resolve Input

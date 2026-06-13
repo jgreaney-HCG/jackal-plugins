@@ -1,6 +1,6 @@
 ---
 name: jackal-pause-session
-description: Gracefully pause an in-progress issue in any Jackal-managed project — records the current phase and next step in the issue doc, moves it to Paused in TODO.md, and commits the checkpoint so the supervisor can surface it and give the exact resume command later.
+description: Gracefully pause an in-progress issue in any Jackal-managed project — records the current phase and next step in the issue doc, marks it paused in the backlog (GitHub issue label by default, or TODO.md), and commits the checkpoint so the supervisor can surface it and give the exact resume command later.
 user-invocable: true
 ---
 
@@ -16,7 +16,7 @@ Records a clean checkpoint when you're stopping work mid-issue.
 
 Read the **## Jackal Config** section from the project's CLAUDE.md. Extract:
 - `repo_root`, `issue_prefix`, `issue_docs`
-- `backend` — `github` or `todo-md` (default: `todo-md`)
+- `backend` — `github` or `todo-md` (default: `github`)
 - `gh_repo` — `owner/repo` (required when `backend: github`)
 
 ---
@@ -94,10 +94,12 @@ If waiting on something external → route to Blocked status.
 [phase + what's done] — next: [immediate next action] [| note: <optional context>]
 ```
 
+The resume command must be runnable as-is. `/execute` takes `[plan-directory] [working-directory]` — always include the worktree as the second arg, since resuming usually starts from the repo root, not inside the worktree.
+
 Examples:
 - `Design Phase 3 done — next: /jackal-impl-plan $DESIGN_PLANS/2026-04-05-PREFIX-46.md`
-- `Impl Phase 2 complete — next: resume Phase 3 in /execute-implementation-plan`
-- `Impl plan exists, execution not started — next: /execute-implementation-plan $IMPL_PLANS/.../`
+- `Impl Phase 2 complete — next: /execute <worktree>/docs/implementation-plans/<slug>/ <worktree>` (resumes at Phase 3)
+- `Impl plan exists, execution not started — next: /execute <worktree>/docs/implementation-plans/<slug>/ <worktree>`
 
 ---
 
