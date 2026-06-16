@@ -68,7 +68,7 @@ Confirm Status is "In Progress".
 
 **First: check the live task list before asking the user anything.**
 
-Use TaskList to read the current session's tasks. The ed3d design and implementation skills create tasks for each phase.
+Use TaskList to read the current session's tasks. The jackal design and implementation skills create tasks for each phase.
 
 **If tasks exist:**
 - Completed tasks → phases already done

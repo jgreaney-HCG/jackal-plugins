@@ -132,8 +132,8 @@ After design commits:
 ```
 Design complete for [ISSUE-ID].
 Design plan: docs/design-plans/[filename]
-Worktree: .worktrees/[ISSUE-ID]-[slug]
-Branch: feature/[module]/[ISSUE-ID]-[slug]
+Worktree: .worktrees/[issue#]-[slug]
+Branch: [type]/[issue#]-[slug]
 
 Next: /jackal-impl-plan docs/design-plans/[filename]
 ```
