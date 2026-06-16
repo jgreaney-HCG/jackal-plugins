@@ -79,7 +79,9 @@ git branch -D [feature-branch]
 
 ### 5. Update Project Context
 
-For Options 1 and 2, dispatch the project-claude-librarian (if available) to update CLAUDE.md files if contracts changed:
+For Options 1 and 2, dispatch the project-claude-librarian to update CLAUDE.md files if contracts
+changed. This agent ships in the `ed3d-extending-claude` plugin — a **declared dependency** of the
+jackal harness (see the marketplace README's "Required dependencies").
 
 ```xml
 <invoke name="Agent">
@@ -93,7 +95,16 @@ Working directory: [path]
 </invoke>
 ```
 
-If the plugin isn't available, skip this step.
+**If `ed3d-extending-claude` is not installed, do NOT silently skip.** Emit a visible warning so the
+human knows the closeout was incomplete — some projects (e.g. ROAR) make CLAUDE.md freshness
+re-verification at branch closeout *mandatory*, and a silent skip means a documented contract may
+have gone stale unnoticed:
+
+```
+⚠️  CLAUDE.md freshness re-verification SKIPPED — ed3d-extending-claude (project-claude-librarian)
+    is not installed. If this project requires doc closeout (check its documentation standard),
+    update the touched CLAUDE.md files and their `Last verified:` dates manually before merging.
+```
 
 ### 6. Update Backlog State and Issue Doc
 

@@ -17,7 +17,10 @@
                 "name": "Jack Greaney",
                 "email": "jgreaney@hcg.com"
             },
-            "license": "UNLICENSED"
+            "license": "UNLICENSED",
+            "requires": [
+                "ed3d-research-agents"
+            ]
         },
         {
             "name": "jackal-plan-and-execute",
@@ -28,7 +31,11 @@
                 "name": "Jack Greaney",
                 "email": "jgreaney@hcg.com"
             },
-            "license": "UNLICENSED"
+            "license": "UNLICENSED",
+            "requires": [
+                "ed3d-research-agents",
+                "ed3d-extending-claude"
+            ]
         },
         {
             "name": "jackal-supervisor",
@@ -39,7 +46,11 @@
                 "name": "Jack Greaney",
                 "email": "jgreaney@hcg.com"
             },
-            "license": "UNLICENSED"
+            "license": "UNLICENSED",
+            "requires": [
+                "jackal-plan-and-execute",
+                "ed3d-playwright"
+            ]
         },
         {
             "name": "ed3d-hook-security-hardening",
