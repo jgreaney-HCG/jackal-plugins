@@ -1,7 +1,7 @@
 {
     "name": "jackal-house-style",
     "description": "Coding standards — TypeScript, React, Python, Postgres, and testing patterns. Derived from ed3d-house-style.",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "author": {
         "name": "Jack Greaney",
         "email": "jgreaney@hcg.com"
