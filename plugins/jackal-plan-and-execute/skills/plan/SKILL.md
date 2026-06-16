@@ -41,6 +41,11 @@ When invoked from `jackal-impl-plan`, the wrapper passes:
 - `BRANCH` — feature branch name
 - `DESIGN_PATH` — design plan or issue doc path
 - `TEST_CMD` — project test command
+- `IMPL_PLANS` — repo-root-relative dir where plan files go (from Jackal Config
+  `impl_plans`, e.g. `docs/impl-plans`). **Use this verbatim to build `PLAN_DIR`** —
+  do not hardcode `docs/implementation-plans/`. If not provided (skill invoked
+  directly), read `impl_plans` from the `## Jackal Config` block in CLAUDE.md, and
+  fall back to `docs/impl-plans` only if neither is available.
 
 If `WORKTREE_PATH` is provided, **skip steps 2 and 3** (conflict gate + worktree creation) — the wrapper has already done them. Go straight to step 4.
 
@@ -123,7 +128,7 @@ $TEST_CMD --tb=no -q 2>/dev/null | tail -3
 <parameter name="description">Planning [issue/feature]</parameter>
 <parameter name="prompt">
 DESIGN_PATH: [absolute path to design plan]
-PLAN_DIR: [absolute path: worktree/docs/implementation-plans/YYYY-MM-DD-slug/]
+PLAN_DIR: [absolute path: $WORKTREE_PATH/$IMPL_PLANS/YYYY-MM-DD-<issue#>-slug/ — e.g. .worktrees/24-foo/docs/impl-plans/2026-06-16-24-foo/. Use the IMPL_PLANS value from config; do NOT hardcode docs/implementation-plans/]
 Working directory: [worktree absolute path]
 
 Generate implementation phase files from this design.

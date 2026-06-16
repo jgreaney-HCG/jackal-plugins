@@ -98,10 +98,20 @@ If waiting on something external → route to Blocked status.
 
 The resume command must be runnable as-is. `/execute` takes `[plan-directory] [working-directory]` — always include the worktree as the second arg, since resuming usually starts from the repo root, not inside the worktree.
 
-Examples:
-- `Design Phase 3 done — next: /jackal-impl-plan $DESIGN_PLANS/2026-04-05-PREFIX-46.md`
-- `Impl Phase 2 complete — next: /execute <worktree>/docs/implementation-plans/<slug>/ <worktree>` (resumes at Phase 3)
-- `Impl plan exists, execution not started — next: /execute <worktree>/docs/implementation-plans/<slug>/ <worktree>`
+**The plan directory must be a real path.** Build it from the project's `impl_plans`
+config (e.g. `docs/impl-plans`), NOT a hardcoded `docs/implementation-plans/`. Before
+emitting the resume command, confirm the directory actually exists:
+
+```bash
+ls "$REPO_ROOT/$WORKTREE_REL/$IMPL_PLANS/" 2>/dev/null   # find the real plan dir name
+```
+
+Use the actual dir name you find (format `YYYY-MM-DD-<issue#>-<slug>`), not a guessed one.
+
+Examples (with `impl_plans: docs/impl-plans`):
+- `Design Phase 3 done — next: /jackal-impl-plan $DESIGN_PLANS/2026-04-05-46-slug.md`
+- `Impl Phase 2 complete — next: /execute <worktree>/docs/impl-plans/2026-04-05-46-slug/ <worktree>` (resumes at Phase 3)
+- `Impl plan exists, execution not started — next: /execute <worktree>/docs/impl-plans/2026-04-05-46-slug/ <worktree>`
 
 ---
 

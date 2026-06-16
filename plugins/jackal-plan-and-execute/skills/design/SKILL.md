@@ -8,7 +8,9 @@ user-invocable: true
 
 Transform a rough idea or Complex issue into a committed design document ready for implementation planning.
 
-**Output:** `docs/design-plans/YYYY-MM-DD-{slug}.md`
+**Output:** `<design_plans>/YYYY-MM-DD-{slug}.md` — where `<design_plans>` is the
+`design_plans` path from the project's `## Jackal Config` (defaults to
+`docs/design-plans`). Use the configured value; the examples below show the default.
 
 ---
 
