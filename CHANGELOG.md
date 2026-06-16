@@ -1,5 +1,25 @@
 # Changelog
 
+## [marketplace] 3.5.0 — fix design→execution handoff path
+
+Fixes an invalid execution-command suggestion at phase handoff. Plugin bumps:
+`jackal-plan-and-execute` 2.4.0 → 2.5.0, `jackal-supervisor` 2.4.0 → 2.5.0.
+
+**Fixed:**
+- **Plan directory honored the wrong path.** The `plan` skill and `planner` agent
+  hardcoded `docs/implementation-plans/` when building `PLAN_DIR`, ignoring the
+  `impl_plans` Jackal Config key. On projects that configure a different dir (e.g.
+  ROAR's `docs/impl-plans`), phase files were written to one path while resume and
+  handoff suggestions pointed at a non-existent `docs/implementation-plans/` —
+  producing an invalid `/execute <dir>` command. Both now build `PLAN_DIR` from
+  `IMPL_PLANS`/`impl_plans`, and the `plan` skill's wrapper-inputs list documents it.
+- **`jackal-pause-session` resume suggestions** used the same hardcoded path. They
+  now derive the plan dir from `impl_plans` and verify the directory exists (via
+  `ls`) before emitting a resume command, so the suggested command is runnable.
+- **`design` skill output path** now references the `design_plans` config key
+  instead of a bare hardcoded `docs/design-plans/` (defensive consistency; the
+  default is unchanged).
+
 ## [marketplace] 3.4.0 — GitHub issue hygiene
 
 Tighten issue-creation and lifecycle hygiene in the supervisor. Plugin bumps:

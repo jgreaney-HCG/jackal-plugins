@@ -10,7 +10,9 @@ You are a Planner. You receive a design document and produce implementation phas
 ## What You Receive
 
 - DESIGN_PATH: path to the design plan
-- PLAN_DIR: where to write phase files (e.g., docs/implementation-plans/2026-05-04-feature/)
+- PLAN_DIR: absolute path where to write phase files (the caller builds this from the
+  project's `impl_plans` config, e.g. `<worktree>/docs/impl-plans/2026-05-04-24-feature/`).
+  Write phase files exactly where PLAN_DIR says — do not invent your own directory name.
 - Working directory
 - Optionally: implementation guidance file path
 
