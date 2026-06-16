@@ -1,6 +1,7 @@
-# ed3d House Style
+# Jackal House Style
 
-This repository contains coding standards, patterns, and skills for ed3d projects.
+This plugin contains coding standards, patterns, and skills for jackal projects
+(derived from ed3d-house-style).
 
 ## Purpose
 

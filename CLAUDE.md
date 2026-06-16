@@ -10,7 +10,7 @@ When documenting Task tool invocations in skills or agent prompts, use XML-style
 
 ```
 <invoke name="Task">
-<parameter name="subagent_type">ed3d-basic-agents:sonnet-general-purpose</parameter>
+<parameter name="subagent_type">jackal-plan-and-execute:implementor</parameter>
 <parameter name="description">Brief description of what the subagent does</parameter>
 <parameter name="prompt">
 The prompt content goes here.
