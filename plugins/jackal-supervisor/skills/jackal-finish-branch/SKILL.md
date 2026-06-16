@@ -16,6 +16,8 @@ Read `## Jackal Config` from CLAUDE.md. Extract:
 - `test_cmd`, `git_remote`, `push_cmd`, `pr_method`, `ui_path`, `issue_docs`, `repo_root`
 - `backend` — `github` or `todo-md` (default: `github`)
 - `gh_repo` — `owner/repo` (required when `backend: github`)
+- `protected_main` — `true`/`false` (default: detect) — when true, finish opens a PR instead of merging locally
+- `label_style` — `slash` or `colon` (default: `slash`) — separator for status labels
 
 ## Step 1: UI Verification Gate
 
@@ -68,7 +70,7 @@ gh issue comment "$GH_ISSUE_NUM" --repo "$GH_REPO" --body "$(cat <<EOF
 EOF
 )"
 
-gh issue edit "$GH_ISSUE_NUM" --repo "$GH_REPO" --remove-label "status:in-progress"
+gh issue edit "$GH_ISSUE_NUM" --repo "$GH_REPO" --remove-label "status/in-progress"
 
 # Close on merge (Option 1) or local merge. For Option 2 (PR), leave open — GH closes
 # automatically when the PR merges via "Closes #N" in the PR body.
