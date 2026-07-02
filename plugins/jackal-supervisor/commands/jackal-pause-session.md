@@ -1,6 +1,6 @@
 ---
 description: Pause an in-progress issue with a resumable checkpoint
-argument-hint: [issue-id] [reason]
+argument-hint: "[issue-id] [reason]"
 ---
 
 # Jackal Pause Session

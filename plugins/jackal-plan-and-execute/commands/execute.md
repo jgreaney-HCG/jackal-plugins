@@ -1,6 +1,6 @@
 ---
 description: Execute an implementation plan or run continuous backlog execution
-argument-hint: [plan-directory] [working-directory]
+argument-hint: "[plan-directory] [working-directory]"
 ---
 
 # Execute
