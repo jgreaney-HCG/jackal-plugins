@@ -1,12 +1,19 @@
 ---
 name: finish
-description: Completes a development branch — verifies tests, presents merge/PR/keep/discard options, updates project context, and cleans up worktree.
+description: Completes a development branch — verifies tests, rebases onto origin/main when behind, pushes, and opens a Pull Request. PR is the only completion path; keep/discard only on explicit request.
 user-invocable: true
 ---
 
 # Finish
 
-Complete a development branch after implementation passes review.
+Complete a development branch after implementation passes review. The output of
+finish is **always a Pull Request** — `main` is protected and the harness never
+merges locally. There is no options menu.
+
+Two exceptions, only when the user explicitly asks:
+- **Keep** ("keep the branch, I'll handle it") — report branch + worktree location, stop.
+- **Discard** ("throw this away") — require a typed "discard" confirmation, then
+  delete the branch and worktree and restore the issue to `status/ready`.
 
 ---
 
@@ -21,9 +28,7 @@ UI_PATH=$(grep 'ui_path' CLAUDE.md | awk '{print $2}')
 git diff --name-only main...[feature-branch] | grep "^${UI_PATH}"
 ```
 
-If any UI files changed: invoke `jackal-ui-verify` with the issue ID. **Do not proceed to merge until it reports ✅ PASS.**
-
-If no UI files changed: skip this step.
+If any UI files changed: invoke `jackal-ui-verify` with the issue ID. **Do not proceed until it reports ✅ PASS.**
 
 ### 2. Verify Tests Pass
 
@@ -33,84 +38,67 @@ $TEST_CMD
 
 If tests fail → stop. Report failures. Don't proceed.
 
-### 2a. Detect Protected Main
+### 3. Rebase If Behind
 
-Determine whether `main` is protected — this decides the **default** completion path and whether
-local merge is even allowed. Resolve in precedence order (first signal wins):
+PRs that sit behind `main` accumulate conflicts and fail CI on stale code. Check
+**before** pushing, every time:
 
-1. `.jackal/harness-guidance.md` merge-strategy override (e.g. "always open a PR, never merge locally")
-2. `protected_main: true` in the Jackal Config
-3. Best-effort detection (cached per session, network-optional):
-   ```bash
-   gh api "repos/$GH_REPO/branches/main/protection" >/dev/null 2>&1 && echo protected || echo open
-   ```
-
-If main is protected, **Option 1 (local merge) is unavailable** — the harness must open a PR.
-
-### 3. Present Options
-
-```
-Implementation complete. Options:
-
-1. Merge back to main locally   (UNAVAILABLE if main is protected)
-2. Push and create a Pull Request
-3. Keep the branch as-is (more work needed / I'll handle it)
-4. Discard this work
-```
-
-If main is protected, say so and present 2–4 only.
-
-### 4. Execute Choice
-
-**Option 1 — Merge locally** (only when main is NOT protected):
 ```bash
-git checkout main
-git pull
-git merge [feature-branch]
-$TEST_CMD                    # verify merged result
-git branch -d [feature-branch]
+git fetch origin
+BEHIND=$(git rev-list --count HEAD..origin/main)
 ```
 
-**Option 2 — Push and create PR:**
+If `BEHIND` > 0:
+
+```bash
+git rebase origin/main
+```
+
+- Rebase clean → re-run `$TEST_CMD` (fast fail: the rebase may have changed
+  behavior under you). Green → proceed.
+- Rebase conflicts → resolve them if the resolution is mechanical (imports,
+  lockfiles, adjacent edits). If the conflict is semantic — both sides changed
+  the same behavior — stop and report: this needs a human or a fresh look at
+  both branches. Never resolve a semantic conflict by guessing.
+
+### 4. Contract Check (if canon exists)
+
+If `docs/canon/` exists and `/contract-check` was not already run by `execute`'s
+final review, run it now. The bar is **CLEAN, or FLAGGED with every flag
+explained** in your report. An unexplained FLAG blocks the PR. ESCALATE always
+blocks — fix the canon gap first.
+
+### 5. Push and Create PR
+
 ```bash
 git push -u origin [feature-branch]
 ```
 
-Build the PR body from the repo's template if one exists, so required sections are filled rather
-than left blank:
+Build the PR body from the repo's template if one exists, so required sections
+are filled rather than left blank:
+
 ```bash
 TEMPLATE=$(ls .github/PULL_REQUEST_TEMPLATE.md .github/pull_request_template.md 2>/dev/null | head -1)
 ```
-- If a template exists: fill each section (e.g. What changed / Closes #N / How to verify / Risk /
-  Docs updated / Gates) from the issue ACs and the diff. Include `Closes #<issue>` so the merge
-  auto-closes the issue.
-- If no template: use a concise default body (summary + `Closes #N` + test results).
+
+- If a template exists: fill each section (What changed / Closes #N / How to
+  verify / Risk / Docs updated / Gates) from the issue ACs and the diff. Include
+  `Closes #<issue>` so the merge auto-closes the issue.
+- If no template: use a concise default body (summary + `Closes #N` + test
+  results + review verdict + contract-check status).
 
 ```bash
-gh pr create --title "[ISSUE-ID]: [title]" --body "$PR_BODY"
+gh pr create --title "[#issue]: [title]" --body "$PR_BODY"
 ```
 
-If project uses CodeCommit (check `pr_method` in Jackal Config):
-```
-Branch pushed. Create PR via:
-aws codecommit create-pull-request ...
-```
+If the project uses CodeCommit (check `pr_method` in Jackal Config), push and
+print the `aws codecommit create-pull-request` command instead.
 
-**Option 3 — Keep:**
-Report branch and worktree location. Done.
+### 6. Update Project Context
 
-**Option 4 — Discard:**
-Require typed "discard" confirmation. Then:
-```bash
-git checkout main
-git branch -D [feature-branch]
-```
-
-### 5. Update Project Context
-
-For Options 1 and 2, dispatch the project-claude-librarian to update CLAUDE.md files if contracts
-changed. This agent ships in the `ed3d-extending-claude` plugin — a **declared dependency** of the
-jackal harness (see the marketplace README's "Required dependencies").
+Dispatch the project-claude-librarian to update CLAUDE.md files if contracts
+changed. This agent ships in the `ed3d-extending-claude` plugin — a **declared
+dependency** of the jackal harness.
 
 ```xml
 <invoke name="Agent">
@@ -120,44 +108,42 @@ jackal harness (see the marketplace README's "Required dependencies").
 Review changes on [feature-branch] vs main.
 Update CLAUDE.md files if API contracts or project structure changed.
 Working directory: [path]
+
+Do not dispatch or invoke any subagents — do the work directly with your own tools.
 </parameter>
 </invoke>
 ```
 
-**If `ed3d-extending-claude` is not installed, do NOT silently skip.** Emit a visible warning so the
-human knows the closeout was incomplete — some projects (e.g. ROAR) make CLAUDE.md freshness
-re-verification at branch closeout *mandatory*, and a silent skip means a documented contract may
-have gone stale unnoticed:
+**If `ed3d-extending-claude` is not installed, do NOT silently skip.** Emit a
+visible warning so the human knows the closeout was incomplete:
 
 ```
 ⚠️  CLAUDE.md freshness re-verification SKIPPED — ed3d-extending-claude (project-claude-librarian)
-    is not installed. If this project requires doc closeout (check its documentation standard),
-    update the touched CLAUDE.md files and their `Last verified:` dates manually before merging.
+    is not installed. If this project requires doc closeout, update the touched CLAUDE.md files
+    and their `Last verified:` dates manually before the PR merges.
 ```
 
-### 6. Update Backlog State and Issue Doc
+### 7. Update Issue State
 
-Read `backend` from `## Jackal Config`. The wrapper (`jackal-finish-branch`) handles GitHub-side updates (labels, comment, close) for Options 1 and 2. This skill's job is local file updates only.
+- Post the final review's **AC coverage table** as an issue comment and tick the
+  satisfied `- [ ] AC` checkboxes in the issue body — the issue should reflect
+  verified reality, not intentions.
+- Remove `status/in-progress`. Leave the issue **open** — `Closes #N` in the PR
+  body closes it when the PR merges.
+- Issue doc (if the project keeps them): Status → In Review, add the PR URL.
 
-For Options 1 and 2:
-- Issue doc: set Status → Done
-- If `backend: todo-md`: remove from Active, append to Resolved with today's date, update "Last updated" line
-- If `backend: github`: skip TODO.md updates (GH is the source of truth — the wrapper closes the issue)
+(The `jackal-finish-branch` wrapper handles the label/comment mechanics when the
+supervisor is in use.)
 
-For Option 4:
-- If `backend: todo-md`: remove from Active, don't add to Resolved
-- If `backend: github`: leave the issue open with `status/ready` (work was discarded — issue is still pending)
+### 8. Worktree
 
-### 7. Clean Up Worktree
+**Keep the worktree while the PR is open** — review feedback may need fixup
+pushes. `/jackal-sweep` removes it (and the local branch) after the PR merges.
 
-For Options 1, 2, 4:
-```bash
-git worktree remove [worktree-path]
-```
+For an explicit discard: `git worktree remove --force [path]` and
+`git branch -D [branch]` after the typed confirmation.
 
-For Option 3: keep worktree.
-
-### 8. Test Plan Reminder
+### 9. Test Plan Reminder
 
 If `docs/test-plans/` has a file matching this issue, remind the user it exists.
 
@@ -165,14 +151,6 @@ If `docs/test-plans/` has a file matching this issue, remind the user it exists.
 
 ## Autonomous Mode
 
-When called from the continuous execution loop (Backlog mode), the orchestrator should skip the
-"present options" step and pick the default for the repo based on the **Detect Protected Main** check
-(step 2a):
-
-- **Main is protected** → push the branch and open a PR (Option 2). Do **not** attempt a local merge —
-  it would be rejected and violates the protected-main invariant. Record the PR URL, then continue
-  the loop to the next issue rather than blocking on a human merge.
-- **Main is open** → merge locally (Option 1) without asking, then proceed to update + cleanup.
-
-The 4-option menu is for interactive use only. The protected-main default is non-negotiable in
-autonomous mode: the loop never self-merges to a protected `main`.
+Identical flow — there is nothing to ask the user. Rebase if behind, push, open
+the PR, update the issue, report the PR URL in one line, and return control to
+the loop. Never block waiting for the PR to merge.

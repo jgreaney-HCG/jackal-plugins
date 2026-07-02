@@ -11,4 +11,4 @@ argument-hint: [plan-directory] [working-directory]
 Invoke the `execute` skill.
 
 - With arguments: executes the specified implementation plan
-- Without arguments: enters continuous backlog mode (reads the backlog — GitHub issues by default, or TODO.md — and dispatches until stuck)
+- Without arguments: enters continuous backlog mode (reads the GitHub Issues backlog and dispatches until stuck)

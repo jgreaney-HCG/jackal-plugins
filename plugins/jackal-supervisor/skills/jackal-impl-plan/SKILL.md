@@ -16,8 +16,7 @@ Wrapper that adds supervisor integration around the `plan` skill.
 
 Read `## Jackal Config` from CLAUDE.md. Extract:
 - `repo_root`, `issue_prefix`, `issue_docs`, `design_plans`, `impl_plans`, `modules`, `test_cmd`
-- `backend` — `github` or `todo-md` (default: `github`)
-- `gh_repo` — `owner/repo` (required when `backend: github`)
+- `gh_repo` — `owner/repo` (required)
 - `label_style` — `slash` or `colon` (default: `slash`) — separator for status labels; examples
   below use `/`, substitute `:` if `colon`
 
@@ -63,7 +62,7 @@ BRANCH=$(awk '/^## Worktree/{flag=1; next} /^## /{flag=0} flag && /- branch:/{pr
 
    ```bash
    cd "$REPO_ROOT"
-   for branch in $(git branch --list 'feature/*' | tr -d ' '); do
+   for branch in $(git branch --list 'feature/*' '*/[0-9]*-*' | tr -d ' '); do
      echo "=== $branch ==="
      git diff --name-only main...$branch 2>/dev/null
    done
@@ -98,8 +97,6 @@ BRANCH=$(awk '/^## Worktree/{flag=1; next} /^## /{flag=0} flag && /- branch:/{pr
 
 ## Step 3: Update Backlog State
 
-**If `backend: github`:**
-
 Skip if Status is already `In Progress` (Complex issues already had this set during /jackal-design-plan). Otherwise, for Standard issues that skipped design:
 
 ```bash
@@ -119,8 +116,6 @@ EOF
 )"
 ```
 
-**If `backend: todo-md`:** move the row from Ready to Active in TODO.md if not already there.
-
 ## Step 4: Invoke Plan Skill
 
 Use `Skill("jackal-plan-and-execute:plan")` with:
@@ -134,6 +129,15 @@ The `plan` skill skips its own worktree creation when `WORKTREE_PATH` is provide
 
 ## Step 5: Execution Starts Automatically
 
-The plan skill flows directly into the execute skill. No handoff ceremony needed.
+The plan skill flows directly into the execute skill — **invoke it via
+`Skill("jackal-plan-and-execute:execute")`, never by inventing a slash command.**
+If you ever need to hand the user a resumable command instead, it is exactly:
+
+```
+/execute <absolute-plan-dir> <absolute-worktree-path>
+```
+
+(`/execute` is the only execution command; there is no `/execute-plan` or
+`/execute-implementation-plan`.)
 
 If running in autonomous mode (backlog execution), everything from this point is automatic until the issue is done or the orchestrator gets stuck.

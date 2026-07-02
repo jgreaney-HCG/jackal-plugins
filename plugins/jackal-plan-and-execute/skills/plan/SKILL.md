@@ -76,7 +76,7 @@ Before creating a worktree, verify no active branches conflict:
 ```bash
 cd $REPO_ROOT
 
-for branch in $(git branch --list 'feature/*' | tr -d ' '); do
+for branch in $(git branch --list 'feature/*' '*/[0-9]*-*' | tr -d ' '); do
   echo "=== $branch ==="
   git diff --name-only main...$branch 2>/dev/null
 done
@@ -133,12 +133,17 @@ Working directory: [worktree absolute path]
 
 Generate implementation phase files from this design.
 Write all phases to disk. Do not ask for interactive review.
+Do not dispatch or invoke any subagents — investigate the codebase directly with your own tools.
 
 [If implementation guidance exists:]
 GUIDANCE: [absolute path to .jackal/implementation-guidance.md]
 
 [If project has specific test command:]
 TEST_CMD: [from Jackal Config]
+
+[If docs/canon/ exists in the repo:]
+CANON: docs/canon/ exists — read registry.md and glossary.md; phases touching
+contract models must draft the impact statement in docs/canon/impact/.
 </parameter>
 </invoke>
 ```
@@ -161,7 +166,15 @@ Phases: [N] files
 Starting execution.
 ```
 
-Then immediately invoke the `execute` skill in Plan mode with the plan directory.
+Then immediately continue via `Skill("jackal-plan-and-execute:execute")` with the
+plan directory and worktree. **Never emit an invented slash command** — if you
+must hand the user a resumable command instead of continuing, it is exactly:
+
+```
+/execute <absolute-plan-dir> <absolute-worktree-path>
+```
+
+(There is no `/execute-plan`; `/execute` is the only execution command.)
 
 If running within the autonomous loop (Backlog mode of execute), this handoff is automatic — no user interaction needed.
 
