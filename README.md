@@ -123,7 +123,8 @@ Two project-level mechanisms customize the harness:
   `gh_repo` (required), `test_cmd`, `label_style` (`slash` | `colon`, default
   `slash`), `contracts_pkg` / `schema_export_cmd` (for the director loop),
   module map, and paths (`issue_docs`, `design_plans`, `impl_plans`, `ui_path`).
-  The skills read it at the start of every run.
+  The skills read it at the start of every run. Full key-by-key reference:
+  [docs/jackal-config-reference.md](docs/jackal-config-reference.md).
 - **`.jackal/harness-guidance.md`** — overrides defaults (review policy,
   parallel execution, stop conditions). Resolved by walking up from the
   working directory to the repo root (nearest-wins), so a monorepo can scope

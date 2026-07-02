@@ -1,5 +1,7 @@
 # jackal-plugins
 
+Last verified: 2026-07-01
+
 Claude Code plugins for design, implementation, and development workflows (forked from ed3d-plugins).
 
 ## Conventions
@@ -49,3 +51,30 @@ Brief description of the release.
 ```
 
 Only include sections that apply. Keep entries concise.
+
+### Worker Agents Never Spawn Subagents
+
+Every agent in `jackal-plan-and-execute` and `jackal-director` (`planner`, `implementor`,
+`reviewer`, `reviewer-deep`, `delta-scribe`, `contract-sentinel`, `lexicon-warden`,
+`registry-drift-checker`) must carry `disallowedTools: Agent` in its frontmatter and an explicit
+"never dispatch or invoke other subagents" rule in its body. Every dispatch prompt template that
+launches one of these agents must repeat the prohibition in the prompt itself — frontmatter
+restrictions have known enforcement gaps in some Claude Code contexts, so the prompt-level
+instruction is belt-and-braces, not redundant.
+
+`jackal-supervisor` is the sole exception — it is the orchestrating tier and keeps the `Agent` tool.
+No other agent in this marketplace should have it.
+
+**When adding a new agent:** decide up front whether it's a worker (deny Agent, add the no-nesting
+rule) or an orchestrator (there should almost never be a reason for a second one). If you're unsure,
+it's a worker.
+
+### The PR Is the Only Completion Path
+
+`finish` and `jackal-finish-branch` never merge locally. The flow is always: verify tests → rebase
+onto origin/main if behind → push → open a PR (`Closes #N`). There is no merge/keep/discard menu in
+the default path — keep and discard exist only when a user explicitly asks for them.
+
+Do not reintroduce a "merge to main" option, a `protected_main: false` fast path that skips the PR,
+or an options menu in autonomous mode. If a future change needs a genuine exception to this, it
+should be a loud, explicit opt-out in `.jackal/harness-guidance.md`, not a default behavior.
