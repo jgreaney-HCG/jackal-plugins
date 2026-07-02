@@ -1,6 +1,6 @@
 ---
 name: jackal-pause-session
-description: Gracefully pause an in-progress issue in any Jackal-managed project — records the current phase and next step in the issue doc, marks it paused in the backlog (GitHub issue label by default, or TODO.md), and commits the checkpoint so the supervisor can surface it and give the exact resume command later.
+description: Gracefully pause an in-progress issue in any Jackal-managed project — records the current phase and next step in the issue doc, swaps the GitHub issue's status label, and commits the checkpoint so the supervisor can surface it and give the exact resume command later.
 user-invocable: true
 ---
 
@@ -16,8 +16,7 @@ Records a clean checkpoint when you're stopping work mid-issue.
 
 Read the **## Jackal Config** section from the project's CLAUDE.md. Extract:
 - `repo_root`, `issue_prefix`, `issue_docs`
-- `backend` — `github` or `todo-md` (default: `github`)
-- `gh_repo` — `owner/repo` (required when `backend: github`)
+- `gh_repo` — `owner/repo` (required)
 - `label_style` — `slash` or `colon` (default: `slash`) — separator for status labels; examples
   below use `/`, substitute `:` if `colon`
 
@@ -127,8 +126,6 @@ Edit `$ISSUE_DOCS/PREFIX-XXX-*.md`:
 
 ## Step 5: Update Backlog State
 
-**If `backend: github`:**
-
 ```bash
 GH_ISSUE_NUM=$(echo "$ISSUE_ID" | grep -oE '[0-9]+$')
 NEW_LABEL="status/paused"   # or "status/blocked" if blocked (use ':' if label_style: colon)
@@ -151,36 +148,13 @@ EOF
 )"
 ```
 
-**If `backend: todo-md`:**
-
-```bash
-sed '/RESOLVED_SECTION_START/q' $REPO_ROOT/TODO.md
-```
-
-Move the row from **Active** to the appropriate table:
-- Paused → `## Paused` (columns: ID | Title | Branch | Checkpoint | Detail)
-- Blocked → `## Blocked` (columns: ID | Title | Blocker | Detail)
-
-The Paused row format:
-```
-| 24 | [title ≤6 words] | feat/24-slug | [checkpoint ~50 chars] | [doc]($ISSUE_DOCS/24-slug.md) |
-```
-
-Update "Last updated" date — set to `Last updated: YYYY-MM-DD`, date only, no commentary.
-
 ---
 
 ## Step 6: Commit the Checkpoint
 
 ```bash
 cd $REPO_ROOT
-# backend=github: only the issue doc changed
-# backend=todo-md: TODO.md also changed
-if [ "$BACKEND" = "github" ]; then
-  git add $ISSUE_DOCS/PREFIX-XXX-*.md
-else
-  git add $ISSUE_DOCS/PREFIX-XXX-*.md TODO.md
-fi
+git add $ISSUE_DOCS/PREFIX-XXX-*.md
 git commit -m "chore: pause PREFIX-XXX — checkpoint: [brief phrase]"
 ```
 

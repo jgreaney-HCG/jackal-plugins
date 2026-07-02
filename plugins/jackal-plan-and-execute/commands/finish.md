@@ -1,8 +1,8 @@
 ---
-description: Complete a development branch (merge, PR, keep, or discard)
+description: Complete a development branch (rebase if behind, push, open PR)
 ---
 
 # Finish
 
 Invoke the `finish` skill:
-verify tests → present options → merge/push/keep/discard → update backlog state → cleanup.
+verify tests → rebase if behind → push → open PR → update issue state.

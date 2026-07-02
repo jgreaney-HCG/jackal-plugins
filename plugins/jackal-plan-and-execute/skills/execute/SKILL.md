@@ -1,6 +1,6 @@
 ---
 name: execute
-description: Executes implementation plans or drives continuous issue execution from a backlog. Model-adaptive — dispatches Sonnet implementors, reviews conditionally based on risk, and parallelizes independent work. Runs autonomously until genuinely stuck.
+description: Executes implementation plans or drives continuous issue execution from the GitHub Issues backlog. Model-adaptive — dispatches Sonnet implementors, reviews conditionally based on risk, and parallelizes independent work. Runs autonomously until genuinely stuck.
 user-invocable: true
 ---
 
@@ -8,7 +8,11 @@ user-invocable: true
 
 Two modes:
 1. **Plan mode** — execute a specific implementation plan (phase files in a directory)
-2. **Backlog mode** — continuously pull and execute issues from the configured backlog backend (GitHub issues by default, or TODO.md) until stuck
+2. **Backlog mode** — continuously pull and execute issues from the GitHub Issues backlog until stuck
+
+**Subagent discipline:** every Agent dispatch prompt in this skill must include
+the line "Do not dispatch or invoke any subagents — do the work directly with
+your own tools." Workers never spawn workers.
 
 ---
 
@@ -32,7 +36,7 @@ done
 printf '%s' "$chain" | while read -r f; do [ -n "$f" ] && { echo "=== $f ==="; cat "$f"; }; done
 ```
 
-Apply overrides to defaults (review policy, merge strategy, parallel execution policy, stop
+Apply overrides to defaults (review policy, parallel execution policy, stop
 conditions). Precedence, lowest to highest: built-in defaults < Jackal Config keys < root
 `.jackal/` < module `.jackal/`. If no guidance file exists anywhere in the chain, all defaults apply.
 
@@ -46,9 +50,9 @@ The orchestrator manages state and makes routing decisions. It **never** writes 
 |---|---|
 | Read/write backlog state and issue docs | Code + tests → `implementor` |
 | Run conflict gate git commands | Phase file generation → `planner` |
-| Create/remove worktrees | Code review → `reviewer` (via `review` skill) |
+| Create/remove worktrees | Code review → `reviewer`/`reviewer-deep` (via `review` skill) |
 | Decide whether and when to review | |
-| Merge branches to main | |
+| Rebase, push, open PRs | |
 | Update backlog state | |
 
 If you find yourself about to write code, run `$TEST_CMD` for correctness, or grep through the codebase — stop and dispatch an `implementor` or `reviewer` instead.
@@ -65,9 +69,12 @@ If you find yourself about to write code, run `$TEST_CMD` for correctness, or gr
 2. For each phase sequentially:
    a. Read the phase file
    b. Dispatch `implementor` with the phase file path and working directory
-   c. Print the implementor's full report
+      (prompt includes the no-subagents line)
+   c. Relay a **3-line summary** of the implementor's report (files, tests,
+      commits). Keep the full report only if it flagged uncertainty or issues.
    d. Decide whether to review (see Review Routing below)
-3. After all phases: run final review, then hand off to `finish` skill
+3. After all phases: run final review, then invoke the `finish` skill (which
+   rebases if behind, pushes, and opens the PR)
 
 ### Review Routing
 
@@ -81,7 +88,18 @@ After each phase completes, decide:
 | Phase is pure infrastructure/config | Skip review |
 | All other phases | Skip per-phase review; catch issues in final review |
 
-**Final review is always mandatory.**
+**Final review is always mandatory**, and it is tiered by risk:
+
+- **`reviewer` (Sonnet)** — the default for Simple and Standard issues.
+- **`reviewer-deep` (Opus)** — for Complex issues, and for any diff touching
+  auth, payments, user data, crypto, or contract boundaries (files under the
+  project's contracts package).
+
+**If `docs/canon/` exists in the repo**, also run `/contract-check` (the
+jackal-director conformance gate) in the same message as the final review
+dispatch — they're independent and run in parallel. The bar before finish is
+review PASS **and** contract-check CLEAN (or FLAGGED with every flag explained
+in your report).
 
 After the final review passes, check for UI changes — `finish` will invoke `jackal-ui-verify` automatically if UI files were touched. It covers the full diff from plan start to completion.
 
@@ -96,7 +114,7 @@ Minor issues from the final review: report them, don't block.
 
 ## Mode 2: Continuous Backlog Execution
 
-**Input:** none (reads from the configured backlog backend — GitHub issues or TODO.md)
+**Input:** none (reads from the GitHub Issues backlog)
 
 This is the autonomous orchestration loop. The orchestrator (you, running in the main conversation) drives issues to completion without human intervention, stopping only when genuinely stuck.
 
@@ -104,23 +122,21 @@ This is the autonomous orchestration loop. The orchestrator (you, running in the
 
 ```
 while true:
-  1. Read backlog state (GH issues or TODO.md)
+  1. Read backlog state (GitHub issues)
   2. Identify unblocked issues in Ready
   3. Run conflict gate on candidates
   4. Select issue(s) to work on
   5. Execute issue (route by complexity)
-  6. Merge result
+  6. Finish (rebase if behind, push, open PR)
   7. Report completion (one-liner)
   8. Loop back to step 1
 ```
 
 ### Step 1: Read Backlog State
 
-Read `backend` and `label_style` from `## Jackal Config` in CLAUDE.md. `label_style` is `slash` |
+Read `gh_repo` and `label_style` from `## Jackal Config` in CLAUDE.md. `label_style` is `slash` |
 `colon` (default **slash**) — it sets the separator in status labels. The examples below use `/`;
 substitute `:` if the project sets `label_style: colon`.
-
-**If `backend: github`:**
 
 ```bash
 gh issue list --repo "$GH_REPO" \
@@ -144,14 +160,6 @@ Issues are grouped by label:
 - `status/paused` / `status/blocked` → skip
 - closed → resolved
 
-**If `backend: todo-md`:**
-
-```bash
-sed '/RESOLVED_SECTION_START/q' $REPO_ROOT/TODO.md
-```
-
-Parse: Active, Paused, Ready, Backlog, Blocked tables.
-
 ### Step 2: Identify Unblocked Work
 
 Read each Ready issue's doc. Check its `Blocked by:` field.
@@ -162,7 +170,7 @@ An issue is unblocked when all its blockers are in Resolved.
 For each unblocked candidate:
 
 ```bash
-for branch in $(git branch --list 'feature/*' | tr -d ' '); do
+for branch in $(git branch --list 'feature/*' '*/[0-9]*-*' | tr -d ' '); do
   echo "=== $branch ==="
   git diff --name-only main...$branch 2>/dev/null
 done
@@ -203,31 +211,23 @@ Read the issue doc's `Complexity` field:
 
 ### Step 6: Complete and Update
 
-After issue passes review, completion depends on whether `main` is protected (see `finish`'s
-**Detect Protected Main** check — `.jackal/harness-guidance.md` merge-strategy, `protected_main`
-config, or `gh` detection):
+After the issue passes review, invoke the `finish` skill (or `jackal-finish-branch`
+when the supervisor wrappers are in use). It rebases onto origin/main if the
+branch is behind, re-verifies, pushes, and opens a PR with `Closes #N`. **Never
+merge locally** — the PR is the only completion path.
 
-- **Main is open:** merge the worktree branch to main; on `backend: github`, `gh issue close $N
-  --reason completed --comment "Merged: <commit>"` and remove the `status/in-progress` label;
-  on `backend: todo-md`, move to Resolved.
-- **Main is protected:** do **not** merge locally. Push the branch and open a PR (with `Closes #N`
-  so GitHub closes the issue on merge); remove `status/in-progress`, leave the issue open for the
-  PR to close. Record the PR URL and continue the loop to the next issue — do not block waiting for
-  a human to merge.
-
-Then update the issue doc (Status → Done, or → In Review if a PR is pending) and remove the worktree
-once the branch is pushed (keep it if a PR is open and you may need to push fixups).
-
-(In practice, this is delegated to `jackal-finish-branch`, which handles protected-main + backend
-gating.)
+Then: remove `status/in-progress` (leave the issue open — GitHub closes it when
+the PR merges), update the issue doc Status → In Review, record the PR URL, and
+continue the loop to the next issue — do not block waiting for a human to merge.
+Keep the worktree while its PR is open (you may need to push fixups); `/jackal-sweep`
+reclaims it after merge.
 
 ### Step 7: Report
 
 Print one line:
 ```
-✓ CG-XX merged. [brief what]. Starting CG-YY next (also dispatching CG-ZZ in parallel).
+✓ #24 PR opened (#NN). Starting #25 next (also dispatching #26 in parallel).
 ```
-(Or, when main is protected: `✓ CG-XX PR opened (#NN). Starting CG-YY next.`)
 
 ### Stop Conditions
 
@@ -260,8 +260,9 @@ Dispatch in single message:
 
 Both run concurrently. When both return:
 - Review each independently
-- Merge each to main (one at a time, re-run tests after each merge)
-- If merge conflict arises: merge the higher-priority one first, then rebase the other
+- Finish each (rebase if behind, push, PR) — higher-priority first
+- If the second branch conflicts with the first's PR, note it in the second PR's
+  body; after the first merges, rebase the second and force-push its branch
 
 ---
 
@@ -315,4 +316,4 @@ This skill handles:
 - Merging completed work
 - Updating backlog state post-completion
 
-They can run together: supervisor assigns, execute runs. Or execute can self-serve from the backlog backend in autonomous mode.
+They can run together: supervisor assigns, execute runs. Or execute can self-serve from the GitHub Issues backlog in autonomous mode.

@@ -14,8 +14,7 @@ Wrapper that integrates the supervisor at entry/exit of the design phase. **This
 
 Read `## Jackal Config` from CLAUDE.md. Extract:
 - `repo_root`, `issue_prefix`, `issue_docs`, `design_plans`, `modules`
-- `backend` — `github` or `todo-md` (default: `github`)
-- `gh_repo` — `owner/repo` (required when `backend: github`)
+- `gh_repo` — `owner/repo` (required)
 - `label_style` — `slash` or `colon` (default: `slash`) — separator for status labels; examples
   below use `/`, substitute `:` if `colon`
 
@@ -33,7 +32,7 @@ Run conflict gate against active feature branches:
 
 ```bash
 cd $REPO_ROOT
-for branch in $(git branch --list 'feature/*' | tr -d ' '); do
+for branch in $(git branch --list 'feature/*' '*/[0-9]*-*' | tr -d ' '); do
   echo "=== $branch ==="
   git diff --name-only main...$branch 2>/dev/null
 done
@@ -90,8 +89,6 @@ git commit -m "chore: assign worktree for ${ISSUE_ID}"
 
 ## Step 4: Update Backlog State
 
-**If `backend: github`:**
-
 ```bash
 GH_ISSUE_NUM=$(echo "$ISSUE_ID" | grep -oE '[0-9]+$')
 
@@ -112,10 +109,6 @@ EOF
 
 If `gh issue edit` fails because a label doesn't exist, report the missing label to the user and continue (the comment is still useful).
 
-**If `backend: todo-md`:**
-
-Move the row in `TODO.md` from Ready to Active. Update "Last updated" date.
-
 ## Step 5: Invoke Design Skill
 
 Use `Skill("jackal-plan-and-execute:design")` with:
@@ -128,15 +121,21 @@ The design skill runs from inside the worktree, so the design document commit la
 
 ## Step 6: Hand Off
 
-After design commits:
+After design commits, post the design doc link as an issue comment
+(`gh issue comment "$GH_ISSUE_NUM" --body "**Design complete** — [design-plans/<filename>](<blob-url-or-path>)"`),
+then hand off:
 
 ```
-Design complete for [ISSUE-ID].
+Design complete for #[issue].
 Design plan: docs/design-plans/[filename]
 Worktree: .worktrees/[issue#]-[slug]
 Branch: [type]/[issue#]-[slug]
 
 Next: /jackal-impl-plan docs/design-plans/[filename]
 ```
+
+Emit that `Next:` line **exactly as written with the real filename substituted** —
+it is a literal command (defined in this plugin's `commands/`), not a
+description. Do not invent command names.
 
 No /clear needed. `jackal-impl-plan` reads the `## Worktree` block from the issue doc to find the existing worktree.

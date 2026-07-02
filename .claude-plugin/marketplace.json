@@ -1,8 +1,8 @@
 {
     "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
     "name": "jackal-plugins",
-    "version": "3.5.0",
-    "description": "Jackal harness — model-adaptive planning, execution, and project supervision for Claude Code.",
+    "version": "4.0.0",
+    "description": "Jackal harness \u2014 model-adaptive planning, execution, and project supervision for Claude Code.",
     "owner": {
         "name": "Jack Greaney",
         "email": "jgreaney@hcg.com"
@@ -10,7 +10,7 @@
     "plugins": [
         {
             "name": "jackal-house-style",
-            "description": "Coding standards — TypeScript, React, Python, Postgres, and testing patterns.",
+            "description": "Coding standards \u2014 TypeScript, React, Python, Postgres, and testing patterns.",
             "version": "1.0.6",
             "source": "./plugins/jackal-house-style",
             "author": {
@@ -25,7 +25,7 @@
         {
             "name": "jackal-plan-and-execute",
             "description": "Model-adaptive planning and execution harness. Sonnet implementors, conditional review, continuous backlog execution.",
-            "version": "2.5.0",
+            "version": "3.0.0",
             "source": "./plugins/jackal-plan-and-execute",
             "author": {
                 "name": "Jack Greaney",
@@ -39,8 +39,8 @@
         },
         {
             "name": "jackal-supervisor",
-            "description": "Project supervisor — backlog management, conflict gates, complexity routing, and lifecycle orchestration.",
-            "version": "2.5.0",
+            "description": "Project supervisor \u2014 backlog management, conflict gates, complexity routing, and lifecycle orchestration.",
+            "version": "3.0.0",
             "source": "./plugins/jackal-supervisor",
             "author": {
                 "name": "Jack Greaney",
@@ -51,6 +51,17 @@
                 "jackal-plan-and-execute",
                 "ed3d-playwright"
             ]
+        },
+        {
+            "name": "jackal-director",
+            "description": "Software Director review loop \u2014 Haiku conformance agents (delta digest, contract sentinel, lexicon warden, registry drift), canon documents, director packets, and directive ingestion.",
+            "version": "1.0.0",
+            "source": "./plugins/jackal-director",
+            "author": {
+                "name": "Jack Greaney",
+                "email": "jgreaney@hcg.com"
+            },
+            "license": "UNLICENSED"
         },
         {
             "name": "ed3d-hook-security-hardening",

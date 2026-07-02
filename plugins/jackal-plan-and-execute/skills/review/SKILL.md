@@ -6,7 +6,13 @@ user-invocable: false
 
 # Review
 
-Dispatch the `reviewer` agent and handle the result.
+Dispatch the right reviewer agent and handle the result.
+
+## Choose the Tier
+
+- **`reviewer`** (Sonnet) — default: Simple and Standard issues, per-phase reviews.
+- **`reviewer-deep`** (Opus) — final review of Complex issues, or any diff
+  touching auth, payments, user data, crypto, or the project's contracts package.
 
 ## Dispatch
 
@@ -25,10 +31,14 @@ Working directory: [path]
 TEST_REQUIREMENTS: [path to <plan-dir>/test-requirements.md]
 
 [If implementation guidance exists:]
-GUIDANCE: [path to .jackal/implementation-guidance.md or .ed3d/implementation-plan-guidance.md]
+GUIDANCE: [path to .jackal/implementation-guidance.md]
+
+Do not dispatch or invoke any subagents — run all verification directly with your own tools.
 </parameter>
 </invoke>
 ```
+
+(Substitute `jackal-plan-and-execute:reviewer-deep` when the tier calls for it.)
 
 ## Handle Response
 
@@ -43,6 +53,7 @@ Proceed. Note any Minor issues in your report but don't act on them.
 
    Working directory: [path]
    Fix all Critical and Important issues. Verify with tests. Commit.
+   Do not dispatch or invoke any subagents — do the work directly with your own tools.
    ```
 2. After fix, re-dispatch reviewer with PRIOR_ISSUES added to prompt
 3. If same issues persist after 3 cycles → stop, report to human

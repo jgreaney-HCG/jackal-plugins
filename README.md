@@ -1,10 +1,11 @@
 # jackal-plugins
 
 The Jackal harness — a model-adaptive set of Claude Code plugins for planning,
-executing, and supervising software work. Forked from
+executing, supervising, and architecturally reviewing software work. Forked from
 [`ed3d-plugins`](https://github.com/ed3dai/ed3d-plugins) and reworked around a
 supervisor that drives a GitHub-issue backlog, routes work by complexity, and
-runs an Opus orchestrator over stateless Sonnet workers.
+runs stateless Sonnet workers under an orchestrating main conversation — with a
+Software Director review loop above it all.
 
 The centerpiece is `jackal-plan-and-execute`, which implements a design →
 plan → execute → finish loop: it avoids hallucination in planning, keeps
@@ -14,14 +15,15 @@ other end not just what you asked for, but what you actually wanted.
 
 ## Plugins
 
-This marketplace ships four plugins:
+This marketplace ships five plugins:
 
 | Plugin | Description |
 |--------|-------------|
-| **`jackal-plan-and-execute`** | The core lifecycle: `design`, `plan`, `execute`, `review`, `finish`, `debug` skills + `planner`/`implementor`/`reviewer` agents (and ported `test-driven-development` / `verification-before-completion` discipline skills). |
-| **`jackal-supervisor`** | Project supervisor: the `jackal-supervisor` agent (backlog management, conflict gates, complexity routing) plus wrapper skills (`jackal-design-plan`, `jackal-impl-plan`, `jackal-finish-branch`, `jackal-pause-session`, `jackal-ui-verify`) that add project-specific config around the core lifecycle. |
+| **`jackal-plan-and-execute`** | The core lifecycle: `design`, `plan`, `execute`, `review`, `finish`, `debug` skills + `planner`/`implementor`/`reviewer`/`reviewer-deep` agents (and ported `test-driven-development` / `verification-before-completion` discipline skills). |
+| **`jackal-supervisor`** | Project supervisor: the `jackal-supervisor` agent (backlog management, epics, conflict gates, complexity routing, hygiene grooming) plus wrapper skills/commands (`jackal-design-plan`, `jackal-impl-plan`, `jackal-finish-branch`, `jackal-pause-session`, `jackal-ui-verify`, `jackal-sweep`). |
+| **`jackal-director`** | The Software Director loop: canon documents (`docs/canon/`), four Haiku conformance agents (delta digest, contract sentinel, lexicon warden, registry drift), director packets, and directive ingestion. |
 | **`jackal-house-style`** | Opinionated coding standards — TypeScript, React, Python, Postgres, functional-core/imperative-shell, testing, and technical writing. |
-| **`ed3d-hook-security-hardening`** | PreToolUse/PostToolUse hooks that catch common secrets-leakage patterns (echoing env vars, reading secret files, tokens in URLs, missing gitignore on sensitive files). Vendored from upstream. |
+| **`ed3d-hook-security-hardening`** | PreToolUse/PostToolUse hooks that catch common secrets-leakage patterns. Vendored from upstream. |
 
 ## Required dependencies
 
@@ -51,6 +53,7 @@ Add both marketplaces, then install the jackal plugins and their ed3d dependenci
 # Jackal plugins
 /plugin install jackal-plan-and-execute@jackal-plugins
 /plugin install jackal-supervisor@jackal-plugins
+/plugin install jackal-director@jackal-plugins
 /plugin install jackal-house-style@jackal-plugins
 /plugin install ed3d-hook-security-hardening@jackal-plugins
 
@@ -65,19 +68,22 @@ Add both marketplaces, then install the jackal plugins and their ed3d dependenci
 The supervisor-driven flow, routed by issue complexity:
 
 ```
-Rough idea / GitHub issue
+GitHub issue (scoped, labeled, linked to its epic)
     │
     ▼
-/jackal-design-plan   ──► Design document (Complex issues; committed to the feature branch)
+/jackal-design-plan   ──► Design document (Complex issues; reads canon; committed to the feature branch)
     │
     ▼
-/jackal-impl-plan     ──► Implementation plan (phase files) in an auto-named worktree
+/jackal-impl-plan     ──► Implementation plan (phase files) in the issue's worktree
     │
     ▼
-/execute              ──► Working code (implemented, reviewed proportionally to risk, committed)
+/execute              ──► Working code (implemented, reviewed proportionally to risk, contract-checked)
     │
     ▼
-/jackal-finish-branch ──► Merge or PR (PR-only when main is protected), backlog updated, worktree cleaned
+finish (automatic)    ──► Rebase if behind → push → Pull Request (main is protected; PR is the only exit)
+    │
+    ▼
+/jackal-sweep         ──► After PRs merge: reclaim worktrees/branches, flag PRs needing rebase, ff main
 ```
 
 Routing by complexity:
@@ -89,29 +95,41 @@ Routing by complexity:
 | Complex | design → plan → execute |
 
 For autonomous backlog execution, run `/execute` with no arguments — the
-orchestrator pulls unblocked issues from the backlog (GitHub Issues by default, or
-`TODO.md`), runs the conflict gate, dispatches work, and loops until genuinely
-stuck. See the
+orchestrator pulls unblocked issues from the GitHub backlog, runs the conflict
+gate, dispatches work, opens PRs, and loops until genuinely stuck. See the
 [plugin README](plugins/jackal-plan-and-execute/README.md) for the full
 architecture.
 
 The raw lifecycle commands (`/design`, `/plan`, `/execute`, `/finish`) are also
 available directly when you don't need the supervisor's project-config wrapping.
 
+## The Director loop
+
+Above the per-issue cycle sits an architectural review loop (the
+`jackal-director` plugin): the repo keeps **canon** — charter, contract
+registry, glossary, ADRs — under `docs/canon/`. Haiku agents mechanically
+produce delta digests, contract-conformance reports, and drift checks;
+`/director-packet` assembles them for a Software Director (Fable, in chat, no
+repo access) whose review memos flow back in via `/ingest-directive` as ADRs,
+glossary rulings, and standing constraints in `.jackal/*-guidance.md` — which
+the design and planning skills read on every run. Per-branch,
+`/contract-check` gates every PR against canon.
+
 ## Configuration
 
 Two project-level mechanisms customize the harness:
 
 - **`## Jackal Config`** block in your project's `CLAUDE.md` — declares
-  `backend` (`github` | `todo-md`), `gh_repo`, `test_cmd`, `protected_main`,
-  `label_style` (`slash` | `colon`, default `slash`), module map, and paths. The
-  skills read it at the start of every run.
-- **`.jackal/harness-guidance.md`** — overrides defaults (merge strategy, review
-  policy, parallel execution, stop conditions). Resolved by walking up from the
+  `gh_repo` (required), `test_cmd`, `label_style` (`slash` | `colon`, default
+  `slash`), `contracts_pkg` / `schema_export_cmd` (for the director loop),
+  module map, and paths (`issue_docs`, `design_plans`, `impl_plans`, `ui_path`).
+  The skills read it at the start of every run.
+- **`.jackal/harness-guidance.md`** — overrides defaults (review policy,
+  parallel execution, stop conditions). Resolved by walking up from the
   working directory to the repo root (nearest-wins), so a monorepo can scope
   guidance per module. `.jackal/design-guidance.md` and
-  `.jackal/implementation-guidance.md` add project terminology and standards.
-  (Legacy `.ed3d/*-guidance.md` files are still read as a fallback.)
+  `.jackal/implementation-guidance.md` add project terminology and standards —
+  and receive the Director's standing constraints via `/ingest-directive`.
 
 ## Contributing
 

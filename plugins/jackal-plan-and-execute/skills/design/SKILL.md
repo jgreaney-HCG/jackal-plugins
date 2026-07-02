@@ -21,6 +21,18 @@ from the working directory to the repo root (nearest-wins — a module-level `.j
 root one; see the `execute` skill's Harness Guidance for the resolution snippet). Read what's present
 and apply project-specific constraints before step 2.
 
+## Canon (if `docs/canon/` exists)
+
+Read `docs/canon/charter.md` and `docs/canon/glossary.md` **before brainstorming**.
+The charter's design theory and invariants constrain every approach you propose;
+the glossary's terms are the only names for the concepts they define. If the
+design needs a concept the glossary lacks, say so explicitly in the design doc —
+never coin a term silently. If the design touches any contract model (files
+under the contracts package named in `docs/canon/registry.md`), the design doc
+must include a **Contract impact** section and the plan phase must draft the
+impact statement in `docs/canon/impact/` — a contract change without one will be
+flagged by contract-sentinel and stall the PR.
+
 ## Delegation Rules
 
 The design skill handles user interaction and commits the design document. Research is always delegated.
@@ -71,6 +83,8 @@ Given that we want to [summary from issue], investigate:
 - Constraints from existing code
 
 Working directory: [repo root]
+
+Do not dispatch or invoke any subagents — investigate directly with your own tools.
 </parameter>
 </invoke>
 ```
@@ -141,6 +155,12 @@ Create `docs/design-plans/YYYY-MM-DD-{slug}.md`:
 ## Architecture
 [Chosen approach from step 4, elaborated]
 
+## Contract Impact
+[Only when docs/canon/ exists and the design touches contract models:
+which registry entries this creates/changes/consumes, and whether the change is
+breaking (breaking → needs an ADR). Mirror this into docs/canon/impact/<slug>.md
+during planning.]
+
 ## Existing Patterns
 [What codebase investigation revealed — patterns to follow]
 
@@ -188,7 +208,7 @@ No /clear needed. `jackal-impl-plan` reads the `## Worktree` block from the issu
 
 ## Guidance Files
 
-Check for `.jackal/design-guidance.md` or `.ed3d/design-plan-guidance.md` in the project root. If found, read it before step 2 — it contains project-specific terminology, constraints, and preferences.
+Check for `.jackal/design-guidance.md` in the project root. If found, read it before step 2 — it contains project-specific terminology, constraints, and preferences (including standing constraints ingested from Director review memos).
 
 ---
 

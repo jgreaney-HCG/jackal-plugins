@@ -1,6 +1,73 @@
 # Changelog
 
-## [marketplace] 3.5.0 — fix design→execution handoff path
+## [marketplace] 4.0.0 — director loop, PR-only lifecycle, no-nesting subagents
+
+Major release: adds the `jackal-director` plugin (1.0.0), removes the todo-md
+backlog backend, and makes the PR the only branch-completion path. Plugin bumps:
+`jackal-plan-and-execute` 2.5.0 → 3.0.0, `jackal-supervisor` 2.5.0 → 3.0.0.
+
+**Breaking:**
+- **todo-md backend removed.** GitHub Issues is the only backlog; `gh_repo` is
+  required. All `backend:` config keys, TODO.md parsing, and todo-md branches
+  are gone from `execute`, `finish`, the supervisor agent, and every wrapper skill.
+- **`finish` no longer presents merge/PR/keep/discard options.** It rebases onto
+  origin/main when behind, pushes, and opens a PR — always. Keep/discard happen
+  only on explicit user request; local merge to main no longer exists.
+
+**New:**
+- **`jackal-director` plugin (1.0.0)** — Software Director review loop: four
+  Haiku court-reporter agents (`delta-scribe`, `contract-sentinel`,
+  `lexicon-warden`, `registry-drift-checker`), `docs/canon/` scaffolding
+  (`/canon-init`), a pre-PR conformance gate (`/contract-check`), cycle packets
+  for the Director (`/director-packet`), and memo ingestion into ADRs, glossary,
+  and `.jackal/*-guidance.md` (`/ingest-directive`). Contracts package and
+  schema exporter are configurable (`contracts_pkg`, `schema_export_cmd`) and
+  work for Pydantic and TypeScript (typebox/zod) alike.
+- **Canon wiring across the lifecycle** (active only when `docs/canon/` exists):
+  `design` reads charter/glossary and adds a Contract Impact section; `planner`
+  drafts impact statements; `execute`'s final review runs `/contract-check` in
+  parallel; `finish` gates the PR on CLEAN or explained-FLAGGED; the supervisor
+  prompts when a director packet is due.
+- **`reviewer-deep` agent (Opus)** — final review tier for Complex issues and
+  auth/payments/user-data/crypto/contract diffs; `reviewer` (Sonnet) remains the
+  default. Review is pre-PR; routine post-PR re-review is retired.
+- **`jackal-sweep` skill + command** — reclaims worktrees/branches for merged
+  PRs (worktree first, then branch — the order ad-hoc sync scripts get wrong),
+  flags open PRs with `mergeStateStatus` BEHIND/DIRTY including the exact rebase
+  command, fast-forwards main, and prunes.
+- **Rebase-before-push in `finish`** — fetches origin, rebases when behind,
+  re-runs tests, then pushes; semantic conflicts stop for a human.
+- **Epics + backlog grooming in the supervisor** — `epic`-labeled tracking
+  issues with task lists, `Part of #N` linkage at creation, epic-grouped status
+  reports, and a groom workflow (mislabeled ready, orphaned in-progress, zombie
+  worktrees, unprioritized issues, epic drift, PRs needing rebase).
+- **Supervisor command files** — `/jackal-design-plan`, `/jackal-impl-plan`,
+  `/jackal-finish-branch`, `/jackal-pause-session`, `/jackal-ui-verify`,
+  `/jackal-sweep` are now real commands, so emitted handoffs are always typable.
+- **AC checkbox closeout** — the final review's AC coverage table is posted as
+  an issue comment and the body's checkboxes are ticked before the PR opens.
+
+**Changed:**
+- **Nested subagent spawning disabled** (matches upstream ed3d 1.12.0):
+  `planner`, `implementor`, `reviewer`, `reviewer-deep` all carry
+  `disallowedTools: Agent` plus an explicit no-nesting rule, and every dispatch
+  prompt template in `design`/`plan`/`execute`/`review`/`finish` repeats the
+  prohibition. The supervisor remains the only orchestrating tier.
+- **Verbosity discipline:** hard report caps (planner 15 / implementor 20 /
+  reviewer 40 / reviewer-deep 60 lines), no-narration rules, and `execute` now
+  relays 3-line summaries instead of full worker reports.
+- **Conflict gate fixed:** branch globs now include the go-forward
+  `<type>/<issue#>-slug` convention (`'feature/*' '*/[0-9]*-*'`) in `plan`,
+  `execute`, `jackal-design-plan`, and `jackal-impl-plan` — previously only
+  `feature/*` was checked, so the gate never fired on new-convention branches.
+- **Handoff commands are literal:** `plan` → execute continues via the Skill
+  tool (or emits exactly `/execute <plan-dir> <worktree>`); the design handoff
+  emits `/jackal-impl-plan <path>` verbatim. Invented names like
+  `/execute-plan` are explicitly called out as nonexistent.
+- READMEs rewritten: five-plugin layout, PR-only cycle, Director loop section,
+  Bedrock model-mapping note (main conversation described as "the session
+  model" rather than a hardcoded model name).
+
 
 Fixes an invalid execution-command suggestion at phase handoff. Plugin bumps:
 `jackal-plan-and-execute` 2.4.0 → 2.5.0, `jackal-supervisor` 2.4.0 → 2.5.0.
