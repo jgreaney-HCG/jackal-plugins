@@ -1,6 +1,6 @@
 ---
 description: Verify UI changes against acceptance criteria (e2e + live Playwright checks)
-argument-hint: [issue-id]
+argument-hint: "[issue-id]"
 ---
 
 # Jackal UI Verify

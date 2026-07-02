@@ -1,6 +1,6 @@
 ---
 description: Start a design for a Complex issue (conflict gate, worktree, design skill)
-argument-hint: [issue-id-or-doc-path]
+argument-hint: "[issue-id-or-doc-path]"
 ---
 
 # Jackal Design Plan

@@ -1,6 +1,6 @@
 ---
 description: Create implementation plan from a design document or issue doc
-argument-hint: [design-plan-or-issue-doc-path]
+argument-hint: "[design-plan-or-issue-doc-path]"
 ---
 
 # Plan

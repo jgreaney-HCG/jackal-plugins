@@ -1,6 +1,6 @@
 ---
 description: Create an implementation plan for a Standard or Complex issue (reuses the design worktree)
-argument-hint: [design-plan-or-issue-doc-path]
+argument-hint: "[design-plan-or-issue-doc-path]"
 ---
 
 # Jackal Implementation Plan

@@ -1,6 +1,6 @@
 ---
 description: Start a design process for a Complex issue or new feature
-argument-hint: [issue-id-or-description]
+argument-hint: "[issue-id-or-description]"
 ---
 
 # Design
