@@ -1,5 +1,7 @@
 # Jackal House Style
 
+Last verified: 2026-07-01
+
 This plugin contains coding standards, patterns, and skills for jackal projects
 (derived from ed3d-house-style).
 
