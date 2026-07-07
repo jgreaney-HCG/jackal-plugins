@@ -1,5 +1,15 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.0.1
+
+Design phase no longer stops to confirm the slug.
+
+**Changed:**
+- The `design` skill picks a sensible default slug — `<issue#>-<kebab-title>`,
+  incorporating the GitHub issue number — and proceeds without asking. It only
+  pauses when no slug can be derived (e.g. a too-vague freeform description).
+  The user can still override afterward.
+
 ## [marketplace] 4.0.0 — director loop, PR-only lifecycle, no-nesting subagents
 
 Major release: adds the `jackal-director` plugin (1.0.0), removes the todo-md

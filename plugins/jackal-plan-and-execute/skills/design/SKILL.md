@@ -106,11 +106,22 @@ If user adjusts, incorporate and re-confirm. Don't proceed until confirmed.
 
 ### 3. Choose a Slug
 
-The slug becomes the AC prefix (e.g., `cost-ledger.AC1.1`). Suggest 2-3 options:
-- If there's a ticket ID, use it: `CG-14-codebuild-infra`
-- Otherwise: short, unambiguous kebab-case
+The slug becomes the AC prefix (e.g., `14-cost-ledger.AC1.1`). **Pick a sensible
+default that incorporates the GitHub issue number and proceed — do not stop to
+confirm it.**
 
-Ask user to pick or provide their own.
+The default is `<issue#>-<kebab-title>`:
+- Extract the issue number from the issue ID (e.g. `14` from `CG-14`).
+- Follow it with a short kebab-case summary of the issue title — e.g. issue #14
+  "CodeBuild infra" → `14-codebuild-infra`.
+- If `SLUG` was passed in (invoked from `jackal-design-plan`) it is
+  title-only; prepend the issue number unless it already begins with it.
+- If there is no issue number (freeform description, no ticket), fall back to a
+  short, unambiguous kebab-case slug derived from the description.
+
+State the chosen slug in one line (e.g. "Slug: `14-codebuild-infra`") and move
+on. Only pause for input if you genuinely cannot derive one — e.g. the
+description is too vague to summarize. The user can always override afterward.
 
 ### 4. Brainstorm Approaches
 
