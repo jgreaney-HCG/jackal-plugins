@@ -18,6 +18,8 @@ them. Plugin bumps: `jackal-plan-and-execute` 3.0.1 → 3.0.2,
   `jackal-ui-verify`, and the supervisor agent.
 - README command references (both plugin READMEs and the director README) now
   show the namespaced form, with a note that bare commands do not resolve.
+- `scripts/trace-deps.sh` now includes `commands/` in the shipped inventory, so
+  namespaced `plugin:command` references resolve instead of dangling.
 
 ## [jackal-plan-and-execute] 3.0.1
 

@@ -2,8 +2,8 @@
 # trace-deps.sh — dependency trace / coherence gate for the jackal marketplace.
 #
 # Scans every plugin for cross-references (subagent_type, plugin-qualified
-# skill/agent refs, REQUIRED SUB-SKILL lines) and classifies each as:
-#   SHIPPED   — resolves to an agent/skill this marketplace ships
+# skill/agent/command refs, REQUIRED SUB-SKILL lines) and classifies each as:
+#   SHIPPED   — resolves to an agent/skill/command this marketplace ships
 #   DECLARED  — resolves to an ed3d plugin declared in marketplace.json `requires`
 #   DANGLING  — resolves to nothing known  → FAILURE
 #
@@ -19,6 +19,8 @@ shipped=$(
       | sed -E 's|plugins/([^/]+)/agents/(.+)\.md|\1:\2|'
     find plugins -path "*/skills/*/SKILL.md" 2>/dev/null \
       | sed -E 's|plugins/([^/]+)/skills/([^/]+)/SKILL.md|\1:\2|'
+    find plugins -path "*/commands/*.md" 2>/dev/null \
+      | sed -E 's|plugins/([^/]+)/commands/(.+)\.md|\1:\2|'
   } | sort -u
 )
 
