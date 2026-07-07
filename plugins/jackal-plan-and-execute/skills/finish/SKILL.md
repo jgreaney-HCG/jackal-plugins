@@ -81,9 +81,18 @@ are filled rather than left blank:
 TEMPLATE=$(ls .github/PULL_REQUEST_TEMPLATE.md .github/pull_request_template.md 2>/dev/null | head -1)
 ```
 
-- If a template exists: fill each section (What changed / Closes #N / How to
-  verify / Risk / Docs updated / Gates) from the issue ACs and the diff. Include
-  `Closes #<issue>` so the merge auto-closes the issue.
+- If a template exists: fill every section it defines from the issue ACs and
+  the diff — the section names are project-specific (e.g. "Linked issue",
+  "Related issue"), so read the template rather than assuming a section is
+  literally titled "Closes #N".
+- **Regardless of the template's section names**, if this PR fully completes
+  the issue, that section's body text must contain one of GitHub's literal
+  auto-close keywords immediately before the bare issue number: `Closes #N` /
+  `Fixes #N` / `Resolves #N`. Writing the issue's tracker ID alone (e.g.
+  `GL-42`) does **not** trigger auto-close — GitHub only recognizes those
+  keywords followed by `#<number>`. If the PR only partially completes the
+  issue (follow-up work remains), use `Related to #N` instead and leave the
+  issue open on purpose.
 - If no template: use a concise default body (summary + `Closes #N` + test
   results + review verdict + contract-check status).
 
