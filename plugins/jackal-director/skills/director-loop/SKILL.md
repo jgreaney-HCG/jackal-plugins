@@ -38,10 +38,10 @@ apply directives faithfully.
    the impact statement in `docs/canon/impact/` as part of the plan, not
    after. A contract change without an impact statement will be flagged by
    contract-sentinel and stall the PR.
-3. **Before the PR:** run `/contract-check` (execute's final review does this
+3. **Before the PR:** run `/jackal-director:contract-check` (execute's final review does this
    when canon exists). CLEAN or explained-FLAGGED is the bar.
 4. **Never edit canon casually.** Charter and glossary changes go through
-   the Director (packet -> memo -> `/ingest-directive`) or an explicit human
+   the Director (packet -> memo -> `/jackal-director:ingest-directive`) or an explicit human
    decision recorded as an ADR. Registry sections may be updated to track
    code, since code is the source of truth there.
 
@@ -64,10 +64,10 @@ more precise, and that is itself worth recording.
 
 ## Cadence
 
-- Per branch: `/contract-check` before the PR.
+- Per branch: `/jackal-director:contract-check` before the PR.
 - Per cycle (weekly, or every ~5 closed issues — the jackal-supervisor
-  prompts when a packet is due): `/director-packet`, human uploads the packet
-  to the Director session, brings back the memo, runs `/ingest-directive`.
+  prompts when a packet is due): `/jackal-director:director-packet`, human uploads the packet
+  to the Director session, brings back the memo, runs `/jackal-director:ingest-directive`.
 - The Director's standing constraints land in
   `.jackal/design-guidance.md` / `.jackal/implementation-guidance.md`,
   which the jackal design and planning skills already consume - so Director

@@ -39,10 +39,10 @@ Read the **## Jackal Config** section from the project's CLAUDE.md. Extract:
 
 Examples:
 ```
-/jackal-pause-session                                    # detect from branch, ask reason
-/jackal-pause-session PREFIX-35                          # explicit ID, ask reason
-/jackal-pause-session PREFIX-35 waiting on infra         # explicit ID + reason
-/jackal-pause-session waiting on design approval         # detect ID from branch
+/jackal-supervisor:jackal-pause-session                            # detect from branch, ask reason
+/jackal-supervisor:jackal-pause-session PREFIX-35                  # explicit ID, ask reason
+/jackal-supervisor:jackal-pause-session PREFIX-35 waiting on infra # explicit ID + reason
+/jackal-supervisor:jackal-pause-session waiting on design approval # detect ID from branch
 ```
 
 **Detect issue ID** (if not provided):
@@ -95,7 +95,7 @@ If waiting on something external → route to Blocked status.
 [phase + what's done] — next: [immediate next action] [| note: <optional context>]
 ```
 
-The resume command must be runnable as-is. `/execute` takes `[plan-directory] [working-directory]` — always include the worktree as the second arg, since resuming usually starts from the repo root, not inside the worktree.
+The resume command must be runnable as-is — **namespaced `plugin:command`, since marketplace-installed commands never resolve bare.** `/jackal-plan-and-execute:execute` takes `[plan-directory] [working-directory]` — always include the worktree as the second arg, since resuming usually starts from the repo root, not inside the worktree.
 
 **The plan directory must be a real path.** Build it from the project's `impl_plans`
 config (e.g. `docs/impl-plans`), NOT a hardcoded `docs/implementation-plans/`. Before
@@ -108,9 +108,9 @@ ls "$REPO_ROOT/$WORKTREE_REL/$IMPL_PLANS/" 2>/dev/null   # find the real plan di
 Use the actual dir name you find (format `YYYY-MM-DD-<issue#>-<slug>`), not a guessed one.
 
 Examples (with `impl_plans: docs/impl-plans`):
-- `Design Phase 3 done — next: /jackal-impl-plan $DESIGN_PLANS/2026-04-05-46-slug.md`
-- `Impl Phase 2 complete — next: /execute <worktree>/docs/impl-plans/2026-04-05-46-slug/ <worktree>` (resumes at Phase 3)
-- `Impl plan exists, execution not started — next: /execute <worktree>/docs/impl-plans/2026-04-05-46-slug/ <worktree>`
+- `Design Phase 3 done — next: /jackal-supervisor:jackal-impl-plan $DESIGN_PLANS/2026-04-05-46-slug.md`
+- `Impl Phase 2 complete — next: /jackal-plan-and-execute:execute <worktree>/docs/impl-plans/2026-04-05-46-slug/ <worktree>` (resumes at Phase 3)
+- `Impl plan exists, execution not started — next: /jackal-plan-and-execute:execute <worktree>/docs/impl-plans/2026-04-05-46-slug/ <worktree>`
 
 ---
 

@@ -64,10 +64,10 @@ Accept:
 
 If given an issue doc for a Standard issue (no design plan exists):
 - The planner agent will generate a mini design plan inline
-- No need to run /design first
+- No need to run design first
 
 If given an issue doc for a Complex issue with no design plan:
-- STOP: "This issue is Complex — run /design first."
+- STOP: "This issue is Complex — run /jackal-supervisor:jackal-design-plan first."
 
 ### 2. Conflict Gate
 
@@ -167,14 +167,17 @@ Starting execution.
 ```
 
 Then immediately continue via `Skill("jackal-plan-and-execute:execute")` with the
-plan directory and worktree. **Never emit an invented slash command** — if you
-must hand the user a resumable command instead of continuing, it is exactly:
+plan directory and worktree. **Never emit an invented or un-namespaced slash
+command** — if you must hand the user a resumable command instead of continuing,
+it is exactly:
 
 ```
-/execute <absolute-plan-dir> <absolute-worktree-path>
+/jackal-plan-and-execute:execute <absolute-plan-dir> <absolute-worktree-path>
 ```
 
-(There is no `/execute-plan`; `/execute` is the only execution command.)
+(There is no `/execute-plan`; `jackal-plan-and-execute:execute` is the only
+execution command. Marketplace-installed commands are always namespaced
+`plugin:command` — a bare `/execute` will not resolve.)
 
 If running within the autonomous loop (Backlog mode of execute), this handoff is automatic — no user interaction needed.
 

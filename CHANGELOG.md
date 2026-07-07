@@ -1,5 +1,24 @@
 # Changelog
 
+## [marketplace] — namespace command handoffs
+
+Fixes end-of-phase handoffs and workflow docs that emitted bare slash commands
+(`/execute`, `/jackal-impl-plan`, …). Marketplace-installed commands are always
+namespaced `plugin:command`, so the bare forms did not resolve when a user typed
+them. Plugin bumps: `jackal-plan-and-execute` 3.0.1 → 3.0.2,
+`jackal-supervisor` 3.0.0 → 3.0.1, `jackal-director` 1.0.0 → 1.0.1.
+
+**Fixed:**
+- Phase-boundary handoffs the user must type are now emitted namespaced —
+  design → `/jackal-supervisor:jackal-impl-plan`, plan/impl-plan resume →
+  `/jackal-plan-and-execute:execute`, and the director loop's
+  `/jackal-director:contract-check` / `director-packet` / `ingest-directive`.
+- Resumable-command emissions in `jackal-pause-session`, redirect/STOP messages,
+  and "offer to run" prompts across `execute`, `finish`, `jackal-sweep`,
+  `jackal-ui-verify`, and the supervisor agent.
+- README command references (both plugin READMEs and the director README) now
+  show the namespaced form, with a note that bare commands do not resolve.
+
 ## [jackal-plan-and-execute] 3.0.1
 
 Design phase no longer stops to confirm the slug.

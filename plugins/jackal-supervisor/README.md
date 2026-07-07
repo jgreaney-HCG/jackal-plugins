@@ -32,14 +32,16 @@ standalone commands. This plugin wraps them with:
 
 ## Commands and skills
 
+Marketplace-installed commands are namespaced `plugin:command` — type them with the `jackal-supervisor:` prefix (a bare `/jackal-design-plan` will not resolve).
+
 | Command | Skill | Purpose |
 |---|---|---|
-| `/jackal-design-plan` | `jackal-design-plan` | Start design for a Complex issue — conflict gate, worktree creation, invokes `design`. |
-| `/jackal-impl-plan` | `jackal-impl-plan` | Create an implementation plan — reuses the design worktree (Complex) or creates one (Standard), invokes `plan`. |
-| `/jackal-finish-branch` | `jackal-finish-branch` | Rebase if behind → push → PR → issue updates. Wraps `finish` with project config. |
-| `/jackal-pause-session` | `jackal-pause-session` | Record a resumable checkpoint (reads the live task list first, falls back to git evidence). |
-| `/jackal-ui-verify` | `jackal-ui-verify` | E2E tests + live Playwright verification against acceptance criteria, for branches touching `ui_path`. |
-| `/jackal-sweep` | `jackal-sweep` | Reclaim worktrees/branches for merged PRs (worktree first, then branch), flag PRs needing rebase, fast-forward main. |
+| `/jackal-supervisor:jackal-design-plan` | `jackal-design-plan` | Start design for a Complex issue — conflict gate, worktree creation, invokes `design`. |
+| `/jackal-supervisor:jackal-impl-plan` | `jackal-impl-plan` | Create an implementation plan — reuses the design worktree (Complex) or creates one (Standard), invokes `plan`. |
+| `/jackal-supervisor:jackal-finish-branch` | `jackal-finish-branch` | Rebase if behind → push → PR → issue updates. Wraps `finish` with project config. |
+| `/jackal-supervisor:jackal-pause-session` | `jackal-pause-session` | Record a resumable checkpoint (reads the live task list first, falls back to git evidence). |
+| `/jackal-supervisor:jackal-ui-verify` | `jackal-ui-verify` | E2E tests + live Playwright verification against acceptance criteria, for branches touching `ui_path`. |
+| `/jackal-supervisor:jackal-sweep` | `jackal-sweep` | Reclaim worktrees/branches for merged PRs (worktree first, then branch), flag PRs needing rebase, fast-forward main. |
 
 ## Epics and backlog hygiene
 
@@ -53,9 +55,9 @@ agent definition's Backlog Groom section for the full checklist.
 ## Director cadence
 
 If the project has `docs/canon/` (see `jackal-director`), the supervisor
-prompts for a `/director-packet` after roughly every 5 closed issues or when
+prompts for a `/jackal-director:director-packet` after roughly every 5 closed issues or when
 7+ days have passed since the last one, and routes returning review memos to
-`/ingest-directive`.
+`/jackal-director:ingest-directive`.
 
 ## Configuration
 

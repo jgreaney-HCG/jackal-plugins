@@ -26,19 +26,22 @@ subagents):
 
 **Commands:**
 
-- `/canon-init` — scaffold `docs/canon/` (charter, registry, glossary, ADRs,
+- `/jackal-director:canon-init` — scaffold `docs/canon/` (charter, registry, glossary, ADRs,
   impact statements)
-- `/contract-check [base]` — pre-PR gate: sentinel + warden in parallel,
+- `/jackal-director:contract-check [base]` — pre-PR gate: sentinel + warden in parallel,
   report filed to `docs/canon/reports/`
-- `/director-packet [since]` — assemble the cycle packet (digest + drift +
+- `/jackal-director:director-packet [since]` — assemble the cycle packet (digest + drift +
   open flags + canon changelog + your questions) for upload to the Director
-- `/ingest-directive <memo.md>` — classify the Director's memo into ADR
+- `/jackal-director:ingest-directive <memo.md>` — classify the Director's memo into ADR
   stubs, `.jackal/` guidance bullets, glossary proposals, impact stubs, and
   GitHub issues — with human confirmation before anything is written
 
+(Marketplace-installed commands are always namespaced `plugin:command`; a bare
+`/canon-init` will not resolve.)
+
 **Skill:** `director-loop` — standing obligations that wire the loop into
 design/plan/execute work (read canon before designing, impact statements with
-the plan, `/contract-check` before the PR).
+the plan, `/jackal-director:contract-check` before the PR).
 
 ## Contracts: Python and TypeScript
 
@@ -59,7 +62,7 @@ The drift checker compares JSON Schemas; it never parses source.
 In the target repo:
 
 ```
-/canon-init
+/jackal-director:canon-init
 ```
 
 Then hand-author the three documents that need a human: the charter, the
