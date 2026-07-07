@@ -2,6 +2,7 @@
 name: plan
 description: Creates an implementation plan from a design document (or issue doc for Standard issues). Sets up worktree, dispatches planner agent, and hands off to execute. Second step in the Jackal dev cycle.
 user-invocable: true
+argument-hint: "[design-plan-or-issue-doc-path]"
 ---
 
 # Plan

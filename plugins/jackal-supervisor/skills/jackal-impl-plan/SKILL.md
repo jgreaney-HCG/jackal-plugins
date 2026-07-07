@@ -1,7 +1,8 @@
 ---
 name: jackal-impl-plan
-description: Create an implementation plan for a Standard or Complex issue. Reuses the worktree assigned by /jackal-design-plan (Complex) or creates one (Standard). Second step in the Jackal dev cycle.
+description: Create an implementation plan for a Standard or Complex issue. Reuses the worktree assigned by /jackal-supervisor:jackal-design-plan (Complex) or creates one (Standard). Second step in the Jackal dev cycle.
 user-invocable: true
+argument-hint: "[design-plan-or-issue-doc-path]"
 ---
 
 # Jackal Implementation Plan

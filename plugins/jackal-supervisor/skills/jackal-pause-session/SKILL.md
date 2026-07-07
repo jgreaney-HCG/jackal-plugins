@@ -2,6 +2,7 @@
 name: jackal-pause-session
 description: Gracefully pause an in-progress issue in any Jackal-managed project — records the current phase and next step in the issue doc, swaps the GitHub issue's status label, and commits the checkpoint so the supervisor can surface it and give the exact resume command later.
 user-invocable: true
+argument-hint: "[issue-id] [reason]"
 ---
 
 # Jackal Pause Session
