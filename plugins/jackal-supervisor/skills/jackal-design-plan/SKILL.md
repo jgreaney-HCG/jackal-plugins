@@ -2,6 +2,7 @@
 name: jackal-design-plan
 description: Start a design for a Complex issue. Runs conflict gate if not yet assigned, then invokes the design skill. Use for Complex issues that need architectural decisions.
 user-invocable: true
+argument-hint: "[issue-id-or-doc-path]"
 ---
 
 # Jackal Design Plan

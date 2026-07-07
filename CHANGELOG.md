@@ -1,5 +1,23 @@
 # Changelog
 
+## [marketplace] — remove redundant wrapper commands
+
+Each `jackal-supervisor` / `jackal-plan-and-execute` entry point shipped
+**twice** — as a thin wrapper command *and* as a same-named `user-invocable`
+skill. The two collide (the skill wins the name), so the wrapper never ran; but
+its body ("invoke the X skill", a bare, self-referential name) is what produced
+the "thin wrapper, then searching for the skill" behavior on invocation. Plugin
+bumps: `jackal-plan-and-execute` 3.0.2 → 3.0.3, `jackal-supervisor` 3.0.1 → 3.0.2.
+
+**Removed:**
+- The 10 redundant wrapper command files in `jackal-supervisor` and
+  `jackal-plan-and-execute`. Their same-named `user-invocable` skills already
+  provide the identical `/plugin:name` entry point, so the wrappers were dead
+  (shadowed by the skill). Each command's `argument-hint` was ported into the
+  corresponding skill's frontmatter, so the `/`-menu hint is preserved.
+  (`jackal-director` commands stay — they are self-contained, with no
+  same-named skill.)
+
 ## [marketplace] — namespace command handoffs
 
 Fixes end-of-phase handoffs and workflow docs that emitted bare slash commands

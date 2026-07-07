@@ -2,6 +2,7 @@
 name: execute
 description: Executes implementation plans or drives continuous issue execution from the GitHub Issues backlog. Model-adaptive — dispatches Sonnet implementors, reviews conditionally based on risk, and parallelizes independent work. Runs autonomously until genuinely stuck.
 user-invocable: true
+argument-hint: "[plan-directory] [working-directory]"
 ---
 
 # Execute

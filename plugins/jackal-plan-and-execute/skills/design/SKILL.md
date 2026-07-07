@@ -2,6 +2,7 @@
 name: design
 description: Full design workflow from idea to committed design document. Gathers context, clarifies requirements, brainstorms approaches, and writes the design plan. Use for Complex issues that need architectural decisions before implementation.
 user-invocable: true
+argument-hint: "[issue-id-or-description]"
 ---
 
 # Design

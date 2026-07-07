@@ -2,6 +2,7 @@
 name: jackal-ui-verify
 description: Generic UI verification skill. Use after implementation completes and before /jackal-finish-branch whenever the issue scope touches the UI. Reads server configuration from the ## Jackal Config section in this project's CLAUDE.md. Runs existing e2e tests, then performs live MCP Playwright visual verification against the issue's acceptance criteria.
 user-invocable: true
+argument-hint: "[issue-id]"
 ---
 
 # Jackal UI Verify
