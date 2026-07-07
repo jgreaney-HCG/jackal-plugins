@@ -40,7 +40,7 @@ Build one table keyed by branch: worktree path (if any), PR number/state,
 | PR **open**, `mergeStateStatus: BEHIND` | Keep; flag **needs rebase** |
 | PR **open**, `mergeStateStatus: DIRTY` | Keep; flag **has conflicts — rebase + resolve** |
 | PR **open**, clean | Keep; no action |
-| No PR, has commits ahead of main | Keep; flag **unfinished work** (offer `/jackal-finish-branch`) |
+| No PR, has commits ahead of main | Keep; flag **unfinished work** (offer `/jackal-supervisor:jackal-finish-branch`) |
 | No PR, no commits ahead | Flag **abandoned?** — ask before reclaiming |
 
 ## Step 2: Reclaim (merged/closed/gone only)

@@ -63,7 +63,7 @@ git rebase origin/main
 
 ### 4. Contract Check (if canon exists)
 
-If `docs/canon/` exists and `/contract-check` was not already run by `execute`'s
+If `docs/canon/` exists and `/jackal-director:contract-check` was not already run by `execute`'s
 final review, run it now. The bar is **CLEAN, or FLAGGED with every flag
 explained** in your report. An unexplained FLAG blocks the PR. ESCALATE always
 blocks — fix the canon gap first.
@@ -138,7 +138,7 @@ supervisor is in use.)
 ### 8. Worktree
 
 **Keep the worktree while the PR is open** — review feedback may need fixup
-pushes. `/jackal-sweep` removes it (and the local branch) after the PR merges.
+pushes. `/jackal-supervisor:jackal-sweep` removes it (and the local branch) after the PR merges.
 
 For an explicit discard: `git worktree remove --force [path]` and
 `git branch -D [branch]` after the typed confirmation.

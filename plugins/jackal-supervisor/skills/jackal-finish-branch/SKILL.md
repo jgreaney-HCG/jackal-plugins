@@ -79,5 +79,5 @@ If yes, update CLAUDE.md.
 ## Step 5: Point at Sweep
 
 The worktree stays until the PR merges. Remind the user (or the autonomous
-loop's session notes): run `/jackal-sweep` periodically to reclaim worktrees and
+loop's session notes): run `/jackal-supervisor:jackal-sweep` periodically to reclaim worktrees and
 branches for merged PRs and to spot PRs needing rebase.

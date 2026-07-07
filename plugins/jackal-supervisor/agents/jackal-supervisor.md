@@ -242,7 +242,7 @@ rebase** (`mergeStateStatus` of `BEHIND` or `DIRTY`).
 
 ### Close Out Completed Work
 
-When `/finish` (or `jackal-finish-branch`) reports success:
+When `/jackal-plan-and-execute:finish` (or `/jackal-supervisor:jackal-finish-branch`) reports success:
 
 ```bash
 gh issue edit "$ISSUE" --repo "$GH_REPO" --remove-label "status/in-progress"
@@ -294,8 +294,8 @@ Your obligations:
 
 - After every ~5 closed issues, or 7+ days since the newest file in
   `docs/canon/packets/`, tell the user: "Director packet due — run
-  `/director-packet`."
-- When the user brings back a review memo, route them to `/ingest-directive` —
+  `/jackal-director:director-packet`."
+- When the user brings back a review memo, route them to `/jackal-director:ingest-directive` —
   never absorb Director directives into guidance files by hand.
 - During grooming, treat unresolved FLAGs in `docs/canon/reports/` as hygiene
   items: each needs a disposition (fixed, explained in a PR, or queued for the
@@ -312,7 +312,7 @@ time away. Audit and report — fix with the user's confirmation:
    matching its issue number, or no commits in 7+ days → ask: still active? Pause
    or return to ready.
 3. **Zombie worktrees:** worktrees whose issue is closed or whose PR merged →
-   list for `/jackal-sweep`.
+   list for `/jackal-supervisor:jackal-sweep`.
 4. **Unprioritized ready:** `status/ready` without a `priority/*` label → assign one.
 5. **Epic drift:** children closed but epic task-list line unchecked; epics where
    every child is closed but the epic is open; issues with no epic linkage.

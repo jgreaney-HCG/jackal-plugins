@@ -37,7 +37,7 @@ Read the **## Jackal Config** section from the project's CLAUDE.md. Extract:
 
 **Skip** for issues that only touch backend, pipeline, or infrastructure with no UI surface changes.
 
-**Invocation point:** After all implementation tasks complete, before `/jackal-finish-branch`.
+**Invocation point:** After all implementation tasks complete, before `/jackal-supervisor:jackal-finish-branch`.
 
 ---
 
@@ -184,7 +184,7 @@ Use `ed3d-playwright:playwright-explorer` for the navigation smoke test if the a
 - No JS errors: ✅ / ❌
 
 ### Verdict
-✅ PASS — Safe to run /jackal-finish-branch
+✅ PASS — Safe to run /jackal-supervisor:jackal-finish-branch
 ❌ FAIL — Fix required:
   - [specific issue]
 ```

@@ -26,7 +26,7 @@ Accept: design plan path, issue doc path, or issue ID.
 
 - Design plan provided → resolve associated issue doc from filename or design plan front-matter
 - Issue doc for Standard issue → planner will auto-generate mini design
-- Issue doc for Complex issue with no design plan → STOP, redirect to `/jackal-design-plan`
+- Issue doc for Complex issue with no design plan → STOP, redirect to `/jackal-supervisor:jackal-design-plan`
 - Simple issue → STOP, redirect to direct implementor dispatch
 
 ## Step 2: Resolve Worktree
@@ -130,14 +130,16 @@ The `plan` skill skips its own worktree creation when `WORKTREE_PATH` is provide
 ## Step 5: Execution Starts Automatically
 
 The plan skill flows directly into the execute skill — **invoke it via
-`Skill("jackal-plan-and-execute:execute")`, never by inventing a slash command.**
-If you ever need to hand the user a resumable command instead, it is exactly:
+`Skill("jackal-plan-and-execute:execute")`, never by inventing or un-namespacing
+a slash command.** If you ever need to hand the user a resumable command
+instead, it is exactly:
 
 ```
-/execute <absolute-plan-dir> <absolute-worktree-path>
+/jackal-plan-and-execute:execute <absolute-plan-dir> <absolute-worktree-path>
 ```
 
-(`/execute` is the only execution command; there is no `/execute-plan` or
-`/execute-implementation-plan`.)
+(`jackal-plan-and-execute:execute` is the only execution command; there is no
+`/execute-plan` or `/execute-implementation-plan`. Marketplace-installed commands
+are always namespaced `plugin:command` — a bare `/execute` will not resolve.)
 
 If running in autonomous mode (backlog execution), everything from this point is automatic until the issue is done or the orchestrator gets stuck.

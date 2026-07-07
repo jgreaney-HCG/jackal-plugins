@@ -22,7 +22,7 @@ Read `## Jackal Config` from CLAUDE.md. Extract:
 
 Accept issue ID or issue doc path. Read the issue doc.
 
-- If Complexity is not Complex → redirect to `/jackal-impl-plan` (Standard) or implementor (Simple)
+- If Complexity is not Complex → redirect to `/jackal-supervisor:jackal-impl-plan` (Standard) or implementor (Simple)
 - If a `## Worktree` block already exists in the issue doc → reuse it (skip step 2). This means design was started before and is being resumed.
 - Otherwise → proceed to step 2
 
@@ -131,7 +131,7 @@ Design plan: docs/design-plans/[filename]
 Worktree: .worktrees/[issue#]-[slug]
 Branch: [type]/[issue#]-[slug]
 
-Next: /jackal-impl-plan docs/design-plans/[filename]
+Next: /jackal-supervisor:jackal-impl-plan docs/design-plans/[filename]
 ```
 
 Emit that `Next:` line **exactly as written with the real filename substituted** —

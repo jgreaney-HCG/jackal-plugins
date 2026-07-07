@@ -9,7 +9,7 @@ Base ref: use `$ARGUMENTS` if provided, otherwise `main`.
 
 1. Confirm the working tree is a git repo and `docs/canon/registry.md`
    exists. If the registry is missing, stop and tell the user to run
-   `/canon-init` first - do not improvise checks without canon.
+   `/jackal-director:canon-init` first - do not improvise checks without canon.
 
 2. Launch **both** of the following as subagents, in a single message so they
    run in parallel:

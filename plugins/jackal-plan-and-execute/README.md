@@ -89,8 +89,11 @@ The main conversation (orchestrator) manages state and makes decisions. It **nev
 ## Continuous Execution (Backlog Mode)
 
 ```
-/execute (no arguments)
+/jackal-plan-and-execute:execute (no arguments)
 ```
+
+(Marketplace-installed commands are namespaced `plugin:command` — a bare
+`/execute` will not resolve.)
 
 The orchestrator:
 1. Reads the GitHub Issues backlog
@@ -109,7 +112,7 @@ When the repo has `docs/canon/` (see the `jackal-director` plugin):
 - `design` reads the charter and glossary before brainstorming and adds a
   Contract Impact section when contract models are touched.
 - `planner` drafts impact statements alongside phases that change contracts.
-- `execute`'s final review runs `/contract-check` in parallel with the reviewer.
+- `execute`'s final review runs `/jackal-director:contract-check` in parallel with the reviewer.
 - `finish` requires contract-check CLEAN (or explained-FLAGGED) before the PR.
 
 ## Harness Guidance

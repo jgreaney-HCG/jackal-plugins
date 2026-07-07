@@ -208,9 +208,9 @@ git commit -m "docs: design plan for [slug]"
 
 ```
 Design complete: docs/design-plans/[filename]
-Worktree: [WORKTREE_PATH if provided, else "(none — created at /plan time)"]
+Worktree: [WORKTREE_PATH if provided, else "(none — created at plan time)"]
 
-Next: /jackal-impl-plan docs/design-plans/[filename]
+Next: /jackal-supervisor:jackal-impl-plan docs/design-plans/[filename]
 ```
 
 No /clear needed. `jackal-impl-plan` reads the `## Worktree` block from the issue doc and reuses the existing worktree.

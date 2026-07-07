@@ -95,7 +95,7 @@ After each phase completes, decide:
   auth, payments, user data, crypto, or contract boundaries (files under the
   project's contracts package).
 
-**If `docs/canon/` exists in the repo**, also run `/contract-check` (the
+**If `docs/canon/` exists in the repo**, also run `/jackal-director:contract-check` (the
 jackal-director conformance gate) in the same message as the final review
 dispatch — they're independent and run in parallel. The bar before finish is
 review PASS **and** contract-check CLEAN (or FLAGGED with every flag explained
@@ -206,7 +206,7 @@ Read the issue doc's `Complexity` field:
 - Execute phases sequentially (Mode 1 above)
 
 **Complex** (architectural decisions, ambiguous scope):
-- STOP. Report: "CG-XX is Complex — needs design decisions. Run /design to start."
+- STOP. Report: "CG-XX is Complex — needs design decisions. Run /jackal-supervisor:jackal-design-plan to start."
 - Do not attempt autonomous execution of Complex issues.
 
 ### Step 6: Complete and Update
@@ -219,7 +219,7 @@ merge locally** — the PR is the only completion path.
 Then: remove `status/in-progress` (leave the issue open — GitHub closes it when
 the PR merges), update the issue doc Status → In Review, record the PR URL, and
 continue the loop to the next issue — do not block waiting for a human to merge.
-Keep the worktree while its PR is open (you may need to push fixups); `/jackal-sweep`
+Keep the worktree while its PR is open (you may need to push fixups); `/jackal-supervisor:jackal-sweep`
 reclaims it after merge.
 
 ### Step 7: Report
