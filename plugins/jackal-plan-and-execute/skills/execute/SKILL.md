@@ -41,6 +41,9 @@ Apply overrides to defaults (review policy, parallel execution policy, stop
 conditions). Precedence, lowest to highest: built-in defaults < Jackal Config keys < root
 `.jackal/` < module `.jackal/`. If no guidance file exists anywhere in the chain, all defaults apply.
 
+One override key lives here: `implementor_continuation` (`on` default / `off`) — see
+"Mode 1: Execute an Implementation Plan" below for what it controls.
+
 ---
 
 ## Delegation Rules
@@ -67,15 +70,91 @@ If you find yourself about to write code, run `$TEST_CMD` for correctness, or gr
 ### Process
 
 1. List phase files, read headers only (first 10 lines each)
-2. For each phase sequentially:
+2. Resolve `implementor_continuation` from Harness Guidance (default `on`). This
+   controls how the implementor is dispatched across phases — see "Implementor
+   Dispatch: Named Continuation" below.
+3. For each phase sequentially:
    a. Read the phase file
-   b. Dispatch `implementor` with the phase file path and working directory
-      (prompt includes the no-subagents line)
+   b. Dispatch `implementor` per the continuation rules below
    c. Relay a **3-line summary** of the implementor's report (files, tests,
       commits). Keep the full report only if it flagged uncertainty or issues.
-   d. Decide whether to review (see Review Routing below)
-3. After all phases: run final review, then invoke the `finish` skill (which
+   d. Decide whether to review (see Review Routing below). If the review finds
+      **Critical** issues, mark continuation as reset for this issue (see
+      Fallback Conditions) before moving to the next phase.
+4. After all phases: run final review, then invoke the `finish` skill (which
    rebases if behind, pushes, and opens the PR)
+
+### Implementor Dispatch: Named Continuation
+
+Each issue's implementor is a **named agent**, dispatched cold on phase 1 and
+resumed via `SendMessage` for phases 2..N. A resumed agent keeps its prior
+transcript warm, so prompt caching applies and it does not re-read stable
+files (design plan, shared helpers, unchanged source) it already read in an
+earlier phase.
+
+**Phase 1 (or any fresh dispatch — see Fallback Conditions): named cold dispatch.**
+
+```xml
+<invoke name="Agent">
+<parameter name="subagent_type">jackal-plan-and-execute:implementor</parameter>
+<parameter name="name">implementor-<ISSUE_NUMBER></parameter>
+<parameter name="description">Implementing phase 1 of #<ISSUE_NUMBER></parameter>
+<parameter name="prompt">
+PHASE_FILE: [path to phase_01.md]
+Working directory: [worktree path]
+
+Implement this phase: read the phase file fully and follow its Context, Goal, and AC
+Coverage exactly. Write code, tests where applicable, run the project's verification
+commands, and commit your work.
+
+Do not dispatch or invoke any subagents — do the work directly with your own tools.
+</parameter>
+</invoke>
+```
+
+**Phases 2..N (continuation active): resume the same named agent via `SendMessage`.**
+
+```xml
+<invoke name="SendMessage">
+<parameter name="to">implementor-<ISSUE_NUMBER></parameter>
+<parameter name="summary">Continue with phase <N> of #<ISSUE_NUMBER></parameter>
+<parameter name="message">
+Your context from prior phases is warm — trust what you already read (design plan,
+shared helpers, unchanged source) and do NOT re-read it. DO re-read any file you
+modified in a prior phase, and any file a prior phase's report flagged as changed,
+since your own writes changed them.
+
+PHASE_FILE: [path to phase_0N.md]
+
+Treat this phase file as the complete spec for this phase. Implement it, test it,
+verify it, and commit on the current branch.
+
+Do not dispatch or invoke any subagents — do the work directly with your own tools.
+</parameter>
+</invoke>
+```
+
+**Fallback Conditions — abandon continuation, start a fresh cold dispatch** (new
+`name`, suffixed `-r2`, `-r3`, ...) when ANY of:
+- The `SendMessage` continuation fails, or returns an empty or truncated
+  response (same failure posture as the reviewer's Context Limit Handling in
+  the `review` skill).
+- A review cycle on a prior phase found **Critical** issues — the implementor's
+  context may be contaminated by the mistake, so reset it rather than resuming.
+- `.jackal/harness-guidance.md` sets `implementor_continuation: off` — in that
+  case every phase gets a fresh named dispatch (step "Phase 1" above, repeated
+  for every phase), which is exactly the pre-continuation behavior.
+
+**Scope of continuation (per-issue, never crosses boundaries):**
+- A **new issue always gets a new implementor** with its own name — continuation
+  never crosses issue boundaries.
+- **Parallel issues keep separate named agents** (`implementor-<issueA>`,
+  `implementor-<issueB>`); their contexts and transcripts never merge. See
+  "Parallel Dispatch" below — the two named-agent streams run and continue
+  independently of each other.
+- The **reviewer is never continued.** Every review dispatch (via the `review`
+  skill) is a fresh, stateless `reviewer`/`reviewer-deep` invocation, regardless
+  of implementor continuation state.
 
 ### Review Routing
 
@@ -255,9 +334,14 @@ When two issues are independent:
 
 ```
 Dispatch in single message:
-  Agent(implementor): CG-XX in worktree A
-  Agent(implementor): CG-YY in worktree B
+  Agent(implementor, name=implementor-XX): CG-XX in worktree A
+  Agent(implementor, name=implementor-YY): CG-YY in worktree B
 ```
+
+Each gets its own named agent (see "Implementor Dispatch: Named Continuation" in
+Mode 1) and its own continuation stream — phase 2..N of CG-XX resumes
+`implementor-XX` only, phase 2..N of CG-YY resumes `implementor-YY` only. The two
+transcripts never merge.
 
 Both run concurrently. When both return:
 - Review each independently
