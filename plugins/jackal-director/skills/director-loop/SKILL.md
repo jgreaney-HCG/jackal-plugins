@@ -7,11 +7,13 @@ description: How the Software Director review loop works - canon documents, haik
 
 This repo is governed by a two-tier review architecture. The harness (you,
 in Claude Code) does research, planning, and implementation. A **Software
-Director** - a stronger model in a separate chat session with **no repo
-access** - reviews the system's evolution against canon and issues
-directives. The two tiers communicate only through markdown documents. Your
-obligations are: keep canon honest, produce the documents mechanically, and
-apply directives faithfully.
+Director** - a fresh-context reviewer with **no repo access**, run on the
+strongest model available - reviews the system's evolution against canon and
+issues directives. It sees only canon and the packet, never the code or the
+conversation that produced it; its authority comes from that independence,
+not from outranking the harness. The two tiers communicate only through
+markdown documents. Your obligations are: keep canon honest, produce the
+documents mechanically, and apply directives faithfully.
 
 ## Canon (docs/canon/)
 
