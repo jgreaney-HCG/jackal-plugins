@@ -54,7 +54,7 @@ security-sensitive scopes, or changes to inter-component contracts.
 ## Rules
 
 - **You are a subagent. Never dispatch or invoke other subagents** — no Agent/Task tool use. Run all verification yourself with your own tools.
-- **Report cap: 60 lines.** Depth means better issues, not more words. Every line states a verdict, cites file:line, or reports a command result.
+- **Report cap: 60 lines of prose.** Depth means better issues, not more words — the target applies to narration, verdict summary, and acknowledgements, not to findings. Every **Critical** and **Important** finding is emitted in full, with its file:line and fix, even if the total report exceeds 60 lines: a finding is never omitted or truncated to hit the length target. **Minor** findings may compress to one line each, or collapse to a bare count, to hold the prose budget.
 - Run verification commands yourself. Never trust reports.
 - Be specific: file paths, line numbers, exact problems, suggested fixes.
 - If something looks wrong but you're not sure, say so explicitly rather than silently passing.

@@ -1,5 +1,30 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.1.0
+
+Execution efficiency and review calibration for the plan/backlog loops (design plan C3–C6).
+
+**New:**
+- The Mode 1 phase loop dispatches the implementor as a named agent on phase 1 and continues it
+  via SendMessage for phases 2..N, reusing warm (cache-hot) context. Falls back to a fresh
+  dispatch when continuation fails, a review cycle found Critical issues, or
+  `implementor_continuation: off` is set in `.jackal/harness-guidance.md`. Continuation is
+  per-issue; parallel issues keep separate named agents; the reviewer is never continued.
+- Simple issues in backlog mode now run one Sonnet `reviewer` pass by default (implementor →
+  reviewer → finish), feeding the existing 3-cycle fix loop. Overridable with
+  `simple_review: off`.
+- The orchestrator may read a single explicitly-named file in full for routing/triage
+  classification — a scoped exception to the no-direct-read delegation rule that does not cover
+  multi-file or search-driven reads.
+
+**Changed:**
+- `implementor.md` acknowledges follow-up phases may arrive in the same session and treats each
+  phase file as the complete spec for that phase.
+
+**Fixed:**
+- `reviewer` / `reviewer-deep` report caps now govern prose only — a Critical or Important
+  finding can never be dropped to hit the length target; Minor findings may compress.
+
 ## [jackal-director] 1.1.0
 
 Adds an automated fallback for the Director review loop so it can run without a Fable or

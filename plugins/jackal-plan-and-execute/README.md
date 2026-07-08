@@ -33,7 +33,7 @@ intended cost/capability tiers.
 
 1. **Sonnet is the workhorse.** Implementation and standard review use Sonnet. Opus for planning and deep review only.
 2. **Phase = unit of work.** No micro-task splitting. One phase, one dispatch.
-3. **Review is proportional to risk.** Simple → none. Standard → final only (Sonnet). Complex or security/contract-touching → per-phase + deep final review (Opus).
+3. **Review is proportional to risk.** Simple → one Sonnet review pass by default (overridable with `simple_review: off`). Standard → final only (Sonnet). Complex or security/contract-touching → per-phase + deep final review (Opus).
 4. **Review happens before the PR, not after.** The PR that opens has already passed tests, review, and (when canon exists) contract-check. Post-PR feedback is welcome; routine post-PR re-review is not part of the loop.
 5. **Workers never spawn workers.** Every agent denies the Agent tool (`disallowedTools: Agent`) and every dispatch prompt repeats the prohibition. Only the orchestrator dispatches.
 6. **Self-review before external review.** Implementor checks its own output.
@@ -76,7 +76,7 @@ The main conversation (orchestrator) manages state and makes decisions. It **nev
 | Rebase, push, open PRs, update backlog | Research external deps/APIs → `ed3d-research-agents:combined-researcher` |
 | Report to human | |
 
-**The rule:** If a task produces an artifact (code, phase files, a review verdict, research findings), delegate it. If a task reads or updates shared state (backlog, git, issue docs) or requires a routing decision, do it directly.
+**The rule:** If a task produces an artifact (code, phase files, a review verdict, research findings), delegate it. If a task reads or updates shared state (backlog, git, issue docs) or requires a routing decision, do it directly. Exception: for routing/triage, the orchestrator may `Read` a single explicitly-named file in full to classify an issue that names exactly one file; multi-file and search-driven reads still delegate.
 
 ## Complexity Routing
 
@@ -124,5 +124,7 @@ Typical contents:
 - **Test command** — override the auto-detected test command
 - **Stop conditions** — e.g., "pause after each issue rather than looping"
 - **Parallel execution policy** — e.g., "never dispatch in parallel (shared DB state)"
+- **`implementor_continuation: off`** — disable cross-phase implementor continuation, forcing a fresh dispatch per phase
+- **`simple_review: off`** — disable the default Sonnet reviewer pass for Simple issues in backlog mode
 
 If the file doesn't exist, all defaults apply.
