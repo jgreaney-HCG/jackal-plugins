@@ -78,3 +78,22 @@ the default path — keep and discard exist only when a user explicitly asks for
 Do not reintroduce a "merge to main" option, a `protected_main: false` fast path that skips the PR,
 or an options menu in autonomous mode. If a future change needs a genuine exception to this, it
 should be a loud, explicit opt-out in `.jackal/harness-guidance.md`, not a default behavior.
+
+## Jackal Config
+
+- `repo_root`: `.` (this repo is its own project root — no separate app subdir)
+- `gh_repo`: `jgreaney-HCG/jackal-plugins`
+- `issue_prefix`: `JKL`
+- `issue_docs`: `docs/issue-docs`
+- `design_plans`: `docs/design-plans`
+- `impl_plans`: `docs/impl-plans`
+- `test_cmd`: `bash scripts/trace-deps.sh && python3 scripts/check-version-sync.py && python3 scripts/check-frontmatter.py && (cd plugins/ed3d-hook-security-hardening/hooks && python3 test-check-bash-secrets.py && python3 test-check-sensitive-file.py)` (mirrors `.github/workflows/ci.yml`; requires `pip install pyyaml` once locally)
+- `git_remote`: `origin`
+- `push_cmd`: `git push`
+- `label_style`: `slash`
+- `modules`:
+  - `director` — `plugins/jackal-director`
+  - `house-style` — `plugins/jackal-house-style`
+  - `plan-and-execute` — `plugins/jackal-plan-and-execute`
+  - `supervisor` — `plugins/jackal-supervisor`
+  - `hook-security` — `plugins/ed3d-hook-security-hardening`
