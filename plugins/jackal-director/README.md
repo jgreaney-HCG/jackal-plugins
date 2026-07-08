@@ -2,9 +2,9 @@
 
 Haiku-powered document manufacturing for a two-tier review architecture: the
 jackal harness (Sonnet/Opus on Bedrock) does the work; a **Software Director**
-- a fresh-context reviewer with no repo access, run on the strongest model
+— a fresh-context reviewer with no repo access, run on the strongest model
 available (Fable in a chat session when you have it, otherwise any
-strong-model chat) - reviews the system's evolution against canon documents
+strong-model chat) — reviews the system's evolution against canon documents
 and issues directives. Its authority comes from independence, not model tier.
 This plugin produces the paper that makes that possible, and closes the loop
 back into the harness.

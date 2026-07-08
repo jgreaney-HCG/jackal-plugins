@@ -78,5 +78,5 @@ affected`, `## ADR` (link or "none - non-breaking").
 Finish by telling the user the three documents that need human authorship
 before the loop is worth running (charter, glossary confirmation, component
 map) and suggest drafting the charter WITH the Director: paste the repo's
-README and this template into the Fable session and let the Director
-interview them.
+README and this template into the Director session (Fable chat if you have
+it, otherwise any strong-model chat) and let it interview them.
