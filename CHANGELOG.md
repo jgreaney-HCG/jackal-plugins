@@ -1,5 +1,21 @@
 # Changelog
 
+## [jackal-director] 1.1.0
+
+Adds an automated fallback for the Director review loop so it can run without a Fable or
+other strong-model chat session available.
+
+**New:**
+- The automated `/jackal-director:director-review` command and the read-only Opus `director`
+  agent (tools: Read only; no repo access by design) — an automated fallback for the Director
+  loop when no Fable or other strong-model chat is available; ingestion stays human-gated.
+
+**Changed:**
+- The Director is now described in capability-relative terms (a fresh-context reviewer with
+  no repo access, run on the strongest model available) across director-loop, director-packet,
+  ingest-directive, and the plugin README; Fable named only as the preferred option. Cadence
+  section gains the fallback ladder.
+
 ## [marketplace] — remove redundant wrapper commands
 
 Each `jackal-supervisor` / `jackal-plan-and-execute` entry point shipped
