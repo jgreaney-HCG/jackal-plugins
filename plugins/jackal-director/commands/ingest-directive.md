@@ -1,12 +1,14 @@
 ---
-description: Ingest a review memo from the Software Director (Fable) - turn its directives into ADR stubs, glossary entries, and .jackal guidance updates, with human confirmation at each step
+description: Ingest a review memo from the Software Director - turn its directives into ADR stubs, glossary entries, and .jackal guidance updates, with human confirmation at each step
 argument-hint: "<path to the Director's review memo .md>"
 ---
 
 Close the Director loop: take the review memo the user brought back from the
-Fable chat session and merge its directives into the places the harness
-actually reads. This is a judgment task - run it yourself on the main model,
-never delegate it to a haiku agent.
+Director - a Fable chat, another strong-model chat, or the automated
+`/jackal-director:director-review` path - and merge its directives into the places the harness
+actually reads. This command is path-agnostic: it ingests a memo file
+regardless of which path produced it. This is a judgment task -
+run it yourself on the main model, never delegate it to a haiku agent.
 
 Input: the memo at `$ARGUMENTS`. If no path given, ask for one.
 

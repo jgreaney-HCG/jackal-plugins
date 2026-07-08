@@ -2,9 +2,12 @@
 
 Haiku-powered document manufacturing for a two-tier review architecture: the
 jackal harness (Sonnet/Opus on Bedrock) does the work; a **Software Director**
-(Fable, in a chat session with no repo access) reviews the system's evolution
-against canon documents and issues directives. This plugin produces the paper
-that makes that possible, and closes the loop back into the harness.
+— a fresh-context reviewer with no repo access, run on the strongest model
+available (Fable in a chat session when you have it, otherwise any
+strong-model chat) — reviews the system's evolution against canon documents
+and issues directives. Its authority comes from independence, not model tier.
+This plugin produces the paper that makes that possible, and closes the loop
+back into the harness.
 
 Director directives land in `.jackal/design-guidance.md` /
 `.jackal/implementation-guidance.md`, which the jackal design and planning
@@ -13,9 +16,10 @@ epic's planning automatically.
 
 ## Contents
 
-**Agents** (all `model: haiku`, all `tools: Bash, Read, Grep, Glob` — detection
-and extraction only, mandatory evidence citations, never judgment, never
-subagents):
+**Agents:** four run on `model: haiku` with `tools: Bash, Read, Grep, Glob` — detection
+and extraction only, mandatory evidence citations, never judgment, never subagents. The
+fifth, `director`, is the Software Director itself — `model: opus`, `tools: Read` only (no
+Bash/Grep/Glob/Write: no repo access, by design), used only by the automated review path:
 
 | Agent | Input | Output |
 |---|---|---|
@@ -23,6 +27,7 @@ subagents):
 | `contract-sentinel` | branch diff + registry | PASS/FLAG/ESCALATE checklist (C1-C5) |
 | `lexicon-warden` | diff/doc + glossary | NEW/CONFLICT/SYNONYM-DRIFT table |
 | `registry-drift-checker` | exported contract schemas + registry | IN-SYNC/STALE/UNDOCUMENTED/ORPHANED |
+| `director` | canon docs + a director packet | numbered review memo (directives) |
 
 **Commands:**
 
@@ -32,6 +37,9 @@ subagents):
   report filed to `docs/canon/reports/`
 - `/jackal-director:director-packet [since]` — assemble the cycle packet (digest + drift +
   open flags + canon changelog + your questions) for upload to the Director
+- `/jackal-director:director-review [packet]` — automated Director path: dispatches the
+  read-only `director` agent and writes its memo; ingestion into canon stays human-gated via
+  `ingest-directive`
 - `/jackal-director:ingest-directive <memo.md>` — classify the Director's memo into ADR
   stubs, `.jackal/` guidance bullets, glossary proposals, impact stubs, and
   GitHub issues — with human confirmation before anything is written
@@ -67,8 +75,9 @@ In the target repo:
 
 Then hand-author the three documents that need a human: the charter, the
 component map, and glossary confirmation. Draft the charter *with* the
-Director — paste your README plus the charter template into the Fable session
-and let it interview you.
+Director — paste your README plus the charter template into the Director
+session (Fable chat if you have it, otherwise any strong-model chat) and let
+it interview you.
 
 ## Bedrock note
 

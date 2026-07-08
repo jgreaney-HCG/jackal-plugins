@@ -1,13 +1,15 @@
 ---
-description: Assemble a director packet - delta digest, drift report, open flags, canon changelog - as a single markdown file to hand to the Software Director (Fable, in chat)
+description: Assemble a director packet - delta digest, drift report, open flags, canon changelog - as a single markdown file to hand to the Software Director, a fresh-context reviewer with no repo access (Fable chat when available, else any strong-model chat or the automated /jackal-director:director-review path)
 argument-hint: "[since, e.g. '2026-06-24' or a ref; default: date of last packet, else 7 days]"
 ---
 
 Build the director packet: the single document the human will upload to the
-Software Director session in Claude chat. The Director has no repo access -
-this packet, plus the canon documents already in the Director's project
-knowledge, is everything it sees. Completeness and honesty of the packet is
-therefore the whole ballgame.
+Software Director - whichever review path this cycle uses (Fable chat,
+another strong-model chat, or the automated `/jackal-director:director-review`
+command). The
+Director has no repo access - this packet, plus the canon documents already
+in its project knowledge, is everything it sees. Completeness and honesty of
+the packet is therefore the whole ballgame.
 
 Determine the range:
 - If `$ARGUMENTS` is given, use it as the start (date or ref) to HEAD.
