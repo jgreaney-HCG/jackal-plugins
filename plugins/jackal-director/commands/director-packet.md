@@ -29,6 +29,9 @@ Then:
 Range: [range]
 Working directory: [repo root]
 Emit the fixed-format delta digest.
+
+Do not dispatch or invoke any subagents - do the work directly with your own
+tools.
 </parameter>
 </invoke>
 <invoke name="Agent">
@@ -37,6 +40,9 @@ Emit the fixed-format delta digest.
 <parameter name="prompt">
 Working directory: [repo root]
 Compare exported contract schemas against docs/canon/registry.md.
+
+Do not dispatch or invoke any subagents - do the work directly with your own
+tools.
 </parameter>
 </invoke>
 ```
