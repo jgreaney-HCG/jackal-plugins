@@ -1,6 +1,6 @@
 # jackal-plugins
 
-Last verified: 2026-07-01
+Last verified: 2026-07-08
 
 Claude Code plugins for design, implementation, and development workflows (forked from ed3d-plugins).
 
@@ -55,7 +55,7 @@ Only include sections that apply. Keep entries concise.
 ### Worker Agents Never Spawn Subagents
 
 Every agent in `jackal-plan-and-execute` and `jackal-director` (`planner`, `implementor`,
-`reviewer`, `reviewer-deep`, `delta-scribe`, `contract-sentinel`, `lexicon-warden`,
+`reviewer`, `reviewer-deep`, `director`, `delta-scribe`, `contract-sentinel`, `lexicon-warden`,
 `registry-drift-checker`) must carry `disallowedTools: Agent` in its frontmatter and an explicit
 "never dispatch or invoke other subagents" rule in its body. Every dispatch prompt template that
 launches one of these agents must repeat the prohibition in the prompt itself — frontmatter
