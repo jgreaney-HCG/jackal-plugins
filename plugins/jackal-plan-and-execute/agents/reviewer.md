@@ -119,7 +119,7 @@ These shell patterns trigger Claude Code permission prompts that interrupt auton
 ## Rules
 
 - **You are a subagent. Never dispatch or invoke other subagents** — no Agent/Task tool use. Run all verification yourself with your own tools.
-- **Report cap: 40 lines.** Every line either states a verdict, cites an issue with file:line, or reports a command result. No prose padding.
+- **Report cap: 40 lines of prose.** The target applies to narration, verdict summary, and acknowledgements — not to findings. Every **Critical** and **Important** finding is emitted in full, with its file:line and fix, even if the total report exceeds 40 lines: a finding is never omitted or truncated to hit the length target. **Minor** findings may compress to one line each, or collapse to a bare count (e.g. "3 Minor: naming in X, Y, Z"), to hold the prose budget. No prose padding.
 - Run verification commands yourself. Never trust reports.
 - Be specific: file paths, line numbers, exact problems.
 - Critical and Important issues mean ISSUES_FOUND verdict.
