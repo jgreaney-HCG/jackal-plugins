@@ -41,8 +41,12 @@ Apply overrides to defaults (review policy, parallel execution policy, stop
 conditions). Precedence, lowest to highest: built-in defaults < Jackal Config keys < root
 `.jackal/` < module `.jackal/`. If no guidance file exists anywhere in the chain, all defaults apply.
 
-One override key lives here: `implementor_continuation` (`on` default / `off`) — see
-"Mode 1: Execute an Implementation Plan" below for what it controls.
+Two override keys live here:
+- `implementor_continuation` (`on` default / `off`) — see "Mode 1: Execute an
+  Implementation Plan" below for what it controls.
+- `simple_review` (`on` default / `off`) — see "Step 5: Execute by Complexity"
+  below for what it controls (whether Simple backlog issues get a default
+  Sonnet review pass).
 
 ---
 
@@ -175,6 +179,12 @@ After each phase completes, decide:
   auth, payments, user data, crypto, or contract boundaries (files under the
   project's contracts package).
 
+(This table governs per-phase and final review inside Mode 1's plan-execution
+loop. Simple issues never enter Mode 1 — they have no plan phase — so their
+review is routed directly in Mode 2 / Step 5 below; the tier choice there
+matches this one: Sonnet by default, escalating to `reviewer-deep` only when
+security-sensitive.)
+
 **If `docs/canon/` exists in the repo**, also run `/jackal-director:contract-check` (the
 jackal-director conformance gate) in the same message as the final review
 dispatch — they're independent and run in parallel. The bar before finish is
@@ -274,11 +284,24 @@ If multiple candidates are unblocked and clear:
 
 Read the issue doc's `Complexity` field:
 
-**Simple** (≤1 day, bug fix, single concern):
+**Simple** (≤1 day, bug fix, single concern) — Standard and Complex routing below
+are unaffected by this:
 - Create worktree
 - Dispatch `implementor` directly with issue doc
 - No plan phase, no design phase
-- Review only if security-sensitive
+- **By default, run exactly one `reviewer` (Sonnet) pass** via the `review`
+  skill (tier = `reviewer`, never `reviewer-deep` for a plain Simple issue).
+  Route the verdict through the existing fix loop described in "Review
+  Routing" above / Mode 1's "When review finds Critical or Important issues":
+  on ISSUES_FOUND, dispatch `implementor` to fix and re-review, stopping after
+  3 cycles (same stop condition as Mode 1).
+  - Security carve-out: a security-sensitive Simple issue (touches auth,
+    payments, user data, crypto, or contract boundaries) still escalates to
+    `reviewer-deep` per the existing risk rules, instead of `reviewer`.
+  - **Override:** if Harness Guidance resolves `simple_review: off` (see
+    "Harness Guidance" above), skip the Simple-issue review entirely unless
+    the security carve-out applies — this restores the old behavior (review
+    only if security-sensitive).
 
 **Standard** (multi-file, clear ACs):
 - Create worktree
