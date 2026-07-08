@@ -76,7 +76,7 @@ The main conversation (orchestrator) manages state and makes decisions. It **nev
 | Rebase, push, open PRs, update backlog | Research external deps/APIs → `ed3d-research-agents:combined-researcher` |
 | Report to human | |
 
-**The rule:** If a task produces an artifact (code, phase files, a review verdict, research findings), delegate it. If a task reads or updates shared state (backlog, git, issue docs) or requires a routing decision, do it directly.
+**The rule:** If a task produces an artifact (code, phase files, a review verdict, research findings), delegate it. If a task reads or updates shared state (backlog, git, issue docs) or requires a routing decision, do it directly. Exception: for routing/triage, the orchestrator may `Read` a single explicitly-named file in full to classify an issue that names exactly one file; multi-file and search-driven reads still delegate.
 
 ## Complexity Routing
 

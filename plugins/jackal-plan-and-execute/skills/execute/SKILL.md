@@ -65,6 +65,10 @@ The orchestrator manages state and makes routing decisions. It **never** writes 
 
 If you find yourself about to write code, run `$TEST_CMD` for correctness, or grep through the codebase — stop and dispatch an `implementor` or `reviewer` instead.
 
+**Single-named-file routing read (exception):** when, during routing/triage, an issue names exactly one explicit file path and the classification decision hinges on that file, the orchestrator MAY `Read` that one file in full to classify the issue — classification accuracy matters more than the marginal read, and a full read beats a capped peek.
+
+**Scope guards (must be explicit):** the exception covers exactly one named file only, at triage time. It does NOT authorize: reading a second file, using `Glob`/`Grep` or any search to *find* files, reading files not named in the issue, or reading to *implement* rather than *classify*. Multi-file or search-driven reads still stop and dispatch (`codebase-investigator` / `implementor`).
+
 ---
 
 ## Mode 1: Execute an Implementation Plan
