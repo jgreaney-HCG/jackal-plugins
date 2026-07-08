@@ -55,7 +55,7 @@
         {
             "name": "jackal-director",
             "description": "Software Director review loop \u2014 Haiku conformance agents (delta digest, contract sentinel, lexicon warden, registry drift), canon documents, director packets, and directive ingestion.",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "source": "./plugins/jackal-director",
             "author": {
                 "name": "Jack Greaney",

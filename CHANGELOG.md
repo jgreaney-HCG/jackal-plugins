@@ -1,5 +1,16 @@
 # Changelog
 
+## [jackal-director] 1.1.1
+
+Closes a no-nesting guard gap on the Haiku conformance agents.
+
+**Fixed:**
+- `delta-scribe`, `contract-sentinel`, `lexicon-warden`, and `registry-drift-checker` now carry
+  `disallowedTools: Agent` in frontmatter and an explicit "never dispatch or invoke other
+  subagents" rule in their body, matching the pattern already used by `director`. Their dispatch
+  prompt templates in `director-packet` and `contract-check` now repeat the prohibition in the
+  prompt text as well.
+
 ## [jackal-plan-and-execute] 3.1.0
 
 Execution efficiency and review calibration for the plan/backlog loops (design plan C3–C6).

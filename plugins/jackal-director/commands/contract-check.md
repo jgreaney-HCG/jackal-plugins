@@ -22,6 +22,9 @@ Base ref: use `$ARGUMENTS` if provided, otherwise `main`.
 Base ref: [base]
 Working directory: [repo root]
 Run your checklist against the diff and emit the verdict table.
+
+Do not dispatch or invoke any subagents - do the work directly with your own
+tools.
 </parameter>
 </invoke>
 <invoke name="Agent">
@@ -30,6 +33,9 @@ Run your checklist against the diff and emit the verdict table.
 <parameter name="prompt">
 Check the diff range [base]...HEAD against docs/canon/glossary.md.
 Working directory: [repo root]
+
+Do not dispatch or invoke any subagents - do the work directly with your own
+tools.
 </parameter>
 </invoke>
 ```
