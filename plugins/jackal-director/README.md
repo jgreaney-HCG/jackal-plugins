@@ -16,9 +16,10 @@ epic's planning automatically.
 
 ## Contents
 
-**Agents** (all `model: haiku`, all `tools: Bash, Read, Grep, Glob` — detection
-and extraction only, mandatory evidence citations, never judgment, never
-subagents):
+**Agents:** four run on `model: haiku` with `tools: Bash, Read, Grep, Glob` — detection
+and extraction only, mandatory evidence citations, never judgment, never subagents. The
+fifth, `director`, is the Software Director itself — `model: opus`, `tools: Read` only (no
+Bash/Grep/Glob/Write: no repo access, by design), used only by the automated review path:
 
 | Agent | Input | Output |
 |---|---|---|
@@ -26,6 +27,7 @@ subagents):
 | `contract-sentinel` | branch diff + registry | PASS/FLAG/ESCALATE checklist (C1-C5) |
 | `lexicon-warden` | diff/doc + glossary | NEW/CONFLICT/SYNONYM-DRIFT table |
 | `registry-drift-checker` | exported contract schemas + registry | IN-SYNC/STALE/UNDOCUMENTED/ORPHANED |
+| `director` | canon docs + a director packet | numbered review memo (directives) |
 
 **Commands:**
 
@@ -35,6 +37,9 @@ subagents):
   report filed to `docs/canon/reports/`
 - `/jackal-director:director-packet [since]` — assemble the cycle packet (digest + drift +
   open flags + canon changelog + your questions) for upload to the Director
+- `/jackal-director:director-review [packet]` — automated Director path: dispatches the
+  read-only `director` agent and writes its memo; ingestion into canon stays human-gated via
+  `ingest-directive`
 - `/jackal-director:ingest-directive <memo.md>` — classify the Director's memo into ADR
   stubs, `.jackal/` guidance bullets, glossary proposals, impact stubs, and
   GitHub issues — with human confirmation before anything is written

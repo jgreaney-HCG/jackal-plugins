@@ -68,8 +68,19 @@ more precise, and that is itself worth recording.
 
 - Per branch: `/jackal-director:contract-check` before the PR.
 - Per cycle (weekly, or every ~5 closed issues — the jackal-supervisor
-  prompts when a packet is due): `/jackal-director:director-packet`, human uploads the packet
-  to the Director session, brings back the memo, runs `/jackal-director:ingest-directive`.
+  prompts when a packet is due): `/jackal-director:director-packet`, then the review path,
+  preferred first:
+  1. **Fable chat (preferred):** strongest reviewer, human in the loop
+     end-to-end — human uploads the packet to the Fable session, brings
+     back the memo.
+  2. **Other strong-model chat:** same manual flow, any strong-model chat
+     session, when Fable is unavailable.
+  3. **`/jackal-director:director-review` (automated):** the read-only
+     director agent produces the memo itself, for when no human-run chat
+     session is available this cycle.
+  All three converge on the same next step: review the memo, then run
+  `/jackal-director:ingest-directive`, which keeps its human-confirmation
+  gates regardless of which path produced the memo.
 - The Director's standing constraints land in
   `.jackal/design-guidance.md` / `.jackal/implementation-guidance.md`,
   which the jackal design and planning skills already consume - so Director
