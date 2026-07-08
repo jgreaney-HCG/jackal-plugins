@@ -1,5 +1,16 @@
 # Changelog
 
+## [jackal-supervisor] 3.0.3
+
+Graceful complexity-routing fallback instead of telling the user to re-run a different command.
+
+**Changed:**
+- `jackal-design-plan` on a Standard issue now auto-invokes `jackal-impl-plan` instead of
+  telling the user to run it themselves; on a Simple issue it now dispatches the implementor
+  directly instead of telling the user to.
+- `jackal-impl-plan` on a Simple issue now dispatches the implementor directly instead of
+  telling the user to.
+
 ## [jackal-director] 1.1.1
 
 Closes a no-nesting guard gap on the Haiku conformance agents.

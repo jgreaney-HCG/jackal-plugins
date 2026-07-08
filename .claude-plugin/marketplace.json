@@ -40,7 +40,7 @@
         {
             "name": "jackal-supervisor",
             "description": "Project supervisor \u2014 backlog management, conflict gates, complexity routing, and lifecycle orchestration.",
-            "version": "3.0.2",
+            "version": "3.0.3",
             "source": "./plugins/jackal-supervisor",
             "author": {
                 "name": "Jack Greaney",

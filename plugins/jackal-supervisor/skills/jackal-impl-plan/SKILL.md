@@ -28,7 +28,11 @@ Accept: design plan path, issue doc path, or issue ID.
 - Design plan provided → resolve associated issue doc from filename or design plan front-matter
 - Issue doc for Standard issue → planner will auto-generate mini design
 - Issue doc for Complex issue with no design plan → STOP, redirect to `/jackal-supervisor:jackal-design-plan`
-- Simple issue → STOP, redirect to direct implementor dispatch
+- Simple issue → this issue doesn't need an implementation plan. Tell the user in one line
+  ("Issue #N is Simple — dispatching the implementor directly instead of planning"), then
+  dispatch the `jackal-plan-and-execute:implementor` agent directly with the issue doc as
+  context (same routing the supervisor agent uses for Simple issues — see its Route to
+  Execution table) and stop processing this skill. Do not ask for confirmation first.
 
 ## Step 2: Resolve Worktree
 
