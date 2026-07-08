@@ -23,7 +23,16 @@ Read `## Jackal Config` from CLAUDE.md. Extract:
 
 Accept issue ID or issue doc path. Read the issue doc.
 
-- If Complexity is not Complex → redirect to `/jackal-supervisor:jackal-impl-plan` (Standard) or implementor (Simple)
+- If Complexity is **Standard** → this issue doesn't need a design phase. Tell the user in
+  one line ("Issue #N is Standard, not Complex — routing to jackal-impl-plan instead of
+  design"), then invoke `Skill("jackal-supervisor:jackal-impl-plan")` with the same issue
+  reference and stop processing this skill. Do not ask for confirmation first — this is a
+  routing correction, not a judgment call the user needs to weigh in on.
+- If Complexity is **Simple** → this issue doesn't need a design or implementation-plan
+  phase at all. Tell the user in one line ("Issue #N is Simple — dispatching the implementor
+  directly instead of design"), then dispatch the `jackal-plan-and-execute:implementor` agent
+  directly with the issue doc as context (same routing the supervisor agent uses for Simple
+  issues — see its Route to Execution table) and stop processing this skill.
 - If a `## Worktree` block already exists in the issue doc → reuse it (skip step 2). This means design was started before and is being resumed.
 - Otherwise → proceed to step 2
 
