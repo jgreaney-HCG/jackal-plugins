@@ -12,7 +12,9 @@ Dispatch the right reviewer agent and handle the result.
 
 - **`reviewer`** (Sonnet) — default: Simple and Standard issues, per-phase reviews.
 - **`reviewer-deep`** (Opus) — final review of Complex issues, or any diff
-  touching auth, payments, user data, crypto, or the project's contracts package.
+  touching auth, payments, user data, crypto, or the project's contract
+  sources (the contracts package, or per-component contract files named in
+  `docs/canon/registry.md`).
 
 ## Dispatch
 

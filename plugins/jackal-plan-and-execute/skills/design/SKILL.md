@@ -29,7 +29,8 @@ The charter's design theory and invariants constrain every approach you propose;
 the glossary's terms are the only names for the concepts they define. If the
 design needs a concept the glossary lacks, say so explicitly in the design doc —
 never coin a term silently. If the design touches any contract model (files
-under the contracts package named in `docs/canon/registry.md`), the design doc
+under a contract source named in `docs/canon/registry.md` — its header's
+contracts package or a Component Map `Contract source` path), the design doc
 must include a **Contract impact** section and the plan phase must draft the
 impact statement in `docs/canon/impact/` — a contract change without one will be
 flagged by contract-sentinel and stall the PR.

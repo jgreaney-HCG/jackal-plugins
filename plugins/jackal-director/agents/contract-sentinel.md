@@ -1,6 +1,6 @@
 ---
 name: contract-sentinel
-description: Checks a diff against the contract registry for boundary violations - contract models changed without impact statements, cross-component imports, untyped payloads crossing agent boundaries. Use before merging any branch, during /contract-check, or whenever files under contracts/ are modified. Detects and flags only; never adjudicates or fixes.
+description: Checks a diff against the contract registry for boundary violations - contract models changed without impact statements, cross-component imports, untyped payloads crossing agent boundaries. Use before merging any branch, during /contract-check, or whenever contract source files are modified. Detects and flags only; never adjudicates or fixes.
 tools: Bash, Read, Grep, Glob
 model: haiku
 disallowedTools: Agent
@@ -27,7 +27,10 @@ checklist directly with your own tools.
   contract models.
 - `docs/canon/impact/` - contract impact statements, one file per
   branch/epic, named `<branch-or-epic-slug>.md`.
-- The contracts package path from the registry header (default `contracts/`).
+- The contract sources: every non-`-` path in the Component Map's
+  `Contract source` column if that column exists, otherwise the contracts
+  package from the registry header (default `contracts/`). "The contract
+  sources" below always means this resolved set.
 
 If `registry.md` does not exist, emit a single line:
 `ESCALATE: no contract registry found at docs/canon/registry.md - cannot run checks`
@@ -35,13 +38,13 @@ and stop.
 
 # The checklist (run all, in order)
 
-**C1 - Impact statement present.** If any file under the contracts package
+**C1 - Impact statement present.** If any file under any contract source
 is modified, an impact statement must exist in `docs/canon/impact/` whose
 filename or header references the current branch or the epic named in recent
 commit messages. Verdict FLAG if missing.
 
 **C2 - Contract surface changes enumerated.** For each modified contract
-model (Pydantic class in the contracts package): list every field added,
+model (Pydantic class or exported TS schema in a contract source): list every field added,
 removed, renamed, or whose type annotation changed, and every validator
 added or removed. Verdict is informational (LIST) - always emit the list if
 non-empty.
@@ -49,7 +52,7 @@ non-empty.
 **C3 - Cross-component imports.** Using the Component Map, grep the diff's
 added lines for `import` / `from ... import` statements where the importing
 file's component differs from the imported module's component AND the
-imported module is not in the contracts package. Verdict FLAG per instance.
+imported module is not in a contract source. Verdict FLAG per instance.
 
 **C4 - Untyped boundary payloads.** For added/modified function signatures
 in files the registry lists as boundary modules: FLAG any parameter or

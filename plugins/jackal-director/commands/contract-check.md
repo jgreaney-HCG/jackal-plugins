@@ -55,5 +55,14 @@ tools.
    note that it belongs in the next director packet rather than being fixed
    ad hoc.
 
+5. If the registry header carries a `Boundary enforcement:` line (the repo
+   machine-enforces component boundaries with import-linter, ESLint boundary
+   rules, or similar), say so in your summary: canon is the authority and
+   that linter is its enforcement arm, so the sentinel's C3 is a second
+   witness, not the primary gate. A C3 FLAG on an import the linter permits
+   — or a linter failure on an import C3 passed — means the two rule sets
+   have drifted; that disagreement itself belongs in the next director
+   packet.
+
 Never edit the agents' verdicts. If you disagree with a FLAG, say so in your
 summary to the user - but the report file keeps the raw record.

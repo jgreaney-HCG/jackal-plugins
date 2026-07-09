@@ -180,8 +180,9 @@ After each phase completes, decide:
 
 - **`reviewer` (Sonnet)** — the default for Simple and Standard issues.
 - **`reviewer-deep` (Opus)** — for Complex issues, and for any diff touching
-  auth, payments, user data, crypto, or contract boundaries (files under the
-  project's contracts package).
+  auth, payments, user data, crypto, or contract boundaries (files under a
+  contract source — the project's contracts package or per-component contract
+  files named in `docs/canon/registry.md`).
 
 (This table governs per-phase and final review inside Mode 1's plan-execution
 loop. Simple issues never enter Mode 1 — they have no plan phase — so their

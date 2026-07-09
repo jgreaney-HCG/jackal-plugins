@@ -34,7 +34,7 @@ security-sensitive scopes, or changes to inter-component contracts.
    - **Security:** injection, authz bypass, secret exposure, unsafe
      deserialization, SSRF, path traversal — trace user-controlled data to sinks.
    - **Contracts:** does the change alter any inter-component boundary
-     (`contracts/` models, API shapes, event payloads)? Silent redefinitions are
+     (contract models, API shapes, event payloads)? Silent redefinitions are
      Critical even when tests pass.
    - **Concurrency & state:** races, non-idempotent retries, transaction
      boundaries, partial-failure handling.
