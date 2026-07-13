@@ -25,6 +25,37 @@ files), what remains, and the exact next step. Never claim autonomous progress y
 with an on-disk observation, and never imply the work is further along than the committed state
 proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
 
+## Recording lessons: memory vs. skills
+
+Two substrates, two purposes — do not conflate them:
+
+- **Memory** (`~/.claude/projects/.../memory/`) is for **project facts and
+  preferences**: which gh account to use, remote names, repo conventions,
+  environment quirks. It is loaded only into *this* orchestrating context —
+  **spawned agents do not receive it** (verified: no plugin forwards the memory
+  index; the Agent-tool dispatch prompt carries none of it).
+- **Skill / agent-definition text** is for **agent procedure** — anything that
+  changes how a worker or the loop *behaves*. This is the only substrate
+  reliably shared with spawned agents.
+
+**Rule of thumb.** Any lesson that changes agent procedure gets written into the
+**owning skill (or agent definition) in the same session it is learned** — not
+parked in memory for later. When you do this:
+1. Edit the owning skill/agent file with the procedure change.
+2. Make the memory entry (if any) **cross-reference** the skill change rather
+   than restating the procedure ("see jackal-sweep merged-PR gate" — not a
+   duplicate copy of the rule).
+3. **Supersede stale memory entries** as part of the same correction — delete or
+   mark-superseded any memory note the skill change now obsoletes. Do this
+   without waiting for the human to ask; stale procedure in memory that never
+   reaches subagents is exactly the GL-347 failure mode.
+
+The lessons already promoted under this rule (reference, don't re-park in memory):
+- **Merged-PR gate** → "Reading the backlog" (this file) + `execute` skill Step 4.
+- **Honest-stopping-point** → this file + `implementor.md` + `execute` dispatch templates (from #18).
+- **Sleep<timeout** → `execute` skill "Waiting for async work" (from #18).
+- **ruff-format before commit** → `implementor.md` Verify step.
+
 ---
 
 ## Step 0: Load Project Config
@@ -58,6 +89,47 @@ gh issue list --repo "$GH_REPO" --state open \
 Group by label: `status/ready` → eligible · `status/in-progress` → active (don't
 double-pick) · `status/blocked` → skip · `status/paused` → resumable. Issues with
 no `status/*` label are unscoped backlog.
+
+### Merged-PR gate (run before ranking — never rank a delivered issue)
+
+Before ranking or selecting any candidate OPEN issue, cross-check it against
+merged PRs. Squash-merges that reference an issue with `Refs`/`#NN` (not
+`Closes #NN`) leave the delivered issue OPEN with a stale `status/in-progress`
+label — ranking it wastes a whole assignment cycle (this is the GL-347 failure).
+
+For each candidate OPEN issue `#N`:
+
+```bash
+# Exact signal first — catches Closes/Fixes-style closures:
+gh issue view "$N" --repo "$GH_REPO" --json closedByPullRequestsReferences
+# Candidate filter for Refs/#NN-style references the exact signal misses —
+# this is a raw substring search, NOT confirmation (a search for "3" also
+# matches "3.2.0", "#13", "#23", dates, etc.):
+gh pr list --repo "$GH_REPO" --state merged --search "$N" \
+  --json number,title,url,body,mergedAt
+```
+
+- **`closedByPullRequestsReferences` is non-empty** → confirmed delivered.
+  **Do not rank it.** Move it to a separate **stale-open — close these** list.
+- **The search returns candidates** → **do not treat the hit as delivery.**
+  Open each matched PR's title/body and confirm it contains an explicit
+  `Closes`/`Fixes`/`Refs #<N>` for this **exact** issue number (not a
+  substring match) before treating `#N` as delivered. No confirmed reference
+  in any matched PR → the issue is genuinely open; proceed to ranking.
+- **No search hits at all** → the issue is genuinely open; proceed to ranking.
+
+Emit the stale-open list as its own block, distinct from the ranked ready queue:
+
+```
+Stale-open (delivered by a merged PR — close, don't rank):
+  #347  (delivered by merged PR #351)  → gh issue close 347 --reason completed
+Ready (ranked):
+  #360 (priority/high), #362 (priority/medium), ...
+```
+
+Closing is a hygiene action — surface it; apply with the user's confirmation
+(same posture as Backlog Groom). Never rank an issue this gate flagged as
+delivered.
 
 ---
 
@@ -325,6 +397,9 @@ time away. Audit and report — fix with the user's confirmation:
    every child is closed but the epic is open; issues with no epic linkage.
 6. **PRs needing rebase:** `mergeStateStatus` `BEHIND`/`DIRTY` → list with the
    rebase command per branch.
+7. **Stale-open (delivered, still open):** OPEN issue whose work shipped in a
+   merged PR (see the Merged-PR gate under "Reading the backlog") → list under
+   **stale-open — close these**; never rank. Close with confirmation.
 
 Output a compact table (issue/branch, problem, proposed fix), apply approved
 fixes, done. Do not create or close issues during a groom without confirmation.
