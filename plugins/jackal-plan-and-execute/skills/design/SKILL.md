@@ -76,6 +76,7 @@ Dispatch a codebase investigator to understand current state:
 ```xml
 <invoke name="Agent">
 <parameter name="subagent_type">ed3d-research-agents:codebase-investigator</parameter>
+<parameter name="model">sonnet</parameter>
 <parameter name="description">Investigating codebase for [feature]</parameter>
 <parameter name="prompt">
 Given that we want to [summary from issue], investigate:
@@ -90,6 +91,10 @@ Do not dispatch or invoke any subagents — investigate directly with your own t
 </parameter>
 </invoke>
 ```
+
+Every Agent dispatch above carries an explicit `<parameter name="model">`; a
+model-unspecified dispatch is a defect (see the Model Tier Table in the
+`execute` skill and the `jackal-supervisor` agent).
 
 If external technologies are involved, use `combined-researcher` instead.
 

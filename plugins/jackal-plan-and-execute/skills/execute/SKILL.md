@@ -15,6 +15,14 @@ Two modes:
 the line "Do not dispatch or invoke any subagents — do the work directly with
 your own tools." Workers never spawn workers.
 
+**Model discipline:** every `<invoke name="Agent">` dispatch in this skill must
+carry an explicit `<parameter name="model">` chosen from the tier table below
+(see "Model Tier Table"). A dispatch that omits `model` — leaving the harness
+default / `model=null` — is a **defect**, not a stylistic lapse: it silently
+abandons tier discipline (24 of 28 dispatches in the audited session ran
+`model=null`). `SendMessage` continuations inherit the model of their cold
+dispatch and do not take a `model` param.
+
 ---
 
 ## Harness Guidance
@@ -112,6 +120,7 @@ earlier phase.
 ```xml
 <invoke name="Agent">
 <parameter name="subagent_type">jackal-plan-and-execute:implementor</parameter>
+<parameter name="model">sonnet</parameter>
 <parameter name="name">implementor-<ISSUE_NUMBER></parameter>
 <parameter name="description">Implementing phase 1 of #<ISSUE_NUMBER></parameter>
 <parameter name="prompt">
