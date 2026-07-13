@@ -85,7 +85,7 @@ If you find yourself about to write code, run `$TEST_CMD` for correctness, or gr
 dispatches worker agents (`implementor`, `reviewer`, `planner`, research) directly. There is no
 intermediate supervisor tier between the orchestrator and its workers by default.
 
-The **GL-488 per-phase warm-context `SendMessage` pattern** — documented above in "Implementor
+The **GL-488 per-phase warm-context `SendMessage` pattern** — documented below in "Implementor
 Dispatch: Named Continuation" (Mode 1) — is the reference implementation of flat topology: one
 named worker dispatched cold on phase 1 and resumed via `SendMessage` for phases 2..N, keeping
 context warm without a supervisor tier in between.
