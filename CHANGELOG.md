@@ -1,5 +1,31 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.5.0
+
+Dependency-aware phase fan-out: independent phases run in parallel; sequential stays the default (#25, R9).
+
+**New:**
+- `planner` phase-file template gains an optional `**Depends on:**` (`depends_on:`) field: a phase lists
+  the prior phase ids that must complete before it may start. Absent ⇒ depends on all prior phases ⇒
+  strictly sequential, exactly as before (backward-compatible). A malformed `depends_on:` (non-existent
+  phase, self-reference, or cycle) is declared a planner defect the execute skill must surface.
+- `execute` skill Mode 1 generalizes "for each phase sequentially" into a dependency-aware scheduler:
+  it tracks completed phases and dispatches every phase whose `depends_on:` set is fully satisfied,
+  running independent phases in parallel.
+- Phase-level fan-out uses Option A on the existing Parallel Dispatch model — the warm trunk agent
+  `implementor-<N>` keeps context while additional ready phases dispatch as cold leaf agents
+  `implementor-<N>-pX` on the same branch, non-merging transcripts. No worker gains the `Agent` tool;
+  the orchestrator makes every fan-out decision (no self-dispatch), and `jackal-supervisor` remains the
+  sole `Agent`-holder.
+- Same-branch write-safety note (independent phases are file-disjoint by construction; per-phase
+  timeout attribution out of scope), watcher cross-reference for long parallel streams, and flat-topology
+  consistency with the Orchestration Topology section. The review + verify-don't-trust posture is
+  unchanged — fan-out changes when phases run, never whether their output is disk-verified.
+
+**Changed:**
+- When no phase declares `depends_on:`, scheduling is byte-for-byte the current named-continuation loop —
+  no cold-start regression for the common sequential case.
+
 ## [jackal-plan-and-execute] 3.4.0
 
 Flat orchestration topology by default; justification-gated middle tier (#19, R3).
