@@ -1,5 +1,21 @@
 # Changelog
 
+## [jackal-supervisor] 3.1.1
+
+Promote operational lessons from director memory into shared skill/agent text (#21).
+
+**New:**
+- Merged-PR gate: `jackal-supervisor.md` "Reading the backlog" and Backlog Groom now cross-check every candidate OPEN issue against merged PRs (`gh pr list --state merged`) before ranking, routing delivered-but-open issues to a separate "stale-open — close these" list (prevents the GL-347 mis-ranking). `jackal-sweep` report surfaces the stale-open list and points to the gate.
+- Rule of thumb: memory is for project facts/preferences; any lesson that changes agent procedure goes into the owning skill/agent definition the same session, memory cross-references it, and stale entries are superseded.
+
+## [jackal-plan-and-execute] 3.2.1
+
+Promote operational lessons into shared skill/agent text (#21).
+
+**New:**
+- `execute` skill Step 4 (backlog select): merged-PR gate drops candidates already delivered by a merged PR before priority ordering.
+- `implementor.md` Verify step: run `ruff format`/`ruff check --fix` before committing when the project uses Ruff (conditional; no-op for non-ruff repos).
+
 ## [jackal-plan-and-execute] 3.2.0
 
 Event-driven waits + subagent liveness contract (#18).
