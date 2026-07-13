@@ -5,6 +5,7 @@ Checks: frontmatter block present and parses as YAML; required keys present
 and non-empty. Does not validate description content quality -- that's a
 review-time judgment, not a CI-time one.
 """
+
 import re
 import sys
 from pathlib import Path
