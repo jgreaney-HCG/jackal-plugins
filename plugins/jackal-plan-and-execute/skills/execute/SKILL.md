@@ -363,9 +363,9 @@ Implement this phase: read the phase file fully and follow its Context, Goal, an
 Coverage exactly. Write code, tests where applicable, run the project's verification
 commands, and commit your work on the current branch.
 
-EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher is monitoring this
-worktree's HEAD; going silent past EXPECT triggers a STALLED recovery). If you cannot finish
-within EXPECT, commit what compiles and report your honest stopping point.
+EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher may be monitoring this
+worktree's HEAD for longer leaf phases; going silent past EXPECT triggers a STALLED recovery). If
+you cannot finish within EXPECT, commit what compiles and report your honest stopping point.
 
 **Honest stopping point.** If you stop before the unit of work is fully done — context limit,
 ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
