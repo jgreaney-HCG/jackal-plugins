@@ -173,21 +173,63 @@ the downgrade honest:
 2. Resolve `implementor_continuation` from Harness Guidance (default `on`). This
    controls how the implementor is dispatched across phases — see "Implementor
    Dispatch: Named Continuation" below.
-3. For each phase sequentially:
-   a. Read the phase file
-   b. Dispatch `implementor` per the continuation rules below
-   c. Relay a **3-line summary** of the implementor's report (files, tests,
-      commits). Keep the full report only if it flagged uncertainty or issues.
-      **Relay rule (verify-don't-trust for delegated work).** Never restate a subagent's success or
-      progress claim in your own status unless you have made a **same-turn on-disk observation** that
-      backs it (`git log`/`git diff`/reading the changed file this turn) and you cite that evidence.
-      An agent reporting "done" is a claim, not a fact — this is
-      `verification-before-completion` applied to delegated work (its "Agent completed → VCS diff
-      shows changes" / "Agent delegation: Agent reports success → Check VCS diff" rows). Cite it;
-      do not duplicate it.
-   d. Decide whether to review (see Review Routing below). If the review finds
-      **Critical** issues, mark continuation as reset for this issue (see
-      Fallback Conditions) before moving to the next phase.
+3. Run the dependency-aware phase scheduler:
+
+   a. **Parse `**Depends on:**` from phase headers.** Step 1 already reads the first ~10 lines of
+      each phase file; that header window now also carries the optional `**Depends on:**` line
+      (the planner's phase-file schema). Parse each phase's dependency set from it. **Absent line
+      ⇒ the phase depends on all lower-numbered phases** — the backward-compatible sequential
+      default.
+
+   b. **Validate before scheduling (AC1.2 surfacing).** Before dispatching anything, validate
+      every `**Depends on:**` entry across all phases: each id must name a real, lower-defined
+      phase in this plan; no phase may name itself; there must be no cycle. A validation failure
+      is a **planner defect** — halt and report it. Do not silently ignore a malformed
+      `**Depends on:**` and do not fall back to sequential execution.
+
+   c. **Run the scheduler:**
+
+      ```
+      completed = {}                      # phase ids that have finished and been disk-verified
+      loop until every phase is in completed:
+        ready = { p : p not in completed AND p's depends_on ⊆ completed }
+        if ready is empty and phases remain → deadlock: report (should not happen after validation)
+        - Dispatch the whole `ready` set this round:
+            • one ready phase continues on the warm trunk agent implementor-<ISSUE_NUMBER>
+              (SendMessage if continuation active, else the cold Phase-1 dispatch) — prefer the
+              lowest-numbered ready phase for the trunk so the common single-ready case is
+              identical to today.
+            • each additional ready phase is dispatched as a cold leaf agent
+              implementor-<ISSUE_NUMBER>-pX (see "Phase-level fan-out" below) — same branch,
+              non-merging transcript.
+        - Await completions (use the watcher from "Waiting for async work" for any long-running
+          phase; short leaf phases need no watcher — see "Phase-level fan-out" below).
+        - For each returned phase, run the per-phase body below exactly as today, then move that
+          phase id into `completed`:
+            i.   Read the phase file
+            ii.  Dispatch `implementor` per the continuation rules below (trunk) or the leaf
+                 template (any other ready phase this round)
+            iii. Relay a **3-line summary** of the implementor's report (files, tests,
+                 commits). Keep the full report only if it flagged uncertainty or issues.
+                 **Relay rule (verify-don't-trust for delegated work).** Never restate a
+                 subagent's success or progress claim in your own status unless you have made a
+                 **same-turn on-disk observation** that backs it (`git log`/`git diff`/reading the
+                 changed file this turn) and you cite that evidence. An agent reporting "done" is
+                 a claim, not a fact — this is `verification-before-completion` applied to
+                 delegated work (its "Agent completed → VCS diff shows changes" / "Agent
+                 delegation: Agent reports success → Check VCS diff" rows). Cite it; do not
+                 duplicate it.
+            iv.  Decide whether to review (see Review Routing below). If the review finds
+                 **Critical** issues, mark continuation as reset for this issue (see Fallback
+                 Conditions) before the next round.
+      ```
+
+   **Sequential default is byte-for-byte preserved.** When no phase in the plan carries a
+   `**Depends on:**` line, every phase depends on all prior phases, so `ready` is always exactly
+   the single lowest-numbered incomplete phase. The scheduler then reduces to the current
+   named-continuation loop — cold dispatch on phase 1, `SendMessage` resume for phases 2..N — with
+   no cold-start regression and no parallel dispatch. Fan-out engages **only** when a plan
+   explicitly declares independence via `**Depends on:**`.
 4. After all phases: run final review, then invoke the `finish` skill (which
    rebases if behind, pushes, and opens the PR)
 
@@ -285,6 +327,99 @@ Do not dispatch or invoke any subagents — do the work directly with your own t
 - The **reviewer is never continued.** Every review dispatch (via the `review`
   skill) is a fresh, stateless `reviewer`/`reviewer-deep` invocation, regardless
   of implementor continuation state.
+
+### Phase-level fan-out (Option A: warm trunk + cold leaves)
+
+**This is the existing Parallel Dispatch model applied within one issue.** Where "Parallel
+Dispatch" (below) runs `implementor-<issueA>` and `implementor-<issueB>` on **different branches /
+worktrees**, phase-level fan-out runs `implementor-<N>` (trunk) plus `implementor-<N>-pX` (leaves)
+on the **same branch / same worktree**. Both are: separate named agents, concurrent, non-merging
+transcripts. No new concurrency mechanism is introduced.
+
+**Trunk vs leaf:**
+- The **trunk** `implementor-<ISSUE_NUMBER>` carries warm context from phase 1 and is resumed via
+  `SendMessage` (per "Implementor Dispatch: Named Continuation" above). It takes the
+  lowest-numbered ready phase each scheduling round.
+- A **leaf** `implementor-<ISSUE_NUMBER>-pX` (where `X` is the phase number, e.g.
+  `implementor-25-p3`) is a **cold** named dispatch — it does not share the trunk's transcript.
+  Cold-start is acceptable precisely because a leaf phase is independent by construction (its
+  `**Depends on:**` set excludes the trunk's current work), so it does not need the trunk's
+  in-context output; its phase file is the complete spec.
+
+**Leaf dispatch template** — modeled exactly on the cold Phase-1 dispatch above, changed only in
+`name`, `description`, and `PHASE_FILE`:
+
+```xml
+<invoke name="Agent">
+<parameter name="subagent_type">jackal-plan-and-execute:implementor</parameter>
+<parameter name="model">sonnet</parameter>
+<parameter name="name">implementor-<ISSUE_NUMBER>-p<PHASE></parameter>
+<parameter name="description">Implementing phase <PHASE> of #<ISSUE_NUMBER> (parallel leaf)</parameter>
+<parameter name="prompt">
+PHASE_FILE: [path to phase_0<PHASE>.md]
+Working directory: [worktree path — same worktree as the trunk]
+
+Implement this phase: read the phase file fully and follow its Context, Goal, and AC
+Coverage exactly. Write code, tests where applicable, run the project's verification
+commands, and commit your work on the current branch.
+
+EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher is monitoring this
+worktree's HEAD; going silent past EXPECT triggers a STALLED recovery). If you cannot finish
+within EXPECT, commit what compiles and report your honest stopping point.
+
+**Honest stopping point.** If you stop before the unit of work is fully done — context limit,
+ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
+**resumable, disk-truthful** stopping point: what landed on disk (cite the commit SHA and changed
+files), what remains, and the exact next step. Never claim autonomous progress you cannot back
+with an on-disk observation, and never imply the work is further along than the committed state
+proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
+
+Do not dispatch or invoke any subagents — do the work directly with your own tools.
+</parameter>
+</invoke>
+```
+
+`model=sonnet` is required (Model Tier Table — implementor = Sonnet; a missing `model` param is a
+defect, per "Subagent discipline" above), and the "Do not dispatch or invoke any subagents" line
+is required verbatim.
+
+**Leaves are never continued across phases.** Each leaf is single-phase: it is dispatched cold for
+its one independent phase and returns. If a later phase depends on a leaf's phase, that later
+phase is scheduled by the orchestrator in a subsequent round (on the trunk or a new leaf) — never
+by the leaf resuming itself. This keeps every fan-out decision with the orchestrator.
+
+**Same-branch write safety.** Parallel leaf phases commit to one branch HEAD. This is safe because
+independent phases are disjoint by construction — a phase only carries `**Depends on:**` (and thus
+becomes eligible to run as a parallel leaf) when its files do not overlap the phases running
+concurrently with it. Commits are additive; each phase's diff touches different files. Concurrent
+leaves committing to the same HEAD interleave commits; that is fine (no rebase between them — same
+branch). If two dispatchable phases are *not* genuinely file-disjoint, they must NOT both carry
+independence-granting `**Depends on:**` — that is a planner defect, caught by the same validation
+in step 3.b above. Per-phase timeout attribution across interleaved commits is explicitly
+**out of scope** (leaf phases are short; noted, not solved).
+
+**Review + verify posture is unchanged.** Each phase's work is still disk-verified via the
+verify-don't-trust relay rule and routed through Review Routing exactly as in the sequential path.
+Fan-out changes *when* phases run, never *whether* their output is verified. Do not weaken
+`verification-before-completion`.
+
+**Watcher.** A long-running parallel phase stream gets its own watcher via "Waiting for async
+work" below — launch `scripts/worktree-watcher.sh` per long leaf/trunk stream as needed; short
+leaf phases (the common case for independent tests/docs/plumbing) need no watcher and are simply
+awaited. The watcher fires on any commit to the shared HEAD (per-phase attribution out of scope,
+per the same-branch write safety note above).
+
+**Topology.** Phase-level fan-out **stays flat**: the orchestrator dispatches trunk and leaf
+workers directly; there is no middle tier and no worker gains the `Agent` tool. This is flat
+topology (orchestrator → parallel workers), consistent with "Orchestration Topology" above, and is
+**not** the justification-gated nested-supervisor exception described there.
+
+**The orchestrator — not the implementor — makes every fan-out decision.** Workers
+(`implementor-<N>`, `implementor-<N>-pX`) keep `disallowedTools: Agent`; no worker gains the
+`Agent` tool; the implementor never self-dispatches parallel sub-tasks. `jackal-supervisor` remains
+the sole `Agent`-holder (CLAUDE.md). The parallelism comes from the orchestrator dispatching
+multiple named workers in one message, exactly as issue-level Parallel Dispatch already does —
+never from a worker spawning workers.
 
 ### Review Routing
 
@@ -526,6 +661,10 @@ Both run concurrently. When both return:
 - Finish each (rebase if behind, push, PR) — higher-priority first
 - If the second branch conflicts with the first's PR, note it in the second PR's
   body; after the first merges, rebase the second and force-push its branch
+
+**Phase-level fan-out reuses this model within a single issue** — see "Phase-level fan-out
+(Option A: warm trunk + cold leaves)" under Mode 1. Same-branch leaves (`implementor-<N>-pX`) are
+the intra-issue analogue of these cross-issue named agents.
 
 ---
 
