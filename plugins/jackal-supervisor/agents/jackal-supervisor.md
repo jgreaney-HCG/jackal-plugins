@@ -25,6 +25,37 @@ files), what remains, and the exact next step. Never claim autonomous progress y
 with an on-disk observation, and never imply the work is further along than the committed state
 proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
 
+## Recording lessons: memory vs. skills
+
+Two substrates, two purposes — do not conflate them:
+
+- **Memory** (`~/.claude/projects/.../memory/`) is for **project facts and
+  preferences**: which gh account to use, remote names, repo conventions,
+  environment quirks. It is loaded only into *this* orchestrating context —
+  **spawned agents do not receive it** (verified: no plugin forwards the memory
+  index; the Agent-tool dispatch prompt carries none of it).
+- **Skill / agent-definition text** is for **agent procedure** — anything that
+  changes how a worker or the loop *behaves*. This is the only substrate
+  reliably shared with spawned agents.
+
+**Rule of thumb.** Any lesson that changes agent procedure gets written into the
+**owning skill (or agent definition) in the same session it is learned** — not
+parked in memory for later. When you do this:
+1. Edit the owning skill/agent file with the procedure change.
+2. Make the memory entry (if any) **cross-reference** the skill change rather
+   than restating the procedure ("see jackal-sweep merged-PR gate" — not a
+   duplicate copy of the rule).
+3. **Supersede stale memory entries** as part of the same correction — delete or
+   mark-superseded any memory note the skill change now obsoletes. Do this
+   without waiting for the human to ask; stale procedure in memory that never
+   reaches subagents is exactly the GL-347 failure mode.
+
+The lessons already promoted under this rule (reference, don't re-park in memory):
+- **Merged-PR gate** → "Reading the backlog" (this file) + `execute` skill Step 4.
+- **Honest-stopping-point** → this file + `implementor.md` + `execute` dispatch templates (from #18).
+- **Sleep<timeout** → `execute` skill "Waiting for async work" (from #18).
+- **ruff-format before commit** → `implementor.md` Verify step.
+
 ---
 
 ## Step 0: Load Project Config
