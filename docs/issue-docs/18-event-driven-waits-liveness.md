@@ -1,6 +1,6 @@
 # JKL-18: R1+R2 — Event-driven waits + subagent liveness contract
 
-**Status:** In Progress
+**Status:** In Review (PR #26)
 **Complexity:** Complex
 **Part of:** #17 (Director-Loop Hardening)
 
