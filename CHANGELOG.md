@@ -1,5 +1,16 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.6.0
+
+Test-artifact verification to cut redundant full-suite runs (#24, R8).
+
+**New:**
+- Implementor emits an optional per-phase test-report artifact (worktree-local, gitignored; `--junitxml`/JUnit XML shown as the canonical example, format-agnostic) — downstream-project guidance; skipped when the suite is trivial.
+- Reviewer verifies the artifact by cross-checking it against its own targeted re-run of touched-area tests; the one full independent suite run is reserved for the deep/final review.
+
+**Changed:**
+- Verify-don't-trust reasserted: review never accepts a test-report artifact in place of its own independent verification — the artifact is an optimization, not a substitute.
+
 ## [jackal-plan-and-execute] 3.5.0
 
 Dependency-aware phase fan-out: independent phases run in parallel; sequential stays the default (#25, R9).
