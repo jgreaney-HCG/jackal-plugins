@@ -46,6 +46,10 @@ files), what remains, and the exact next step. Never claim autonomous progress y
 with an on-disk observation, and never imply the work is further along than the committed state
 proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
 
+Commit-early (see step 5) is the other half of this: frequent green-state commits
+mean your honest stopping point is always a real, resumable commit on disk, not an
+uncommitted working tree.
+
 ## Process
 
 ### 1. Read and Understand
@@ -109,6 +113,16 @@ test: [what was tested]
 If the project's CLAUDE.md documents commit **scopes** (e.g. `feat(institutions):`,
 `fix(shared):`), use the scope for the module/area you touched. Bare `feat:`/`fix:` is for
 genuinely cross-cutting changes only.
+
+**Commit early, commit at every green.** Don't save all your commits for the end
+of a phase. Every time the work reaches a green intermediate state — a file
+compiles, a test starts passing, a sub-step is done — commit it. WIP commits are
+fine and expected; a squash-merge collapses them into one clean commit on merge,
+so intermediate WIP commits cost nothing and never reach main's history. This is
+insurance: if your session or the operator's credentials expire mid-phase, the
+committed checkpoints survive and the work is resumable from disk. An implementor
+phase that touches several files should show intermediate commits, not one
+end-of-phase commit.
 
 ### 6. Self-Review
 

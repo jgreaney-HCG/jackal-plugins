@@ -336,6 +336,37 @@ When the user says "go" / "execute the backlog" / "keep going": invoke the
 (reading the GitHub Issues backlog) and autonomously processes issues until
 stuck.
 
+## Credential pre-flight (before long dispatches)
+
+**Applies to the downstream project the loop is operating on, not this repo.**
+If the project the loop drives deploys to or reads from AWS with SSO/STS
+credentials, a dispatch expected to run **>10 min** can outlive the operator's
+session and lose uncommitted work. This plugins repo itself has no AWS creds and
+is never gated by this check — the snippet is guidance to emit into projects that
+do use AWS.
+
+Before any dispatch you expect to run >10 min, in a project that uses AWS creds:
+
+```bash
+# Who am I / are creds live at all?
+aws sts get-caller-identity || { echo "No valid AWS credentials — tell the human to re-auth (aws sso login) BEFORE dispatching."; }
+
+# Remaining lifetime, where obtainable. SSO sessions expose an expiry in the
+# cached token; STS assumed-role creds expose Expiration. Not every credential
+# type reports a machine-readable expiry — if none is available, fall back to
+# asking the operator when they last authenticated.
+aws configure export-credentials --format process 2>/dev/null | \
+  python3 -c 'import sys,json; d=json.load(sys.stdin); print("Expiration:", d.get("Expiration","<not reported>"))' 2>/dev/null \
+  || echo "Expiration not machine-readable for this credential type — confirm remaining session time with the operator."
+```
+
+**Decision rule:** if remaining lifetime `< (expected task duration + margin)`
+(use a margin of at least the dispatch's `EXPECT` window), **do not dispatch** —
+tell the human to re-authenticate (`aws sso login` or the project's documented
+re-auth) BEFORE the dispatch starts. A dispatch launched into a soon-to-expire
+session is the failure this check exists to prevent. Record the check in the
+transcript (AC5.1: every >=10-min dispatch is preceded by a credential check).
+
 ### Status Report
 
 ```bash
