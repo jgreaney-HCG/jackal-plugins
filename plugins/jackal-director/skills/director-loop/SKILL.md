@@ -65,6 +65,15 @@ verify-disk → instruct commit-and-report → resume-from-disk procedure docume
 in full in the `execute` skill's "Waiting for async work" section — this is a
 summary, not the canonical version.
 
+### Relay rule and reinforced non-goal
+
+The director never relays a subagent's progress or success claim without a
+same-turn, cited disk observation backing it — this is
+`verification-before-completion` applied to delegated work. No director message
+asserts progress unbacked by a same-turn disk-verified observation, even when
+skipping the check would be faster. The full relay rule lives in the `execute`
+skill's Mode 1 Process step 3c; this is a summary, not the canonical version.
+
 ## The haiku agents (detection layer)
 
 Four agents run on the small/fast model. They are deliberately confined to
