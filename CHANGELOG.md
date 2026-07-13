@@ -1,5 +1,12 @@
 # Changelog
 
+## [jackal-director] 1.3.0
+
+Director operating-discipline notes for autonomous cycles.
+
+**Changed:**
+- `director-loop` skill: added an "Operating discipline (autonomous cycles)" section covering a preventive metadata-commit routing note (adopt a PR/exception route before enforce_admins-style tightening; preserves the PR-only completion invariant — no observed violation) and a `/clear` context-growth discipline note for issue/PR boundaries.
+
 ## [jackal-director] 1.2.0
 
 Monorepo support: contracts no longer have to live in one central package. Driven by the ROAR

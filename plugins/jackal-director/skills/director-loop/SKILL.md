@@ -94,3 +94,31 @@ more precise, and that is itself worth recording.
   which the jackal design and planning skills already consume - so Director
   directives automatically constrain the *next* epic's planning. That closing
   of the loop is the entire point.
+
+## Operating discipline (autonomous cycles)
+
+### Metadata-commit routing (preventive)
+
+Backlog-metadata and issue-doc commits (labels, TODO.md bookkeeping, issue-doc
+edits) still need a clear route to main. This is preventive, not a fix: an
+audit of two full director sessions found zero direct-to-main pushes — every
+push went through a feature branch, and this repo already has branch
+protection on. The point is to decide the route *before* any further
+tightening (e.g. `enforce_admins`-style admin-enforced protection), not after
+it breaks something.
+
+- Pick one: a fast-tracked PR for metadata-only changes, or a deliberately
+  scoped and loudly-documented exception path. Either is fine; silence is not.
+- Whatever is chosen must not reintroduce a direct-to-main fast path, and must
+  preserve the "PR is the only completion path" invariant from the repo
+  CLAUDE.md (`finish` / `jackal-finish-branch` never merge locally). If a
+  bot/metadata exception is ever adopted, it must be a loud, explicit
+  opt-out — consistent with that same CLAUDE.md note — not a quiet default.
+
+### `/clear` context-growth discipline
+
+The director loop accumulates a large transcript over an autonomous run
+(audited median ~397K context per turn). At natural boundaries — a PR opens,
+or an issue closes — prefer `/clear` and re-invoking the relevant skill with
+the issue ID over continuing on a fat context, unless warm context is
+actively needed for the immediately-next issue.
