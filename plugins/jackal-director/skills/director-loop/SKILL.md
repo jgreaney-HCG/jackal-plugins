@@ -55,6 +55,16 @@ and appear in the one registry's Component Map.
    decision recorded as an ADR. Registry sections may be updated to track
    code, since code is the source of truth there.
 
+### Waiting for async work
+
+When the director waits on dispatched async work, it uses the event-driven
+watcher (`scripts/worktree-watcher.sh`), never scheduled foreground polling.
+Foreground sleeps are ≤100s, comfortably under the Bash tool's 120s timeout.
+Status is batched — no "still waiting" turns. A `STALLED` signal triggers the
+verify-disk → instruct commit-and-report → resume-from-disk procedure documented
+in full in the `execute` skill's "Waiting for async work" section — this is a
+summary, not the canonical version.
+
 ## The haiku agents (detection layer)
 
 Four agents run on the small/fast model. They are deliberately confined to
