@@ -86,6 +86,13 @@ If you find yourself about to write code, run `$TEST_CMD` for correctness, or gr
    b. Dispatch `implementor` per the continuation rules below
    c. Relay a **3-line summary** of the implementor's report (files, tests,
       commits). Keep the full report only if it flagged uncertainty or issues.
+      **Relay rule (verify-don't-trust for delegated work).** Never restate a subagent's success or
+      progress claim in your own status unless you have made a **same-turn on-disk observation** that
+      backs it (`git log`/`git diff`/reading the changed file this turn) and you cite that evidence.
+      An agent reporting "done" is a claim, not a fact — this is
+      `verification-before-completion` applied to delegated work (its "Agent completed → VCS diff
+      shows changes" / "Agent delegation: Agent reports success → Check VCS diff" rows). Cite it;
+      do not duplicate it.
    d. Decide whether to review (see Review Routing below). If the review finds
       **Critical** issues, mark continuation as reset for this issue (see
       Fallback Conditions) before moving to the next phase.
@@ -115,6 +122,17 @@ Implement this phase: read the phase file fully and follow its Context, Goal, an
 Coverage exactly. Write code, tests where applicable, run the project's verification
 commands, and commit your work.
 
+EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher is monitoring this
+worktree's HEAD; going silent past EXPECT triggers a STALLED recovery). If you cannot finish
+within EXPECT, commit what compiles and report your honest stopping point.
+
+**Honest stopping point.** If you stop before the unit of work is fully done — context limit,
+ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
+**resumable, disk-truthful** stopping point: what landed on disk (cite the commit SHA and changed
+files), what remains, and the exact next step. Never claim autonomous progress you cannot back
+with an on-disk observation, and never imply the work is further along than the committed state
+proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
+
 Do not dispatch or invoke any subagents — do the work directly with your own tools.
 </parameter>
 </invoke>
@@ -136,6 +154,17 @@ PHASE_FILE: [path to phase_0N.md]
 
 Treat this phase file as the complete spec for this phase. Implement it, test it,
 verify it, and commit on the current branch.
+
+EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher is monitoring this
+worktree's HEAD; going silent past EXPECT triggers a STALLED recovery). If you cannot finish
+within EXPECT, commit what compiles and report your honest stopping point.
+
+**Honest stopping point.** If you stop before the unit of work is fully done — context limit,
+ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
+**resumable, disk-truthful** stopping point: what landed on disk (cite the commit SHA and changed
+files), what remains, and the exact next step. Never claim autonomous progress you cannot back
+with an on-disk observation, and never imply the work is further along than the committed state
+proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
 
 Do not dispatch or invoke any subagents — do the work directly with your own tools.
 </parameter>
@@ -338,6 +367,9 @@ Print one line:
 ```
 
 ### Stop Conditions
+
+**Reinforced non-goal.** No director message asserts progress unbacked by a same-turn
+disk-verified observation — even when skipping the check would be faster.
 
 Stop the loop and report to human when:
 - No unblocked issues remain in Ready/Backlog
