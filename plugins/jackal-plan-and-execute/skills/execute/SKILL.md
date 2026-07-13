@@ -379,6 +379,45 @@ Both run concurrently. When both return:
 
 ---
 
+## Waiting for async work
+
+The watcher **augments** `SendMessage` continuation above — it does not replace it.
+`SendMessage` is still the default for in-band phase-to-phase resume; reach for the
+watcher only for genuinely long-running or async phases.
+
+1. **Watcher.** Launch `scripts/worktree-watcher.sh <worktree> <signal-file>
+   <expect-seconds>` as a **background task** and end the foreground turn. It
+   polls the worktree's HEAD every 60s inside the background task (that internal
+   poll is exempt from the sleep rule below — do not "fix" it) and wakes you only
+   on a real event: `NEW_COMMIT <sha>` when HEAD advances, or `STALLED <agent>
+   <window>` when EXPECT elapses with no new commit — then it exits, and that
+   completion is what generates your task-notification. Your context is touched
+   only on a real notification, never on a schedule.
+
+2. **Hard rule — never foreground-sleep to the timeout.** The Bash tool has a
+   **120s default timeout** (a foreground `sleep 120` or longer returns exit 143 /
+   SIGTERM, wasting the turn). Any foreground wait you schedule must be **≤100s**,
+   comfortably under the 120s ceiling. Prefer the watcher (event-driven,
+   background) over any foreground sleep at all.
+
+3. **Batched status.** Emit at most one narration per meaningful state change
+   (dispatch launched; watcher fired `NEW_COMMIT`; watcher fired `STALLED`; phase
+   reviewed). "Still waiting" / "checking again" turns are prohibited — if
+   nothing changed, say nothing and let the watcher wake you.
+
+4. **On a `STALLED` notification:**
+   1. **Verify disk state** — inspect the worktree (git log / git status / read
+      the changed files) to establish what actually landed, per
+      `verification-before-completion` — never trust the absence of a commit as
+      proof of no work.
+   2. **Instruct commit-and-report** — `SendMessage` the named agent to commit
+      whatever is done and report a resumable stopping point.
+   3. **If unrecoverable, resume from disk** — start a fresh cold implementor
+      dispatch seeded from the on-disk state (same posture as the Fallback
+      Conditions above), never from the stalled agent's unverified claims.
+
+---
+
 ## Worktree Management
 
 Every issue gets its own worktree:
