@@ -1,5 +1,23 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.3.0
+
+Enforce explicit model tiering + credential pre-flight + commit-early discipline (#22, R4+R5).
+
+**New:**
+- Every `<invoke name="Agent">` dispatch in the execute, plan, review, design, and finish skills now carries an explicit `<parameter name="model">`; a model-unspecified dispatch is declared a defect.
+- Model Tier Table (planner=Opus, implementor=Sonnet, reviewer=Sonnet, reviewer-deep=Opus, contract-sentinel=Sonnet, lexicon-warden=Sonnet, doc-render/research=Sonnet) in the execute skill, with a footnote reconciling the sentinel/warden `model: haiku` frontmatter (dispatch sites live in jackal-director — deferred follow-up).
+- Credential pre-flight (`aws sts get-caller-identity` + remaining-lifetime check) before any dispatch expected to run >10 min — framed as generic guidance for downstream projects, not a gate on this repo.
+- Commit-early clause in the implementor prompt: commit at every green intermediate state so credential expiry or a stall can't destroy uncommitted work.
+
+## [jackal-supervisor] 3.2.0
+
+Model tiering + credential pre-flight (#22, R4+R5).
+
+**New:**
+- Model Tiers section mirroring the execute skill's tier table; every supervisor dispatch specifies `model` explicitly.
+- Credential pre-flight guidance before long-running dispatches (downstream-project scope).
+
 ## [jackal-supervisor] 3.1.1
 
 Promote operational lessons from director memory into shared skill/agent text (#21).
