@@ -89,6 +89,14 @@ Run and report results:
 
 If anything fails, fix it before proceeding. Iterate until green.
 
+**Formatting.** If the project uses Ruff (a `pyproject.toml`/`ruff.toml`/`.ruff.toml`
+is present, or its CLAUDE.md names ruff), run `ruff format .` and `ruff check --fix .`
+before committing, and re-run the test command afterward. Formatting is part of
+"green" — never commit code that the project's formatter would rewrite. For
+non-Python projects, run the project's configured formatter/linter (Prettier,
+gofmt, etc.) under the same rule. If no formatter is configured, skip this — do
+not introduce one.
+
 ### 5. Commit
 
 One commit per logical unit of work. Use conventional commit format:
