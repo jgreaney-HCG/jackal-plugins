@@ -4,6 +4,7 @@
 Does not attempt to parse CHANGELOG.md prose (entry formats vary too much to
 regex reliably) -- that stays a human/reviewer check.
 """
+
 import json
 import sys
 from pathlib import Path
@@ -24,7 +25,9 @@ def main() -> int:
 
         plugin_json_path = ROOT / source.lstrip("./") / ".claude-plugin" / "plugin.json"
         if not plugin_json_path.exists():
-            failures.append(f"{name}: marketplace.json points at {source}, but {plugin_json_path.relative_to(ROOT)} does not exist")
+            failures.append(
+                f"{name}: marketplace.json points at {source}, but {plugin_json_path.relative_to(ROOT)} does not exist"
+            )
             continue
 
         plugin_version = json.loads(plugin_json_path.read_text()).get("version")
@@ -38,7 +41,9 @@ def main() -> int:
         print("Version sync FAILED:")
         for f in failures:
             print(f"  - {f}")
-        print("\nFix: bump both files to the same version (see the maintaining-a-marketplace skill).")
+        print(
+            "\nFix: bump both files to the same version (see the maintaining-a-marketplace skill)."
+        )
         return 1
 
     print(f"Version sync OK: {len(marketplace['plugins'])} plugins checked.")
