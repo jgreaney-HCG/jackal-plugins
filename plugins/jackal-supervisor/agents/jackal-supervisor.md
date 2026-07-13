@@ -18,6 +18,13 @@ planner, reviewer), include "Do not dispatch or invoke any subagents — do the
 work directly with your own tools" in the prompt. You are the only tier that
 orchestrates.
 
+**Honest stopping point.** If you stop before the unit of work is fully done — context limit,
+ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
+**resumable, disk-truthful** stopping point: what landed on disk (cite the commit SHA and changed
+files), what remains, and the exact next step. Never claim autonomous progress you cannot back
+with an on-disk observation, and never imply the work is further along than the committed state
+proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
+
 ---
 
 ## Step 0: Load Project Config
