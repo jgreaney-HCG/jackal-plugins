@@ -314,14 +314,23 @@ the issue with `Refs`/`#NN` (not `Closes`) leaves it OPEN with a stale
 cycle (the GL-347 failure).
 
 ```bash
+# Exact signal first — catches Closes/Fixes-style closures:
+gh issue view "$N" --repo "$GH_REPO" --json closedByPullRequestsReferences
+# Candidate filter for Refs/#NN-style references the exact signal misses —
+# raw substring search, NOT confirmation (searching "3" also matches
+# "3.2.0", "#13", "#23", dates, etc.):
 gh pr list --repo "$GH_REPO" --state merged --search "$N" \
-  --json number,url,mergedAt   # per candidate issue #N
+  --json number,url,body,mergedAt
 ```
 
-If a merged PR delivered the candidate, drop it from selection and surface it in
-a **stale-open — close these** list (do not auto-close during the loop —
-report it; closing is a supervisor hygiene action). Only issues with no
-delivering merged PR proceed to priority ordering below.
+A non-empty `closedByPullRequestsReferences` confirms delivery. A search hit is
+only a candidate — do not treat it as delivery confirmation until you have
+opened a matched PR's title/body and seen an explicit `Closes`/`Fixes`/`Refs
+#<N>` for this exact issue number (not a substring). If delivery is confirmed
+by either check, drop the candidate from selection and surface it in a
+**stale-open — close these** list (do not auto-close during the loop — report
+it; closing is a supervisor hygiene action). Only issues with no confirmed
+delivering PR proceed to priority ordering below.
 
 Determine priority order from the `priority/*` label (`priority/high` > `priority/medium` > `priority/low`), falling back to issue number (lower = older = first) when a candidate has no priority label. Issues with no `priority/*` label sort *after* labelled ones at the same tier — flag any unprioritized `status/ready` issue so the backlog stays orderable.
 

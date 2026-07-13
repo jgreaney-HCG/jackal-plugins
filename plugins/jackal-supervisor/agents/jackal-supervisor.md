@@ -100,17 +100,23 @@ label — ranking it wastes a whole assignment cycle (this is the GL-347 failure
 For each candidate OPEN issue `#N`:
 
 ```bash
+# Exact signal first — catches Closes/Fixes-style closures:
+gh issue view "$N" --repo "$GH_REPO" --json closedByPullRequestsReferences
+# Candidate filter for Refs/#NN-style references the exact signal misses —
+# this is a raw substring search, NOT confirmation (a search for "3" also
+# matches "3.2.0", "#13", "#23", dates, etc.):
 gh pr list --repo "$GH_REPO" --state merged --search "$N" \
-  --json number,title,url,mergedAt
-# Also catch body/branch references the search may miss:
-gh pr list --repo "$GH_REPO" --state merged \
-  --search "in:body $N" --json number,url
+  --json number,title,url,body,mergedAt
 ```
 
-- **A merged PR delivers `#N`** (its title/body/branch names the issue, or the
-  work is clearly shipped) → **do not rank it.** Move it to a separate
-  **stale-open — close these** list.
-- **No merged PR** → the issue is genuinely open; proceed to ranking.
+- **`closedByPullRequestsReferences` is non-empty** → confirmed delivered.
+  **Do not rank it.** Move it to a separate **stale-open — close these** list.
+- **The search returns candidates** → **do not treat the hit as delivery.**
+  Open each matched PR's title/body and confirm it contains an explicit
+  `Closes`/`Fixes`/`Refs #<N>` for this **exact** issue number (not a
+  substring match) before treating `#N` as delivered. No confirmed reference
+  in any matched PR → the issue is genuinely open; proceed to ranking.
+- **No search hits at all** → the issue is genuinely open; proceed to ranking.
 
 Emit the stale-open list as its own block, distinct from the ranked ready queue:
 
