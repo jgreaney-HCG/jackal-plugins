@@ -79,6 +79,44 @@ If you find yourself about to write code, run `$TEST_CMD` for correctness, or gr
 
 ---
 
+## Orchestration Topology
+
+**Flat is the default.** The default orchestration shape is flat: the director/orchestrator
+dispatches worker agents (`implementor`, `reviewer`, `planner`, research) directly. There is no
+intermediate supervisor tier between the orchestrator and its workers by default.
+
+The **GL-488 per-phase warm-context `SendMessage` pattern** — documented above in "Implementor
+Dispatch: Named Continuation" (Mode 1) — is the reference implementation of flat topology: one
+named worker dispatched cold on phase 1 and resumed via `SendMessage` for phases 2..N, keeping
+context warm without a supervisor tier in between.
+
+**The middle-tier exception requires written justification.** A middle supervisor tier (an
+`Agent`-holding orchestrator dispatched *by* the orchestrator — a nested supervisor) is a
+deliberate exception, not a default. Before dispatching one, the orchestrator MUST write a
+**one-sentence justification in the Agent dispatch prompt itself**, stating what that tier
+provides that flat dispatch plus accumulated orchestrator memory cannot (e.g. genuinely
+independent multi-issue fan-out beyond what parallel named workers can coordinate). A
+nested-supervisor dispatch **without** that justification sentence in the prompt is a **defect**,
+in the same sense the model-omission and unbacked-relay lapses are defects elsewhere in this skill
+— not a stylistic lapse.
+
+**When a middle tier IS used, R2's liveness contract applies with stricter windows.** See
+"Waiting for async work" below for the watcher / `EXPECT` / `STALLED` mechanism — do not
+duplicate it here. A nested-supervisor dispatch uses a **stricter (shorter) `EXPECT` window**
+than a leaf worker dispatch: a mistake in a middle tier compounds down to every worker it fans
+out to, so it must prove liveness sooner. (The audited sweep session's nested Opus supervisor
+produced a wrong first deliverable and is where that session's "lost agent" stall arose.)
+
+**Reconciliation with CLAUDE.md.** CLAUDE.md's rule that `jackal-supervisor` is the sole
+orchestrator tier remains the default and is unchanged by this section. This topology policy is
+the **documented exception** to it: flat-by-default, with the narrow, justification-gated
+nested-supervisor tier above as the single sanctioned exception. The two documents agree —
+CLAUDE.md sets the default, this section defines the one narrow carve-out and its guard. No new
+orchestrator agent is introduced and no worker gains the `Agent` tool; the only `Agent`-holder
+remains `jackal-supervisor`.
+
+---
+
 ## Model Tier Table
 
 Every Agent dispatch picks its model from this table. The dispatch-site
