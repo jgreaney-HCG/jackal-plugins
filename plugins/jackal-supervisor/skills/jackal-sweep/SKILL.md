@@ -98,4 +98,11 @@ Swept: [n] worktrees removed, [n] branches deleted, main fast-forwarded to [sha]
 Needs rebase: #NN (BEHIND), #MM (DIRTY — conflicts)
 Unfinished:  feat/31-bar (12 commits, no PR)
 Kept (open PRs): #22, #27
+Stale-open (delivered by a merged PR, still OPEN — close, don't rank): #NN (PR #MM)
 ```
+
+> **Stale-open issues.** This sweep reclaims *worktrees/branches*. Ranking a
+> candidate OPEN issue that a merged PR already delivered is prevented by the
+> **Merged-PR gate** in the jackal-supervisor agent ("Reading the backlog") and
+> the `execute` skill (Step 4). If you spot a delivered-but-open issue here,
+> list it under Stale-open and close it with `gh issue close <#> --reason completed`.

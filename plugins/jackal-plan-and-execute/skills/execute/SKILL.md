@@ -307,6 +307,22 @@ Compare active branch file sets against candidate's `In scope:` paths.
 
 ### Step 4: Select Work
 
+**Merged-PR gate (before ranking).** For every candidate OPEN issue, cross-check
+merged PRs before it enters priority ordering — a squash-merge that referenced
+the issue with `Refs`/`#NN` (not `Closes`) leaves it OPEN with a stale
+`status/in-progress` label. Ranking a delivered issue burns a full assignment
+cycle (the GL-347 failure).
+
+```bash
+gh pr list --repo "$GH_REPO" --state merged --search "$N" \
+  --json number,url,mergedAt   # per candidate issue #N
+```
+
+If a merged PR delivered the candidate, drop it from selection and surface it in
+a **stale-open — close these** list (do not auto-close during the loop —
+report it; closing is a supervisor hygiene action). Only issues with no
+delivering merged PR proceed to priority ordering below.
+
 Determine priority order from the `priority/*` label (`priority/high` > `priority/medium` > `priority/low`), falling back to issue number (lower = older = first) when a candidate has no priority label. Issues with no `priority/*` label sort *after* labelled ones at the same tier — flag any unprioritized `status/ready` issue so the backlog stays orderable.
 
 If multiple candidates are unblocked and clear:

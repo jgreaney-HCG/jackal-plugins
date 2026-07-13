@@ -59,6 +59,41 @@ Group by label: `status/ready` → eligible · `status/in-progress` → active (
 double-pick) · `status/blocked` → skip · `status/paused` → resumable. Issues with
 no `status/*` label are unscoped backlog.
 
+### Merged-PR gate (run before ranking — never rank a delivered issue)
+
+Before ranking or selecting any candidate OPEN issue, cross-check it against
+merged PRs. Squash-merges that reference an issue with `Refs`/`#NN` (not
+`Closes #NN`) leave the delivered issue OPEN with a stale `status/in-progress`
+label — ranking it wastes a whole assignment cycle (this is the GL-347 failure).
+
+For each candidate OPEN issue `#N`:
+
+```bash
+gh pr list --repo "$GH_REPO" --state merged --search "$N" \
+  --json number,title,url,mergedAt
+# Also catch body/branch references the search may miss:
+gh pr list --repo "$GH_REPO" --state merged \
+  --search "in:body $N" --json number,url
+```
+
+- **A merged PR delivers `#N`** (its title/body/branch names the issue, or the
+  work is clearly shipped) → **do not rank it.** Move it to a separate
+  **stale-open — close these** list.
+- **No merged PR** → the issue is genuinely open; proceed to ranking.
+
+Emit the stale-open list as its own block, distinct from the ranked ready queue:
+
+```
+Stale-open (delivered by a merged PR — close, don't rank):
+  #347  (delivered by merged PR #351)  → gh issue close 347 --reason completed
+Ready (ranked):
+  #360 (priority/high), #362 (priority/medium), ...
+```
+
+Closing is a hygiene action — surface it; apply with the user's confirmation
+(same posture as Backlog Groom). Never rank an issue this gate flagged as
+delivered.
+
 ---
 
 ## Branch & worktree naming
@@ -325,6 +360,9 @@ time away. Audit and report — fix with the user's confirmation:
    every child is closed but the epic is open; issues with no epic linkage.
 6. **PRs needing rebase:** `mergeStateStatus` `BEHIND`/`DIRTY` → list with the
    rebase command per branch.
+7. **Stale-open (delivered, still open):** OPEN issue whose work shipped in a
+   merged PR (see the Merged-PR gate under "Reading the backlog") → list under
+   **stale-open — close these**; never rank. Close with confirmation.
 
 Output a compact table (issue/branch, problem, proposed fix), apply approved
 fixes, done. Do not create or close issues during a groom without confirmation.
