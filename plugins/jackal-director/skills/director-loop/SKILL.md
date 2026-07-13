@@ -55,6 +55,25 @@ and appear in the one registry's Component Map.
    decision recorded as an ADR. Registry sections may be updated to track
    code, since code is the source of truth there.
 
+### Waiting for async work
+
+When the director waits on dispatched async work, it uses the event-driven
+watcher (`scripts/worktree-watcher.sh`), never scheduled foreground polling.
+Foreground sleeps are ≤100s, comfortably under the Bash tool's 120s timeout.
+Status is batched — no "still waiting" turns. A `STALLED` signal triggers the
+verify-disk → instruct commit-and-report → resume-from-disk procedure documented
+in full in the `execute` skill's "Waiting for async work" section — this is a
+summary, not the canonical version.
+
+### Relay rule and reinforced non-goal
+
+The director never relays a subagent's progress or success claim without a
+same-turn, cited disk observation backing it — this is
+`verification-before-completion` applied to delegated work. No director message
+asserts progress unbacked by a same-turn disk-verified observation, even when
+skipping the check would be faster. The full relay rule lives in the `execute`
+skill's Mode 1 Process step 3c; this is a summary, not the canonical version.
+
 ## The haiku agents (detection layer)
 
 Four agents run on the small/fast model. They are deliberately confined to

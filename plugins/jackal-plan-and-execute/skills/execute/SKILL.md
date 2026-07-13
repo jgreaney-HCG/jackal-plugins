@@ -86,6 +86,13 @@ If you find yourself about to write code, run `$TEST_CMD` for correctness, or gr
    b. Dispatch `implementor` per the continuation rules below
    c. Relay a **3-line summary** of the implementor's report (files, tests,
       commits). Keep the full report only if it flagged uncertainty or issues.
+      **Relay rule (verify-don't-trust for delegated work).** Never restate a subagent's success or
+      progress claim in your own status unless you have made a **same-turn on-disk observation** that
+      backs it (`git log`/`git diff`/reading the changed file this turn) and you cite that evidence.
+      An agent reporting "done" is a claim, not a fact — this is
+      `verification-before-completion` applied to delegated work (its "Agent completed → VCS diff
+      shows changes" / "Agent delegation: Agent reports success → Check VCS diff" rows). Cite it;
+      do not duplicate it.
    d. Decide whether to review (see Review Routing below). If the review finds
       **Critical** issues, mark continuation as reset for this issue (see
       Fallback Conditions) before moving to the next phase.
@@ -115,6 +122,17 @@ Implement this phase: read the phase file fully and follow its Context, Goal, an
 Coverage exactly. Write code, tests where applicable, run the project's verification
 commands, and commit your work.
 
+EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher is monitoring this
+worktree's HEAD; going silent past EXPECT triggers a STALLED recovery). If you cannot finish
+within EXPECT, commit what compiles and report your honest stopping point.
+
+**Honest stopping point.** If you stop before the unit of work is fully done — context limit,
+ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
+**resumable, disk-truthful** stopping point: what landed on disk (cite the commit SHA and changed
+files), what remains, and the exact next step. Never claim autonomous progress you cannot back
+with an on-disk observation, and never imply the work is further along than the committed state
+proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
+
 Do not dispatch or invoke any subagents — do the work directly with your own tools.
 </parameter>
 </invoke>
@@ -136,6 +154,17 @@ PHASE_FILE: [path to phase_0N.md]
 
 Treat this phase file as the complete spec for this phase. Implement it, test it,
 verify it, and commit on the current branch.
+
+EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher is monitoring this
+worktree's HEAD; going silent past EXPECT triggers a STALLED recovery). If you cannot finish
+within EXPECT, commit what compiles and report your honest stopping point.
+
+**Honest stopping point.** If you stop before the unit of work is fully done — context limit,
+ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
+**resumable, disk-truthful** stopping point: what landed on disk (cite the commit SHA and changed
+files), what remains, and the exact next step. Never claim autonomous progress you cannot back
+with an on-disk observation, and never imply the work is further along than the committed state
+proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
 
 Do not dispatch or invoke any subagents — do the work directly with your own tools.
 </parameter>
@@ -339,6 +368,9 @@ Print one line:
 
 ### Stop Conditions
 
+**Reinforced non-goal.** No director message asserts progress unbacked by a same-turn
+disk-verified observation — even when skipping the check would be faster.
+
 Stop the loop and report to human when:
 - No unblocked issues remain in Ready/Backlog
 - All unblocked issues are Complex
@@ -376,6 +408,45 @@ Both run concurrently. When both return:
 - Finish each (rebase if behind, push, PR) — higher-priority first
 - If the second branch conflicts with the first's PR, note it in the second PR's
   body; after the first merges, rebase the second and force-push its branch
+
+---
+
+## Waiting for async work
+
+The watcher **augments** `SendMessage` continuation above — it does not replace it.
+`SendMessage` is still the default for in-band phase-to-phase resume; reach for the
+watcher only for genuinely long-running or async phases.
+
+1. **Watcher.** Launch `scripts/worktree-watcher.sh <worktree> <signal-file>
+   <expect-seconds>` as a **background task** and end the foreground turn. It
+   polls the worktree's HEAD every 60s inside the background task (that internal
+   poll is exempt from the sleep rule below — do not "fix" it) and wakes you only
+   on a real event: `NEW_COMMIT <sha>` when HEAD advances, or `STALLED <agent>
+   <window>` when EXPECT elapses with no new commit — then it exits, and that
+   completion is what generates your task-notification. Your context is touched
+   only on a real notification, never on a schedule.
+
+2. **Hard rule — never foreground-sleep to the timeout.** The Bash tool has a
+   **120s default timeout** (a foreground `sleep 120` or longer returns exit 143 /
+   SIGTERM, wasting the turn). Any foreground wait you schedule must be **≤100s**,
+   comfortably under the 120s ceiling. Prefer the watcher (event-driven,
+   background) over any foreground sleep at all.
+
+3. **Batched status.** Emit at most one narration per meaningful state change
+   (dispatch launched; watcher fired `NEW_COMMIT`; watcher fired `STALLED`; phase
+   reviewed). "Still waiting" / "checking again" turns are prohibited — if
+   nothing changed, say nothing and let the watcher wake you.
+
+4. **On a `STALLED` notification:**
+   1. **Verify disk state** — inspect the worktree (git log / git status / read
+      the changed files) to establish what actually landed, per
+      `verification-before-completion` — never trust the absence of a commit as
+      proof of no work.
+   2. **Instruct commit-and-report** — `SendMessage` the named agent to commit
+      whatever is done and report a resumable stopping point.
+   3. **If unrecoverable, resume from disk** — start a fresh cold implementor
+      dispatch seeded from the on-disk state (same posture as the Fallback
+      Conditions above), never from the stalled agent's unverified claims.
 
 ---
 

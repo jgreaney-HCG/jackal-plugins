@@ -37,6 +37,15 @@ is warm):
 A fresh (cold) dispatch, as always, receives full context in-prompt and carries
 no assumptions about prior phases.
 
+### Honest Stopping Point
+
+**Honest stopping point.** If you stop before the unit of work is fully done — context limit,
+ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
+**resumable, disk-truthful** stopping point: what landed on disk (cite the commit SHA and changed
+files), what remains, and the exact next step. Never claim autonomous progress you cannot back
+with an on-disk observation, and never imply the work is further along than the committed state
+proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
+
 ## Process
 
 ### 1. Read and Understand
