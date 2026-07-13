@@ -14,10 +14,25 @@ WORKTREE="${1:?usage: worktree-watcher.sh <worktree-path> <signal-file> <expect-
 SIGNAL="${2:?usage: worktree-watcher.sh <worktree-path> <signal-file> <expect-seconds>}"
 EXPECT="${3:?usage: worktree-watcher.sh <worktree-path> <signal-file> <expect-seconds>}"
 
+case "$EXPECT" in
+  ''|*[!0-9]*|0)
+    echo "usage: worktree-watcher.sh <worktree-path> <signal-file> <expect-seconds>" >&2
+    echo "error: <expect-seconds> must be a positive integer, got: $EXPECT" >&2
+    exit 1
+    ;;
+esac
+
 POLL_INTERVAL=60
 AGENT="$(basename "$WORKTREE")"
 
 head_sha() { git -C "$WORKTREE" rev-parse HEAD 2>/dev/null; }
+
+write_signal() {
+  # Atomic write: build the line in a temp file, then mv into place, so any
+  # reader of $SIGNAL never observes a zero-length or partially written file.
+  printf '%s\n' "$1" > "$SIGNAL.tmp"
+  mv "$SIGNAL.tmp" "$SIGNAL"
+}
 
 start_sha="$(head_sha)"
 elapsed=0
@@ -28,12 +43,12 @@ while :; do
 
   current="$(head_sha)"
   if [ -n "$current" ] && [ "$current" != "$start_sha" ]; then
-    printf 'NEW_COMMIT %s\n' "$current" > "$SIGNAL"
+    write_signal "NEW_COMMIT $current"
     exit 0
   fi
 
   if [ "$elapsed" -ge "$EXPECT" ]; then
-    printf 'STALLED %s %s\n' "$AGENT" "$EXPECT" > "$SIGNAL"
+    write_signal "STALLED $AGENT $EXPECT"
     exit 0
   fi
 done
