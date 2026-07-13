@@ -1,5 +1,31 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.4.0
+
+Flat orchestration topology by default; justification-gated middle tier (#19, R3).
+
+**New:**
+- `execute` skill gains an `## Orchestration Topology` section: flat (director → workers) is the
+  default, with the GL-488 per-phase warm-context `SendMessage` named-continuation pattern named as
+  the reference implementation.
+- A middle supervisor tier now requires a one-sentence written justification in the Agent dispatch
+  prompt (what the tier provides that flat dispatch + memory cannot); a nested-supervisor dispatch
+  without it is declared a defect.
+- When a middle tier is used, R2's liveness contract applies with a stricter (shorter) `EXPECT`
+  window — cross-referenced, not duplicated.
+- Explicit reconciliation with the repo CLAUDE.md sole-orchestrator rule, written into the skill
+  text: flat-by-default + the narrow, justification-gated nested-supervisor tier as the documented
+  exception (CLAUDE.md itself unchanged).
+
+## [jackal-supervisor] 3.3.0
+
+Sweeps run flat, not under a nested Opus supervisor (#19, R3).
+
+**New:**
+- `jackal-sweep` skill directs backlog sweeps to run as direct director work or at most a single
+  Sonnet research dispatch — never a nested Opus supervisor — unless justified per the `execute`
+  skill's Orchestration Topology policy (one-sentence justification + stricter liveness window).
+
 ## [jackal-plan-and-execute] 3.3.0
 
 Enforce explicit model tiering + credential pre-flight + commit-early discipline (#22, R4+R5).
