@@ -51,19 +51,42 @@ Bash/Grep/Glob/Write: no repo access, by design), used only by the automated rev
 design/plan/execute work (read canon before designing, impact statements with
 the plan, `/jackal-director:contract-check` before the PR).
 
-## Contracts: Python and TypeScript
+## Contracts: single package or per-component
 
-The registry header names the contracts package and the schema exporter; both
-can also be set project-wide in `## Jackal Config`:
+Two registry modes, both Python and TypeScript:
 
-```
-contracts_pkg: contracts/           # or ui/src/contracts/
-schema_export_cmd: python -m contracts.export_schemas   # or: npm run export-schemas
-```
+- **Single contracts package** — the registry header names the package and
+  the schema exporter; both can also be set project-wide in `## Jackal
+  Config`:
+
+  ```
+  contracts_pkg: contracts/           # or ui/src/contracts/
+  schema_export_cmd: python -m contracts.export_schemas   # or: npm run export-schemas
+  ```
+
+- **Per-component contracts** (monorepos where each module owns its published
+  models, e.g. `packages/modules/*/…/api/contracts.py`) — the header says
+  `Contracts: per-component` and the registry's Component Map carries a
+  `Contract source` path and optional `Exporter` command per row. The agents
+  iterate the rows.
+
+Registry sections are either **detailed** (full field table — for shared
+contracts with no better home) or an **index** (a `Source:` line pointing at
+the owning component's model file, which stays the source of truth — the norm
+in per-component mode, since transcribing fields would create the drift the
+checker exists to catch).
 
 Any exporter works as long as it emits one JSON Schema per contract model —
 `model_json_schema()` for Pydantic, a typebox/zod export script for TypeScript.
 The drift checker compares JSON Schemas; it never parses source.
+
+**One canon per repo, even in a monorepo.** Per-module canons are an
+anti-pattern: the loop polices the seams between components, which a
+per-module canon cannot see, and N glossaries drift. The per-component
+registry rows are the monorepo affordance. Repos that already machine-enforce
+boundaries (import-linter, ESLint boundary rules) record that in the registry
+header's `Boundary enforcement:` line — canon declares the invariant, the
+linter enforces it, and disagreement between them is a director-packet item.
 
 ## Setup
 

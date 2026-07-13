@@ -46,12 +46,15 @@ read-only git commands:
 git log --oneline --stat <range>
 git log --format='%h %ad %s' --date=short <range>
 git diff --stat <range>
-git diff <range> -- contracts/ docs/canon/
+git diff <range> -- <contract source paths> docs/canon/
 ```
 
-Read `docs/canon/registry.md` (first section only) to learn the component
-names so you can group changes by component. If it does not exist, group by
-top-level directory.
+Read `docs/canon/registry.md` (header + Component Map only) to learn the
+component names, so you can group changes by component, and the contract
+source paths: every non-`-` `Contract source` cell in the Component Map if
+that column exists, else the header's `Contracts package:` path, else
+`contracts/`. If the registry does not exist, group by top-level directory
+and use `contracts/` as the only contract source path.
 
 # Output format (exact)
 
@@ -68,8 +71,8 @@ Grouped by component. One line per coherent change (may span commits).
 - <component>: <what changed> (<sha>, <sha>)
 
 ## Contracts Touched
-Any change under contracts/ or to files the registry lists as boundary
-modules.
+Any change under a contract source path or to files the registry lists as
+boundary modules.
 - <contract or module>: <fields/functions added/removed/changed> (<sha>)
 
 ## Canon Changes
@@ -82,7 +85,7 @@ Only items with direct textual evidence:
 - Commit messages containing: deviat, workaround, hack, temporary, TODO,
   revert, hotfix (<sha>, quote the phrase)
 - Reverted or re-landed commits (<sha>)
-- Changes to contracts/ with no matching entry under docs/canon/impact/ (path)
+- Changes to a contract source with no matching entry under docs/canon/impact/ (path)
 
 ## ESCALATE
 Items a reviewer must look at. Each entry: evidence quote + location. No

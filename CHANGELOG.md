@@ -1,5 +1,42 @@
 # Changelog
 
+## [jackal-director] 1.2.0
+
+Monorepo support: contracts no longer have to live in one central package. Driven by the ROAR
+governance comparison (per-module contracts, existing `docs/standards/` + import-linter layer).
+
+**New:**
+- Per-component contract sources: the registry's Component Map may carry `Contract source` and
+  `Exporter` columns; `registry-drift-checker`, `contract-sentinel`, and `delta-scribe` resolve
+  contract paths from those rows when present, falling back to the single contracts package
+  header (which keeps working unchanged).
+- Registry-as-index sections: a contract section with a `Source:` line and no fields table
+  delegates field-level truth to the referenced model file; the drift checker audits the
+  reference (path exists, model defined there) instead of mirroring fields.
+- `Boundary enforcement:` registry header line for repos that already machine-enforce
+  boundaries (import-linter, ESLint boundary rules); `canon-init` detects such tooling and
+  `contract-check` reports C3 as a second witness — drift between sentinel and linter is a
+  director-packet item.
+
+**Changed:**
+- `canon-init` now documents "one canon per repo, even in a monorepo" (per-module canons are an
+  anti-pattern; the per-component registry is the monorepo affordance), seeds the glossary from
+  curated docs (`docs/standards/`, CLAUDE.md Contracts/Invariants sections) before falling back
+  to a frequency grep, layers on top of existing standards docs instead of duplicating them, and
+  drops `.gitkeep` files into `reports/` and `packets/` so the scaffolded tree survives a fresh
+  clone.
+- `director-loop` skill and README describe both registry modes and the one-canon rule.
+
+## [jackal-plan-and-execute] 3.1.1
+
+Wording sync with jackal-director 1.2.0's per-component contract sources.
+
+**Changed:**
+- `design`, `execute`, and `review` skills and `reviewer-deep` now say "contract sources" (the
+  contracts package or per-component contract files named in `docs/canon/registry.md`) wherever
+  they previously assumed a single contracts package for impact statements and review-tier
+  routing.
+
 ## [jackal-supervisor] 3.0.3
 
 Graceful complexity-routing fallback instead of telling the user to re-run a different command.

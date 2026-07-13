@@ -17,11 +17,19 @@ documents mechanically, and apply directives faithfully.
 
 ## Canon (docs/canon/)
 
+There is exactly one canon per repo, at the repo root — a monorepo included.
+The loop polices the seams *between* components, which per-component canons
+cannot see; components keep their contract detail in their own code and docs
+and appear in the one registry's Component Map.
+
 - `charter.md` - what the system is, its components, design theory,
   invariants. The Director's constitution.
-- `registry.md` - every inter-component contract, generated/audited against
-  the Pydantic models in the contracts package. **Code is the source of
-  truth; the registry is the audited map.**
+- `registry.md` - every inter-component contract, audited against the typed
+  contract models it names: a single contracts package, or per-component
+  contract sources listed in its Component Map. Sections are either detailed
+  field tables (shared contracts with no better home) or index references to
+  the owning component's model file. **Code is the source of truth; the
+  registry is the audited map.**
 - `glossary.md` - the ubiquitous language. `Never:` lines list forbidden
   synonyms.
 - `adr/` - architecture decision records.
