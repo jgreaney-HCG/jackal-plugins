@@ -79,6 +79,52 @@ If you find yourself about to write code, run `$TEST_CMD` for correctness, or gr
 
 ---
 
+## Model Tier Table
+
+Every Agent dispatch picks its model from this table. The dispatch-site
+`<parameter name="model">` is authoritative — it overrides the target agent's
+frontmatter `model:` for that invocation. A dispatch that omits `model` is a
+defect (see "Subagent discipline" above).
+
+| Dispatched agent | Tier | `model` param |
+|---|---|---|
+| `planner` | Opus | `opus` |
+| `implementor` | Sonnet | `sonnet` |
+| `reviewer` | Sonnet | `sonnet` |
+| `reviewer-deep` | Opus | `opus` |
+| `contract-sentinel` | Sonnet | `sonnet` |
+| `lexicon-warden` | Sonnet | `sonnet` |
+| research (`ed3d-research-agents:codebase-investigator`) | Sonnet | `sonnet` |
+| doc-render (`ed3d-extending-claude:project-claude-librarian`) | Sonnet | `sonnet` |
+
+The supervisor/orchestrator tier is not a row here — it is the dispatching
+context, not a dispatched worker (CLAUDE.md: supervisor is the sole `Agent`
+holder).
+
+> **Frontmatter reconciliation (known, intentional):** `contract-sentinel` and
+> `lexicon-warden` currently declare `model: haiku` in their `jackal-director`
+> agent frontmatter; this table promotes both to Sonnet, and the dispatch-site
+> `model` param wins at runtime. The director-side dispatch sites and frontmatter
+> live in the `jackal-director` plugin (out of scope for this issue) — reconcile
+> them there in a follow-up so frontmatter and table agree. Other director
+> workers (`delta-scribe`, `registry-drift-checker`) intentionally remain on
+> haiku and are not tiered up here.
+
+### Verifying a downgraded tier (Sonnet where Opus once ran)
+
+Sentinel and warden run on Sonnet here where earlier cycles used Opus. To keep
+the downgrade honest:
+- **Spot-check a Sonnet sentinel/warden verdict against a prior Opus baseline**
+  when one exists (e.g. GL-488's warden run flagged 12 glossary terms — a
+  materially lighter Sonnet result on comparable input is a signal, not noise).
+- **Log any case where a Sonnet `reviewer` verdict is later contradicted** (a
+  bug it passed that a human or deep review then caught). Accumulated
+  contradictions are the evidence to re-promote that tier to Opus. Record them
+  where the project tracks review lessons (issue comment or the owning skill),
+  not just in the transcript.
+
+---
+
 ## Mode 1: Execute an Implementation Plan
 
 **Input:** path to plan directory (contains `phase_NN.md` files)
