@@ -1,35 +1,28 @@
 # Ruff configuration for jackal-plugins.
 #
-# This repo is a Claude Code plugin marketplace — its Python surface is small:
-# the CI helper scripts under scripts/ and the security hooks (+ their tests)
-# under plugins/ed3d-hook-security-hardening/hooks/. There is no application
-# package, so this config governs standalone scripts, not an importable library.
+# This repo is a Claude Code plugin marketplace — its substance is Markdown
+# (skill text, agent prompts) and JSON config. The Python surface is small: the
+# CI helper scripts under scripts/ and the security hooks (+ their tests) under
+# plugins/ed3d-hook-security-hardening/hooks/. There is no application package,
+# so this config governs standalone utility scripts, not an importable library.
 #
-# Modeled on the ROAR project's ruff config, adapted for a scripts/hooks repo:
-# ROAR's app-specific (FastAPI model/router) per-file-ignores are dropped, and
-# CLI-appropriate rules (T201 print, INP001 implicit-namespace) are relaxed for
-# the script/hook directories that are legitimately run as files, not imported.
+# Scope is deliberately lean rather than `select = ["ALL"]`: for a handful of
+# utility scripts, ALL is mostly noise (test-idiom warnings, shebang-exec nits).
+# We enable the high-signal rule groups — real bugs, unused/undefined names,
+# import order, modern-syntax upgrades, and common simplifications — and let the
+# formatter handle style. This repo's CI does not run ruff; this config governs
+# local runs and the implementor's "run ruff format before commit" guidance.
 
 [tool.ruff]
 target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["ALL"]
-ignore = [
-    "D",       # pydocstyle — docstrings not enforced across these scripts
-    "ANN",     # annotations — not enforced repo-wide for small scripts
-    "COM812",  # trailing comma — conflicts with the formatter
-    "ISC001",  # implicit string concat — conflicts with the formatter
-    "FIX002",  # allow TODO comments
-    "TD002",   # allow TODO without author
-    "TD003",   # allow TODO without issue link
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes — real bugs, unused/undefined names
+    "I",    # isort — import ordering
+    "UP",   # pyupgrade — modern syntax
+    "B",    # flake8-bugbear — likely bugs
+    "SIM",  # flake8-simplify
 ]
-
-[tool.ruff.lint.per-file-ignores]
-# CLI scripts and hooks are executed as files: they print to stdout/stderr and
-# are not part of an importable package.
-"scripts/**" = ["T201", "INP001"]
-"plugins/ed3d-hook-security-hardening/hooks/**" = ["T201", "INP001"]
-# Test files: asserts, magic values, and long lines are expected in tests.
-"**/test-*.py" = ["S101", "PLR2004", "E501", "INP001", "T201"]
