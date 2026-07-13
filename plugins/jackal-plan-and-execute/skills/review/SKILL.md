@@ -10,11 +10,14 @@ Dispatch the right reviewer agent and handle the result.
 
 ## Choose the Tier
 
-- **`reviewer`** (Sonnet) — default: Simple and Standard issues, per-phase reviews.
+- **`reviewer`** (Sonnet) — default: Simple and Standard issues, per-phase reviews. Per-phase
+  reviews re-run only the touched-area tests plus verify the implementor's per-phase artifact —
+  they do not re-run the full suite.
 - **`reviewer-deep`** (Opus) — final review of Complex issues, or any diff
   touching auth, payments, user data, crypto, or the project's contract
   sources (the contracts package, or per-component contract files named in
-  `docs/canon/registry.md`).
+  `docs/canon/registry.md`). The one full independent suite run is reserved for this tier's
+  final/deep review.
 
 ## Dispatch
 
