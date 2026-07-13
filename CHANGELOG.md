@@ -1,5 +1,36 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.2.0
+
+Event-driven waits + subagent liveness contract (#18).
+
+**New:**
+- `execute` skill documents the event-driven watcher (`scripts/worktree-watcher.sh`), the
+  sleep<timeout hard rule (foreground sleeps ≤100s under the 120s Bash timeout), the batched-status
+  rule, and the STALLED stall-response procedure (verify disk → instruct commit-and-report → resume
+  from disk).
+- Honest-stopping-point clause added to `implementor.md` and both `execute` dispatch templates;
+  EXPECT/heartbeat expectation set at dispatch; relay rule forbidding unbacked progress claims,
+  cross-referencing `verification-before-completion`.
+
+## [jackal-supervisor] 3.1.0
+
+Subagent liveness contract (#18).
+
+**New:**
+- Honest-stopping-point clause added to `jackal-supervisor.md` alongside the "workers never spawn
+  workers" rule (belt-and-braces prompt-level enforcement). Supervisor retains the `Agent` tool as
+  the sole orchestrator.
+
+## [jackal-director] 1.4.0
+
+Event-driven waits + liveness, director-side (#18).
+
+**New:**
+- `director-loop` skill mirrors the event-driven wait / STALLED stall-response summary and the
+  relay rule (no relayed subagent progress claim without a cited same-turn disk observation),
+  referencing the `execute` skill for the canonical procedure.
+
 ## [jackal-director] 1.3.0
 
 Director operating-discipline notes for autonomous cycles.
