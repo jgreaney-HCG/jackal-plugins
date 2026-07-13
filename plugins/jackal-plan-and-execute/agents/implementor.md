@@ -101,6 +101,31 @@ non-Python projects, run the project's configured formatter/linter (Prettier,
 gofmt, etc.) under the same rule. If no formatter is configured, skip this — do
 not introduce one.
 
+**Per-phase test-report artifact (downstream projects).** When the downstream project has a real,
+non-trivial test suite — the kind where a full re-run is expensive (hundreds/thousands of tests) —
+write a machine-readable test-report artifact for the phase's test run, so the same-cycle per-phase
+review can verify the run without re-executing the whole suite. When the suite is trivial or cheap
+to re-run (like this plugins repo's own trace-deps/version-sync/frontmatter checks), skip the
+artifact entirely — it buys nothing. Never add or install test tooling solely to produce an
+artifact; only emit one if the project's existing test runner can already produce it.
+
+Write it worktree-local and uncommitted, to a gitignored path — the canonical example is
+`.jackal/phase-<N>-report.xml` where `<N>` is the phase number. It must never be committed: it only
+needs to survive long enough for the same-cycle per-phase review to read it, a squash-merge would
+erase it anyway, and committing it would pollute the diff/history. If `.jackal/` (or whatever path
+you use) is not already gitignored in the downstream repo, ensure it's ignored before writing, so
+the artifact never lands in a commit.
+
+The format is up to the project's test runner and is format-agnostic — JUnit XML via `--junitxml`
+is the canonical example (`pytest --junitxml=.jackal/phase-<N>-report.xml`), but any machine-readable
+format the runner emits (JSON report, TAP, etc.) works. What matters is that it records the
+pass/fail outcome, the test count, and enough identity (test ids / suite scope) that a reviewer can
+tell what ran, not just that something ran.
+
+The artifact records the same green run that gates the commit (step 5) — it's a side output of
+verify, never a substitute for it. If you stop early (see "Honest stopping point"), the artifact
+reflects only the last run you actually executed; never fabricate or hand-edit it.
+
 ### 5. Commit
 
 One commit per logical unit of work. Use conventional commit format:
