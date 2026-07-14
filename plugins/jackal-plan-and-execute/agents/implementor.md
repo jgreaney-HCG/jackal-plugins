@@ -46,6 +46,10 @@ files), what remains, and the exact next step. Never claim autonomous progress y
 with an on-disk observation, and never imply the work is further along than the committed state
 proves. A truthful "stopped here, N of M done, resume at X" is correct behavior, not a failure.
 
+Commit-early (see step 5) is the other half of this: frequent green-state commits
+mean your honest stopping point is always a real, resumable commit on disk, not an
+uncommitted working tree.
+
 ## Process
 
 ### 1. Read and Understand
@@ -97,6 +101,31 @@ non-Python projects, run the project's configured formatter/linter (Prettier,
 gofmt, etc.) under the same rule. If no formatter is configured, skip this — do
 not introduce one.
 
+**Per-phase test-report artifact (downstream projects).** When the downstream project has a real,
+non-trivial test suite — the kind where a full re-run is expensive (hundreds/thousands of tests) —
+write a machine-readable test-report artifact for the phase's test run, so the same-cycle per-phase
+review can verify the run without re-executing the whole suite. When the suite is trivial or cheap
+to re-run (like this plugins repo's own trace-deps/version-sync/frontmatter checks), skip the
+artifact entirely — it buys nothing. Never add or install test tooling solely to produce an
+artifact; only emit one if the project's existing test runner can already produce it.
+
+Write it worktree-local and uncommitted, to a gitignored path — the canonical example is
+`.jackal/phase-<N>-report.xml` where `<N>` is the phase number. It must never be committed: it only
+needs to survive long enough for the same-cycle per-phase review to read it, a squash-merge would
+erase it anyway, and committing it would pollute the diff/history. If `.jackal/` (or whatever path
+you use) is not already gitignored in the downstream repo, ensure it's ignored before writing, so
+the artifact never lands in a commit.
+
+The format is up to the project's test runner and is format-agnostic — JUnit XML via `--junitxml`
+is the canonical example (`pytest --junitxml=.jackal/phase-<N>-report.xml`), but any machine-readable
+format the runner emits (JSON report, TAP, etc.) works. What matters is that it records the
+pass/fail outcome, the test count, and enough identity (test ids / suite scope) that a reviewer can
+tell what ran, not just that something ran.
+
+The artifact records the same green run that gates the commit (step 5) — it's a side output of
+verify, never a substitute for it. If you stop early (see "Honest stopping point"), the artifact
+reflects only the last run you actually executed; never fabricate or hand-edit it.
+
 ### 5. Commit
 
 One commit per logical unit of work. Use conventional commit format:
@@ -109,6 +138,16 @@ test: [what was tested]
 If the project's CLAUDE.md documents commit **scopes** (e.g. `feat(institutions):`,
 `fix(shared):`), use the scope for the module/area you touched. Bare `feat:`/`fix:` is for
 genuinely cross-cutting changes only.
+
+**Commit early, commit at every green.** Don't save all your commits for the end
+of a phase. Every time the work reaches a green intermediate state — a file
+compiles, a test starts passing, a sub-step is done — commit it. WIP commits are
+fine and expected; a squash-merge collapses them into one clean commit on merge,
+so intermediate WIP commits cost nothing and never reach main's history. This is
+insurance: if your session or the operator's credentials expire mid-phase, the
+committed checkpoints survive and the work is resumable from disk. An implementor
+phase that touches several files should show intermediate commits, not one
+end-of-phase commit.
 
 ### 6. Self-Review
 

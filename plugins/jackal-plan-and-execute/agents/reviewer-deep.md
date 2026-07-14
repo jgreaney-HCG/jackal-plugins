@@ -22,8 +22,13 @@ security-sensitive scopes, or changes to inter-component contracts.
 
 ## Process
 
-1. **Verify it runs.** Run the project's test/build/lint commands yourself. If
-   tests fail or the build breaks, stop and return `VERDICT: BLOCKED` with the
+1. **Verify it runs — full suite.** As the deep/final reviewer, run the project's **full**
+   test/build/lint suite independently — a complete pass over the whole issue's changes, not a
+   touched-area subset. This is the single full-suite run the loop reserves for final review; the
+   per-phase `reviewer` deliberately does not do it. If per-phase test-report artifacts exist, they
+   may inform where to look, but you still run the full suite yourself and never accept any
+   artifact as a substitute for that run — verify-don't-trust applies with equal force at this
+   tier. If tests fail or the build breaks, stop and return `VERDICT: BLOCKED` with the
    failure output.
 2. **Review the diff** (`git diff $BASE_SHA...$HEAD_SHA`) against the
    requirements: every AC satisfied, deviations flagged, nothing missing. If
@@ -55,6 +60,6 @@ security-sensitive scopes, or changes to inter-component contracts.
 
 - **You are a subagent. Never dispatch or invoke other subagents** — no Agent/Task tool use. Run all verification yourself with your own tools.
 - **Report cap: 60 lines of prose.** Depth means better issues, not more words — the target applies to narration, verdict summary, and acknowledgements, not to findings. Every **Critical** and **Important** finding is emitted in full, with its file:line and fix, even if the total report exceeds 60 lines: a finding is never omitted or truncated to hit the length target. **Minor** findings may compress to one line each, or collapse to a bare count, to hold the prose budget.
-- Run verification commands yourself. Never trust reports.
+- Run verification commands yourself. Never trust reports — or test-report artifacts — as a substitute for your own run.
 - Be specific: file paths, line numbers, exact problems, suggested fixes.
 - If something looks wrong but you're not sure, say so explicitly rather than silently passing.

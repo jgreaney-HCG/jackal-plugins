@@ -18,6 +18,10 @@ planner, reviewer), include "Do not dispatch or invoke any subagents — do the
 work directly with your own tools" in the prompt. You are the only tier that
 orchestrates.
 
+**Every dispatch you make specifies `model` explicitly** per the Model Tiers
+table below — a dispatch left on the harness default (`model=null`) silently
+abandons tier discipline and is a defect.
+
 **Honest stopping point.** If you stop before the unit of work is fully done — context limit,
 ambiguity, a blocking dependency, or a genuine stall — commit whatever compiles and report a
 **resumable, disk-truthful** stopping point: what landed on disk (cite the commit SHA and changed
@@ -55,6 +59,39 @@ The lessons already promoted under this rule (reference, don't re-park in memory
 - **Honest-stopping-point** → this file + `implementor.md` + `execute` dispatch templates (from #18).
 - **Sleep<timeout** → `execute` skill "Waiting for async work" (from #18).
 - **ruff-format before commit** → `implementor.md` Verify step.
+
+---
+
+## Model Tiers
+
+Every Agent dispatch picks its model from this table. The dispatch-site
+`<parameter name="model">` is authoritative — it overrides the target agent's
+frontmatter `model:` for that invocation. A dispatch that omits `model` is a
+defect (see the "workers never spawn workers" callout above).
+
+| Dispatched agent | Tier | `model` param |
+|---|---|---|
+| `planner` | Opus | `opus` |
+| `implementor` | Sonnet | `sonnet` |
+| `reviewer` | Sonnet | `sonnet` |
+| `reviewer-deep` | Opus | `opus` |
+| `contract-sentinel` | Sonnet | `sonnet` |
+| `lexicon-warden` | Sonnet | `sonnet` |
+| research (`ed3d-research-agents:codebase-investigator`) | Sonnet | `sonnet` |
+| doc-render (`ed3d-extending-claude:project-claude-librarian`) | Sonnet | `sonnet` |
+
+The supervisor/orchestrator tier is not a row here — it is the dispatching
+context, not a dispatched worker (CLAUDE.md: supervisor is the sole `Agent`
+holder).
+
+> **Frontmatter reconciliation (known, intentional):** `contract-sentinel` and
+> `lexicon-warden` currently declare `model: haiku` in their `jackal-director`
+> agent frontmatter; this table promotes both to Sonnet, and the dispatch-site
+> `model` param wins at runtime. The director-side dispatch sites and frontmatter
+> live in the `jackal-director` plugin (out of scope for this issue) — reconcile
+> them there in a follow-up so frontmatter and table agree. Other director
+> workers (`delta-scribe`, `registry-drift-checker`) intentionally remain on
+> haiku and are not tiered up here.
 
 ---
 
@@ -286,7 +323,7 @@ After assigning, if the user expressed implementation intent:
 
 | Complexity | Action |
 |---|---|
-| Simple | Dispatch the `jackal-plan-and-execute:implementor` agent directly with the issue (body/doc) as context |
+| Simple | Dispatch the `jackal-plan-and-execute:implementor` agent directly with the issue (body/doc) as context (Sonnet — see "Model Tiers" above) |
 | Standard | Invoke the `jackal-plan-and-execute:plan` skill with the issue reference |
 | Complex | Invoke the `jackal-plan-and-execute:design` skill with the issue reference |
 
@@ -298,6 +335,37 @@ When the user says "go" / "execute the backlog" / "keep going": invoke the
 `jackal-plan-and-execute:execute` skill with no arguments. It enters Backlog mode
 (reading the GitHub Issues backlog) and autonomously processes issues until
 stuck.
+
+## Credential pre-flight (before long dispatches)
+
+**Applies to the downstream project the loop is operating on, not this repo.**
+If the project the loop drives deploys to or reads from AWS with SSO/STS
+credentials, a dispatch expected to run **>10 min** can outlive the operator's
+session and lose uncommitted work. This plugins repo itself has no AWS creds and
+is never gated by this check — the snippet is guidance to emit into projects that
+do use AWS.
+
+Before any dispatch you expect to run >10 min, in a project that uses AWS creds:
+
+```bash
+# Who am I / are creds live at all?
+aws sts get-caller-identity || { echo "No valid AWS credentials — tell the human to re-auth (aws sso login) BEFORE dispatching."; }
+
+# Remaining lifetime, where obtainable. SSO sessions expose an expiry in the
+# cached token; STS assumed-role creds expose Expiration. Not every credential
+# type reports a machine-readable expiry — if none is available, fall back to
+# asking the operator when they last authenticated.
+aws configure export-credentials --format process 2>/dev/null | \
+  python3 -c 'import sys,json; d=json.load(sys.stdin); print("Expiration:", d.get("Expiration","<not reported>"))' 2>/dev/null \
+  || echo "Expiration not machine-readable for this credential type — confirm remaining session time with the operator."
+```
+
+**Decision rule:** if remaining lifetime `< (expected task duration + margin)`
+(use a margin of at least the dispatch's `EXPECT` window), **do not dispatch** —
+tell the human to re-authenticate (`aws sso login` or the project's documented
+re-auth) BEFORE the dispatch starts. A dispatch launched into a soon-to-expire
+session is the failure this check exists to prevent. Record the check in the
+transcript (AC5.1: every >=10-min dispatch is preceded by a credential check).
 
 ### Status Report
 

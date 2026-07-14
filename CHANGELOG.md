@@ -1,5 +1,86 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.6.0
+
+Test-artifact verification to cut redundant full-suite runs (#24, R8).
+
+**New:**
+- Implementor emits an optional per-phase test-report artifact (worktree-local, gitignored; `--junitxml`/JUnit XML shown as the canonical example, format-agnostic) — downstream-project guidance; skipped when the suite is trivial.
+- Reviewer verifies the artifact by cross-checking it against its own targeted re-run of touched-area tests; the one full independent suite run is reserved for the deep/final review.
+
+**Changed:**
+- Verify-don't-trust reasserted: review never accepts a test-report artifact in place of its own independent verification — the artifact is an optimization, not a substitute.
+
+## [jackal-plan-and-execute] 3.5.0
+
+Dependency-aware phase fan-out: independent phases run in parallel; sequential stays the default (#25, R9).
+
+**New:**
+- `planner` phase-file template gains an optional `**Depends on:**` (`depends_on:`) field: a phase lists
+  the prior phase ids that must complete before it may start. Absent ⇒ depends on all prior phases ⇒
+  strictly sequential, exactly as before (backward-compatible). A malformed `depends_on:` (non-existent
+  phase, self-reference, or cycle) is declared a planner defect the execute skill must surface.
+- `execute` skill Mode 1 generalizes "for each phase sequentially" into a dependency-aware scheduler:
+  it tracks completed phases and dispatches every phase whose `depends_on:` set is fully satisfied,
+  running independent phases in parallel.
+- Phase-level fan-out uses Option A on the existing Parallel Dispatch model — the warm trunk agent
+  `implementor-<N>` keeps context while additional ready phases dispatch as cold leaf agents
+  `implementor-<N>-pX` on the same branch, non-merging transcripts. No worker gains the `Agent` tool;
+  the orchestrator makes every fan-out decision (no self-dispatch), and `jackal-supervisor` remains the
+  sole `Agent`-holder.
+- Same-branch write-safety note (independent phases are file-disjoint by construction; per-phase
+  timeout attribution out of scope), watcher cross-reference for long parallel streams, and flat-topology
+  consistency with the Orchestration Topology section. The review + verify-don't-trust posture is
+  unchanged — fan-out changes when phases run, never whether their output is disk-verified.
+
+**Changed:**
+- When no phase declares `depends_on:`, scheduling is byte-for-byte the current named-continuation loop —
+  no cold-start regression for the common sequential case.
+
+## [jackal-plan-and-execute] 3.4.0
+
+Flat orchestration topology by default; justification-gated middle tier (#19, R3).
+
+**New:**
+- `execute` skill gains an `## Orchestration Topology` section: flat (director → workers) is the
+  default, with the GL-488 per-phase warm-context `SendMessage` named-continuation pattern named as
+  the reference implementation.
+- A middle supervisor tier now requires a one-sentence written justification in the Agent dispatch
+  prompt (what the tier provides that flat dispatch + memory cannot); a nested-supervisor dispatch
+  without it is declared a defect.
+- When a middle tier is used, R2's liveness contract applies with a stricter (shorter) `EXPECT`
+  window — cross-referenced, not duplicated.
+- Explicit reconciliation with the repo CLAUDE.md sole-orchestrator rule, written into the skill
+  text: flat-by-default + the narrow, justification-gated nested-supervisor tier as the documented
+  exception (CLAUDE.md itself unchanged).
+
+## [jackal-supervisor] 3.3.0
+
+Sweeps run flat, not under a nested Opus supervisor (#19, R3).
+
+**New:**
+- `jackal-sweep` skill directs backlog sweeps to run as direct director work or at most a single
+  Sonnet research dispatch — never a nested Opus supervisor — unless justified per the `execute`
+  skill's Orchestration Topology policy (one-sentence justification + stricter liveness window).
+
+## [jackal-plan-and-execute] 3.3.0
+
+Enforce explicit model tiering + credential pre-flight + commit-early discipline (#22, R4+R5).
+
+**New:**
+- Every `<invoke name="Agent">` dispatch in the execute, plan, review, design, and finish skills now carries an explicit `<parameter name="model">`; a model-unspecified dispatch is declared a defect.
+- Model Tier Table (planner=Opus, implementor=Sonnet, reviewer=Sonnet, reviewer-deep=Opus, contract-sentinel=Sonnet, lexicon-warden=Sonnet, doc-render/research=Sonnet) in the execute skill, with a footnote reconciling the sentinel/warden `model: haiku` frontmatter (dispatch sites live in jackal-director — deferred follow-up).
+- Credential pre-flight (`aws sts get-caller-identity` + remaining-lifetime check) before any dispatch expected to run >10 min — framed as generic guidance for downstream projects, not a gate on this repo.
+- Commit-early clause in the implementor prompt: commit at every green intermediate state so credential expiry or a stall can't destroy uncommitted work.
+
+## [jackal-supervisor] 3.2.0
+
+Model tiering + credential pre-flight (#22, R4+R5).
+
+**New:**
+- Model Tiers section mirroring the execute skill's tier table; every supervisor dispatch specifies `model` explicitly.
+- Credential pre-flight guidance before long-running dispatches (downstream-project scope).
+
 ## [jackal-supervisor] 3.1.1
 
 Promote operational lessons from director memory into shared skill/agent text (#21).

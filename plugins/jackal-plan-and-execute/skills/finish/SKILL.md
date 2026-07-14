@@ -112,6 +112,7 @@ dependency** of the jackal harness.
 ```xml
 <invoke name="Agent">
 <parameter name="subagent_type">ed3d-extending-claude:project-claude-librarian</parameter>
+<parameter name="model">sonnet</parameter>
 <parameter name="description">Updating project context</parameter>
 <parameter name="prompt">
 Review changes on [feature-branch] vs main.
@@ -122,6 +123,10 @@ Do not dispatch or invoke any subagents — do the work directly with your own t
 </parameter>
 </invoke>
 ```
+
+Every Agent dispatch above carries an explicit `<parameter name="model">`; a
+model-unspecified dispatch is a defect (see the Model Tier Table in the
+`execute` skill and the `jackal-supervisor` agent).
 
 **If `ed3d-extending-claude` is not installed, do NOT silently skip.** Emit a
 visible warning so the human knows the closeout was incomplete:

@@ -126,6 +126,7 @@ $TEST_CMD --tb=no -q 2>/dev/null | tail -3
 ```xml
 <invoke name="Agent">
 <parameter name="subagent_type">jackal-plan-and-execute:planner</parameter>
+<parameter name="model">opus</parameter>
 <parameter name="description">Planning [issue/feature]</parameter>
 <parameter name="prompt">
 DESIGN_PATH: [absolute path to design plan]
@@ -148,6 +149,10 @@ contract models must draft the impact statement in docs/canon/impact/.
 </parameter>
 </invoke>
 ```
+
+Every Agent dispatch above carries an explicit `<parameter name="model">`; a
+model-unspecified dispatch is a defect (see the Model Tier Table in the
+`execute` skill and the `jackal-supervisor` agent).
 
 The planner:
 - Investigates codebase state

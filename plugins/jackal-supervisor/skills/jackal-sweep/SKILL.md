@@ -14,6 +14,19 @@ out in a worktree can't be deleted, and a worktree with stray files blocks
 
 **Announce at start:** "Sweeping worktrees, branches, and PR state."
 
+> **How to run the sweep (flat).** Steps 0-5 are branch/worktree/git hygiene —
+> run them as **direct director work**, not delegated to a nested tier. If a
+> step needs investigation beyond git plumbing (e.g. confirming a
+> delivered-but-open issue was truly closed by a merged PR), fan out **at most
+> a single Sonnet research dispatch** (the research tier in the Model Tier
+> Table); do not chain multiple dispatches for it. Never run the sweep under a **nested
+> Opus supervisor** — that is the direct lesson of the audited sweep session
+> (nested Opus supervisor → wrong first deliverable → the "lost agent" stall).
+> A middle tier for a sweep is only the justification-gated exception in the
+> `execute` skill's **`## Orchestration Topology`** section: the one-sentence
+> written justification plus the stricter R2 liveness `EXPECT` window both
+> apply — see that section, not restated here.
+
 ---
 
 ## Step 0: Fetch and Inventory

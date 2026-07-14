@@ -10,17 +10,21 @@ Dispatch the right reviewer agent and handle the result.
 
 ## Choose the Tier
 
-- **`reviewer`** (Sonnet) — default: Simple and Standard issues, per-phase reviews.
+- **`reviewer`** (Sonnet) — default: Simple and Standard issues, per-phase reviews. Per-phase
+  reviews re-run only the touched-area tests plus verify the implementor's per-phase artifact —
+  they do not re-run the full suite.
 - **`reviewer-deep`** (Opus) — final review of Complex issues, or any diff
   touching auth, payments, user data, crypto, or the project's contract
   sources (the contracts package, or per-component contract files named in
-  `docs/canon/registry.md`).
+  `docs/canon/registry.md`). The one full independent suite run is reserved for this tier's
+  final/deep review.
 
 ## Dispatch
 
 ```xml
 <invoke name="Agent">
 <parameter name="subagent_type">jackal-plan-and-execute:reviewer</parameter>
+<parameter name="model">sonnet</parameter>
 <parameter name="description">Reviewing [what]</parameter>
 <parameter name="prompt">
 WHAT_WAS_IMPLEMENTED: [summary]
@@ -40,7 +44,11 @@ Do not dispatch or invoke any subagents — run all verification directly with y
 </invoke>
 ```
 
-(Substitute `jackal-plan-and-execute:reviewer-deep` when the tier calls for it.)
+(When the tier calls for the deep reviewer, substitute **both** `subagent_type` → `jackal-plan-and-execute:reviewer-deep` **and** `model` → `opus`. The two must always move together — a `reviewer-deep` dispatch left on `model: sonnet` is a model-tier defect.)
+
+Every Agent dispatch above carries an explicit `<parameter name="model">`; a
+model-unspecified dispatch is a defect (see the Model Tier Table in the
+`execute` skill and the `jackal-supervisor` agent).
 
 ## Handle Response
 

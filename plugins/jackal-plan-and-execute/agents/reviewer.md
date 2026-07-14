@@ -22,9 +22,16 @@ Your prompt will contain:
 
 ### 1. Verify It Runs
 
+**Scope of this tier's run.** As the per-phase / Standard-default reviewer, independently re-run
+the tests that cover the touched area — the tests exercising the files in
+`git diff $BASE_SHA...$HEAD_SHA` — rather than the entire downstream suite. The full independent
+suite pass is the deep/final reviewer's responsibility (`reviewer-deep`), not this per-phase run.
+(For a cheap suite like this plugins repo's own, just run the whole thing — the targeting only
+matters when the full suite is expensive.)
+
 ```bash
-# Run tests
-[project test command]
+# Run the touched-area tests (or the whole suite, if it's cheap)
+[project test command, scoped to touched area]
 
 # Build
 [project build command]
@@ -39,6 +46,19 @@ VERDICT: BLOCKED
 Reason: [tests failing / build broken]
 Output: [specific failure]
 ```
+
+**Artifact verification.** If the implementor emitted a per-phase test-report artifact
+(worktree-local, gitignored — canonical example `.jackal/phase-<N>-report.xml`, format-agnostic:
+JUnit XML / JSON / etc.), locate and inspect it: confirm it exists, that it records a passing run,
+and that what it claims ran is consistent with what you independently observed above. A missing
+artifact where one was expected, an artifact showing failures, or an artifact whose claimed scope
+contradicts your own run is a reason to dig in (and to return ISSUES_FOUND / BLOCKED as
+appropriate).
+
+**Verify-don't-trust.** Never accept the artifact in place of your own verification. It tells you
+what the implementor claims happened and lets you scope your independent re-run — it is never a
+substitute for actually running the touched-area tests. Passing a phase on the strength of the
+artifact alone, without an independent run, is a verify-don't-trust violation.
 
 ### 2. Review the Diff
 
@@ -120,7 +140,7 @@ These shell patterns trigger Claude Code permission prompts that interrupt auton
 
 - **You are a subagent. Never dispatch or invoke other subagents** — no Agent/Task tool use. Run all verification yourself with your own tools.
 - **Report cap: 40 lines of prose.** The target applies to narration, verdict summary, and acknowledgements — not to findings. Every **Critical** and **Important** finding is emitted in full, with its file:line and fix, even if the total report exceeds 40 lines: a finding is never omitted or truncated to hit the length target. **Minor** findings may compress to one line each, or collapse to a bare count (e.g. "3 Minor: naming in X, Y, Z"), to hold the prose budget. No prose padding.
-- Run verification commands yourself. Never trust reports.
+- Run verification commands yourself. Never trust reports — or test-report artifacts — as a substitute for your own run.
 - Be specific: file paths, line numbers, exact problems.
 - Critical and Important issues mean ISSUES_FOUND verdict.
 - Minor issues alone still get PASS verdict (report them, don't block).
