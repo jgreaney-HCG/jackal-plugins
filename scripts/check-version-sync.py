@@ -25,8 +25,9 @@ def main() -> int:
 
         plugin_json_path = ROOT / source.lstrip("./") / ".claude-plugin" / "plugin.json"
         if not plugin_json_path.exists():
+            rel = plugin_json_path.relative_to(ROOT)
             failures.append(
-                f"{name}: marketplace.json points at {source}, but {plugin_json_path.relative_to(ROOT)} does not exist"
+                f"{name}: marketplace.json points at {source}, but {rel} does not exist"
             )
             continue
 
