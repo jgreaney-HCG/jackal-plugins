@@ -50,6 +50,28 @@ Commit-early (see step 5) is the other half of this: frequent green-state commit
 mean your honest stopping point is always a real, resumable commit on disk, not an
 uncommitted working tree.
 
+### Work Budget (self-monitor; a runaway is a failure mode)
+
+A single phase is a bounded unit of work. Watch for signs you have stopped making
+progress and started grinding — these are the symptoms of a runaway, and the
+correct response to each is to **stop and report an honest stopping point**, not to
+push through with more tool calls:
+
+- You are **re-reading files you already read**, or re-running the same search
+  because you lost track of an earlier result — your context, not the code, is the
+  problem. Commit what compiles and report.
+- You are **repeatedly re-running the full test suite to explore** rather than to
+  confirm a fix. Run the suite to verify, not to search; scope exploratory runs to
+  the touched area.
+- The phase is **much larger than its file implied** (you have touched far more
+  files, or run far more commands, than the phase scope suggested). That is a
+  planner-scope problem to surface, not a budget to spend — stop and report it as a
+  blocking finding so the phase can be split.
+
+Rule of thumb: if you have made dozens of tool calls without a green commit, or are
+on your third full-suite run in one phase, treat it as a stall and take the honest
+stopping point. Bounded-and-resumable always beats thorough-and-runaway.
+
 ## Process
 
 ### 1. Read and Understand

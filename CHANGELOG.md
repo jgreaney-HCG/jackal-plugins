@@ -16,6 +16,15 @@ Reframe the conformance gate around a deterministic pre-pass so it stays cheap a
 **Fixed:**
 - Second runaway found by audit: `registry-drift-checker` had a worst observed run of ~29 min / 95 tool calls / ~23.6M cache-read tokens — worse than the lexicon-warden run that started this — caused by the same dispatch-site model omission plus an unbounded per-component Bash loop.
 
+## [jackal-plan-and-execute] 3.8.0
+
+Add self-monitored work budgets to the implementor and reviewer so a single dispatch can't grind into a runaway.
+
+**Changed:**
+- `implementor` gains a "Work Budget" section: recognize runaway symptoms (re-reading files already read, re-running the full suite to explore, a phase far larger than its file implied) and take an honest, resumable stopping point instead of pushing through. Complements the existing commit-early / honest-stopping-point discipline.
+- `reviewer` gains a "Work budget" note in its verify step: run the touched-area tests once, never re-run the suite to explore, and return `BLOCKED` on inconclusive verification rather than grinding. Full-suite runs remain the deep reviewer's responsibility.
+- Motivated by the cost audit that accompanied the jackal-director 1.5.0 reframe: `reviewer`/`implementor` were the REVIEW-tier long tails (unbounded suite runs / no work cap), distinct from the sentinel/warden runaways.
+
 ## [jackal-plan-and-execute] 3.7.0
 
 Reconcile the Model Tier Table with the jackal-director conformance reframe.
