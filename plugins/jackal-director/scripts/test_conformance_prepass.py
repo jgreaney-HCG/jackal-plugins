@@ -306,6 +306,42 @@ def test_long_line_snipped() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Test (regression): a long IDENTIFIER (field/class/import), not just a long
+# line, must not balloon the packet — identifiers are capped at extraction.
+# ---------------------------------------------------------------------------
+def test_long_identifier_bounded() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        repo = Path(d)
+        scenario_base(repo)
+        git(repo, "checkout", "-q", "-b", "feature/hugeident")
+        write(repo, "docs/canon/impact/feature/hugeident.md", "x")
+        huge_field = "f" + "z" * 500_000
+        huge_class = "C" + "y" * 500_000
+        # removed field with a giant name (C2/C5) + a new class with a giant name (L1)
+        write(
+            repo,
+            "packages/gallery/api/contracts.py",
+            f"class {huge_class}:\n    id: int\n",
+        )
+        # also touch shared (non-contract) to add the giant-named class in a fresh file
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "huge identifiers")
+        code, out = run_prepass(repo)
+        packet_size = len(json.dumps(out))
+        check("huge identifier packet stays small", packet_size < 50_000, f"packet={packet_size} chars")
+        # every field/term string in the packet must be capped
+        idents = []
+        for c in out.get("sentinel_candidates", {}).get("c2_surface_changes", []):
+            idents.append(c.get("field", ""))
+        lc = out.get("lexicon_candidates", {})
+        for c in lc.get("new_term_candidates", []):
+            idents.append(c.get("term", ""))
+        for f in out.get("deterministic_findings", []):
+            idents.append(f.get("summary", ""))
+        check("no packet identifier is unbounded", all(len(s) <= 400 for s in idents), f"max={max((len(s) for s in idents), default=0)}")
+
+
+# ---------------------------------------------------------------------------
 # Test (regression): numeric issue slug must not substring-match a longer number
 # ---------------------------------------------------------------------------
 def test_slug_no_false_positive() -> None:
@@ -388,6 +424,7 @@ def main() -> int:
         test_lexicon_candidates,
         test_known_term_not_new,
         test_long_line_snipped,
+        test_long_identifier_bounded,
         test_slug_no_false_positive,
         test_slug_true_positive,
         test_docstring_labels_not_fields,

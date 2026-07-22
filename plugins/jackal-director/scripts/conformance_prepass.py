@@ -47,12 +47,21 @@ DEFAULT_MAX_DIFF_LINES = 4000
 # balloon the packet the agents receive inline.
 MAX_CANDIDATES_PER_CHECK = 40
 MAX_SNIPPET_CHARS = 200
+# A real identifier (field/class/enum name, import path) is short; cap it too so
+# a diff with one abnormally long identifier can't balloon the packet even when
+# it squeaks under the file/line caps.
+MAX_IDENT_CHARS = 120
 
 
 def _snip(text: str) -> str:
     """Trim and length-cap a diff line for safe embedding in the packet."""
     s = text.strip()
     return s if len(s) <= MAX_SNIPPET_CHARS else s[:MAX_SNIPPET_CHARS] + "…"
+
+
+def _snip_ident(name: str) -> str:
+    """Length-cap an extracted identifier before it enters the packet."""
+    return name if len(name) <= MAX_IDENT_CHARS else name[:MAX_IDENT_CHARS] + "…"
 
 
 @dataclass
@@ -284,7 +293,7 @@ def field_name(diff_line: str) -> str | None:
     name = m.group(1)
     if name.lower() in _DOCSTRING_LABELS:
         return None
-    return name
+    return _snip_ident(name)
 
 
 def _slug_matches(slug: str, text: str) -> bool:
@@ -362,6 +371,7 @@ def check_c3_cross_component(
             if not mod or mod.startswith("."):
                 continue  # relative import stays in-component
             top = mod.split(".")[0]
+            mod = _snip_ident(mod)  # cap before it enters the summary string
             # does this top-level package name correspond to another component?
             for c in comps:
                 if c.name == src_comp:
@@ -484,7 +494,7 @@ def extract_lexicon_candidates(
                 m = rx.match(text)
                 if not m:
                     continue
-                name = m.group(1)
+                name = _snip_ident(m.group(1))
                 if name.lower() in known or name.lower() in seen_terms:
                     continue
                 seen_terms.add(name.lower())
