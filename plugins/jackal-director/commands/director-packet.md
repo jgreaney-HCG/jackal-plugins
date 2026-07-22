@@ -25,6 +25,7 @@ Then:
 <invoke name="Agent">
 <parameter name="subagent_type">jackal-director:delta-scribe</parameter>
 <parameter name="description">Delta digest for director packet</parameter>
+<parameter name="model">haiku</parameter>
 <parameter name="prompt">
 Range: [range]
 Working directory: [repo root]
@@ -37,6 +38,7 @@ tools.
 <invoke name="Agent">
 <parameter name="subagent_type">jackal-director:registry-drift-checker</parameter>
 <parameter name="description">Registry drift for director packet</parameter>
+<parameter name="model">haiku</parameter>
 <parameter name="prompt">
 Working directory: [repo root]
 Compare exported contract schemas against docs/canon/registry.md.

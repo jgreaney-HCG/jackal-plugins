@@ -130,8 +130,8 @@ defect (see "Subagent discipline" above).
 | `implementor` | Sonnet | `sonnet` |
 | `reviewer` | Sonnet | `sonnet` |
 | `reviewer-deep` | Opus | `opus` |
-| `contract-sentinel` | Sonnet | `sonnet` |
-| `lexicon-warden` | Sonnet | `sonnet` |
+| `contract-sentinel` | Haiku | `haiku` |
+| `lexicon-warden` | Haiku | `haiku` |
 | research (`ed3d-research-agents:codebase-investigator`) | Sonnet | `sonnet` |
 | doc-render (`ed3d-extending-claude:project-claude-librarian`) | Sonnet | `sonnet` |
 
@@ -139,22 +139,17 @@ The supervisor/orchestrator tier is not a row here — it is the dispatching
 context, not a dispatched worker (CLAUDE.md: supervisor is the sole `Agent`
 holder).
 
-> **Frontmatter reconciliation (known, intentional):** `contract-sentinel` and
-> `lexicon-warden` currently declare `model: haiku` in their `jackal-director`
-> agent frontmatter; this table promotes both to Sonnet, and the dispatch-site
-> `model` param wins at runtime. The director-side dispatch sites and frontmatter
-> live in the `jackal-director` plugin (out of scope for this issue) — reconcile
-> them there in a follow-up so frontmatter and table agree. Other director
-> workers (`delta-scribe`, `registry-drift-checker`) intentionally remain on
-> haiku and are not tiered up here.
+> **Sentinel/warden run on Haiku by design.** As of jackal-director 1.5.0 the
+> `contract-sentinel` and `lexicon-warden` agents no longer crawl the repo — a
+> deterministic pre-pass (`conformance_prepass.py`) does the scanning and hands
+> each agent a small evidence packet to adjudicate read-only. That bounded job
+> is a Haiku job, and their frontmatter, this table, and the `jackal-director`
+> dispatch sites all now agree on `haiku`. (Earlier cycles promoted them to
+> Sonnet to compensate for an unbounded repo crawl that once ran 20+ minutes;
+> the reframe removed the crawl, so the promotion is gone.)
 
-### Verifying a downgraded tier (Sonnet where Opus once ran)
+### Verifying the `reviewer` tier
 
-Sentinel and warden run on Sonnet here where earlier cycles used Opus. To keep
-the downgrade honest:
-- **Spot-check a Sonnet sentinel/warden verdict against a prior Opus baseline**
-  when one exists (e.g. GL-488's warden run flagged 12 glossary terms — a
-  materially lighter Sonnet result on comparable input is a signal, not noise).
 - **Log any case where a Sonnet `reviewer` verdict is later contradicted** (a
   bug it passed that a human or deep review then caught). Accumulated
   contradictions are the evidence to re-promote that tier to Opus. Record them

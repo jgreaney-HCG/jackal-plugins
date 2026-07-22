@@ -29,6 +29,7 @@ when no Fable or other strong-model chat session is available this cycle.
 <invoke name="Agent">
 <parameter name="subagent_type">jackal-director:director</parameter>
 <parameter name="description">Automated Director review of the cycle packet</parameter>
+<parameter name="model">opus</parameter>
 <parameter name="prompt">
 Packet path: [resolved packet path]
 Working directory: [repo root]

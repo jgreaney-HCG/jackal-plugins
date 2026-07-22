@@ -1,5 +1,29 @@
 # Changelog
 
+## [jackal-director] 1.5.0
+
+Reframe the conformance gate around a deterministic pre-pass so it stays cheap and bounded; re-enable the sentinel and warden as read-only adjudicators; pin every director agent's model at its dispatch site.
+
+**New:**
+- `scripts/conformance_prepass.py` — a stdlib-only, no-model pre-pass run by `/contract-check`. It computes the branch diff, enforces a hard size cap (ESCALATE before any agent runs), parses the Component Map + glossary, runs the fully-deterministic checks (C1 impact-statement-present, C3 cross-component imports, C5 breaking-change-without-ADR), and emits a bounded JSON evidence packet. Verified against the real monorepo `docs/canon/registry.md` (12 components, including multi-line cells). Tests in `scripts/test_conformance_prepass.py`.
+
+**Changed:**
+- `contract-sentinel` and `lexicon-warden` are re-enabled but rebuilt as **read-only adjudicators**: their only tool is `Read`, they receive the evidence packet inline, and they never grep/git/crawl the repo. This structurally prevents the repo-wide scans behind the original runaway.
+- `contract-check` now runs the pre-pass first, ESCALATEs on cap breach or missing registry, and otherwise dispatches both agents on Haiku with the packet pasted into each prompt.
+- `registry-drift-checker` gains a hard work budget (≈2 tool calls per contract source, ≤25 total; ESCALATE rather than grind) — it keeps `Bash` because it must run schema exporters, but can no longer run unbounded.
+- Every director command dispatch now sets `<parameter name="model">` explicitly (`director-packet` → delta-scribe/drift-checker = haiku; `director-review` → director = opus; `contract-check` → sentinel/warden = haiku). Previously these omitted `model`, so agents silently inherited the parent session model regardless of their `haiku` frontmatter.
+
+**Fixed:**
+- Second runaway found by audit: `registry-drift-checker` had a worst observed run of ~29 min / 95 tool calls / ~23.6M cache-read tokens — worse than the lexicon-warden run that started this — caused by the same dispatch-site model omission plus an unbounded per-component Bash loop.
+
+## [jackal-plan-and-execute] 3.7.0
+
+Reconcile the Model Tier Table with the jackal-director conformance reframe.
+
+**Changed:**
+- `contract-sentinel` and `lexicon-warden` are now tiered **Haiku** (were Sonnet). The reframe removed their repo crawl — they adjudicate a pre-computed evidence packet read-only — so the Sonnet promotion that compensated for the crawl is gone, and frontmatter, tier table, and director dispatch sites all agree on haiku.
+- Replaced the now-stale "downgraded tier" verification note with a `reviewer`-only version.
+
 ## [jackal-director] 1.4.1
 
 Temporarily disable the `contract-sentinel` and `lexicon-warden` conformance
