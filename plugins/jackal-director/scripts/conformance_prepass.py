@@ -42,9 +42,17 @@ from pathlib import Path
 DEFAULT_MAX_FILES = 60
 DEFAULT_MAX_DIFF_LINES = 4000
 # Bounds on the evidence packet handed to the agent, so its input can't blow up
-# even on a diff that squeaks under the diff cap.
+# even on a diff that squeaks under the diff cap. MAX_SNIPPET_CHARS caps a single
+# embedded line so one very long line (minified/base64 blob, giant comment) can't
+# balloon the packet the agents receive inline.
 MAX_CANDIDATES_PER_CHECK = 40
-MAX_SNIPPET_LINES = 200
+MAX_SNIPPET_CHARS = 200
+
+
+def _snip(text: str) -> str:
+    """Trim and length-cap a diff line for safe embedding in the packet."""
+    s = text.strip()
+    return s if len(s) <= MAX_SNIPPET_CHARS else s[:MAX_SNIPPET_CHARS] + "…"
 
 
 @dataclass
@@ -251,6 +259,49 @@ FIELD_RE = re.compile(r"^\s*([A-Za-z_]\w*)\s*[:=]")
 CLASS_RE = re.compile(r"^\s*class\s+([A-Za-z_]\w*)")
 ENUM_MEMBER_RE = re.compile(r"^\s*([A-Z][A-Z0-9_]+)\s*=")
 
+# Docstring section labels (`Args:`, `Returns:`, `Note:` …) match FIELD_RE but
+# are prose, not contract fields; exclude them so C2/C5 stay mechanical.
+_DOCSTRING_LABELS = frozenset(
+    {
+        "args", "arguments", "attributes", "example", "examples", "note", "notes",
+        "param", "parameters", "raises", "return", "returns", "see", "todo",
+        "fixme", "warning", "warnings", "yields", "usage",
+    }
+)
+
+
+def field_name(diff_line: str) -> str | None:
+    """Return the field/assignment name on a contract-source line, or None.
+
+    Rejects comment lines and docstring section labels so the mechanical C2/C5
+    layer doesn't emit prose as a 'field'."""
+    stripped = diff_line.lstrip()
+    if stripped.startswith("#"):
+        return None
+    m = FIELD_RE.match(diff_line)
+    if not m:
+        return None
+    name = m.group(1)
+    if name.lower() in _DOCSTRING_LABELS:
+        return None
+    return name
+
+
+def _slug_matches(slug: str, text: str) -> bool:
+    """Does `slug` reference `text` (an impact filename stem or header line)?
+
+    Numeric issue slugs (from `#N`) match on word boundaries so `21` matches
+    `21-foo` but NOT `121-legacy` — bare substring containment there is a
+    false-negative hazard (it would treat an unrelated old impact file as
+    covering this change). Text slugs (branch names) use substring, but require
+    a minimum length so a 1-2 char branch fragment can't match everything.
+    """
+    if not slug or not text:
+        return False
+    if slug.isdigit():
+        return re.search(rf"(?<!\d){re.escape(slug)}(?!\d)", text) is not None
+    return len(slug) >= 3 and slug in text
+
 
 def check_c1_impact(
     changed: list[str], comps: list[Component], impact_dir: Path, branch: str, commit_slugs: list[str]
@@ -267,14 +318,14 @@ def check_c1_impact(
     if impact_dir.is_dir():
         for f in impact_dir.rglob("*.md"):
             stem = f.stem
-            if any(s and (s in stem or stem in s) for s in slugs):
+            if any(_slug_matches(s, stem) for s in slugs):
                 found = True
                 break
             try:
                 head = f.read_text(encoding="utf-8", errors="replace")[:500]
             except OSError:
                 head = ""
-            if any(s and s in head for s in slugs):
+            if any(_slug_matches(s, head) for s in slugs):
                 found = True
                 break
     if found:
@@ -325,7 +376,7 @@ def check_c3_cross_component(
                             "verdict": "FLAG",
                             "confidence": "LOW",
                             "summary": f"{src_comp} imports {mod} (looks like {c.name})",
-                            "evidence": {"path": path, "line": ln, "text": text.strip()},
+                            "evidence": {"path": path, "line": ln, "text": _snip(text)},
                         }
                     )
                     break
@@ -371,13 +422,13 @@ def check_c5_breaking_without_adr(
         if cur is None or line.startswith("@@") or line.startswith("+++") or line.startswith("---"):
             continue
         if line.startswith("-"):
-            fm = FIELD_RE.match(line[1:])
-            if fm:
-                removed.append({"path": cur, "field": fm.group(1), "text": line[1:].strip()})
+            name = field_name(line[1:])
+            if name:
+                removed.append({"path": cur, "field": name, "text": _snip(line[1:])})
         elif line.startswith("+"):
-            fm = FIELD_RE.match(line[1:])
-            if fm:
-                added.append({"path": cur, "field": fm.group(1), "text": line[1:].strip()})
+            name = field_name(line[1:])
+            if name:
+                added.append({"path": cur, "field": name, "text": _snip(line[1:])})
     c2_candidates = (removed + added)[:MAX_CANDIDATES_PER_CHECK]
     if not removed:
         return [], c2_candidates
@@ -387,7 +438,7 @@ def check_c5_breaking_without_adr(
     branch_slug = branch.split("/")[-1]
     if not has_adr and impact_dir.is_dir():
         for f in impact_dir.rglob("*.md"):
-            if branch_slug and branch_slug in f.stem:
+            if _slug_matches(branch_slug, f.stem):
                 try:
                     if adr_re.search(f.read_text(encoding="utf-8", errors="replace")):
                         has_adr = True
@@ -437,7 +488,7 @@ def extract_lexicon_candidates(
                 if name.lower() in known or name.lower() in seen_terms:
                     continue
                 seen_terms.add(name.lower())
-                l1_candidates.append({"term": name, "path": path, "line": ln, "text": text.strip()})
+                l1_candidates.append({"term": name, "path": path, "line": ln, "text": _snip(text)})
                 break
             if len(l1_candidates) >= MAX_CANDIDATES_PER_CHECK:
                 break
@@ -454,7 +505,7 @@ def extract_lexicon_candidates(
                             "canonical_term": entry["term"],
                             "path": path,
                             "line": ln,
-                            "text": text.strip(),
+                            "text": _snip(text),
                         }
                     )
             if len(l3_hits) >= MAX_CANDIDATES_PER_CHECK:

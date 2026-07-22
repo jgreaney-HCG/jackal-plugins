@@ -277,6 +277,105 @@ def test_known_term_not_new() -> None:
         check("known term Module not flagged new", "Module" not in new_terms, str(new_terms))
 
 
+# ---------------------------------------------------------------------------
+# Test (regression): long lines are snipped so the packet stays bounded
+# ---------------------------------------------------------------------------
+def test_long_line_snipped() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        repo = Path(d)
+        scenario_base(repo)
+        git(repo, "checkout", "-q", "-b", "feature/hugeline")
+        write(repo, "docs/canon/impact/feature/hugeline.md", "x")
+        # one enormous added line in a contract source (under the file/line caps)
+        blob = "x" * 500_000
+        write(repo, "packages/gallery/api/contracts.py", f"class Foo:\n    id: int\n    name: str\n    # {blob}\n")
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "huge line")
+        code, out = run_prepass(repo)
+        packet_size = len(json.dumps(out))
+        check("huge line packet stays small", packet_size < 20_000, f"packet={packet_size} chars")
+        # every embedded text field must be capped
+        texts = []
+        for f in out.get("deterministic_findings", []):
+            ev = f.get("evidence", {})
+            if isinstance(ev.get("text"), str):
+                texts.append(ev["text"])
+        for c in out.get("sentinel_candidates", {}).get("c2_surface_changes", []):
+            texts.append(c.get("text", ""))
+        check("no embedded text exceeds cap", all(len(t) <= 210 for t in texts), f"max={max((len(t) for t in texts), default=0)}")
+
+
+# ---------------------------------------------------------------------------
+# Test (regression): numeric issue slug must not substring-match a longer number
+# ---------------------------------------------------------------------------
+def test_slug_no_false_positive() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        repo = Path(d)
+        scenario_base(repo)
+        git(repo, "checkout", "-q", "-b", "feature/nomatch")
+        # an unrelated pre-existing impact file whose number *contains* our slug
+        write(repo, "docs/canon/impact/121-legacy-migration.md", "old work")
+        write(
+            repo,
+            "packages/gallery/api/contracts.py",
+            "class Foo:\n    id: int\n    name: str\n    extra: bool\n",
+        )
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "add field, closes #21")
+        code, out = run_prepass(repo)
+        checks = {f["check"] for f in out.get("deterministic_findings", [])}
+        check(
+            "c1 flagged despite 121 impact file (slug 21 != 121)",
+            "C1" in checks,
+            str(out.get("deterministic_findings")),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Test (regression): numeric slug still matches its own impact file
+# ---------------------------------------------------------------------------
+def test_slug_true_positive() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        repo = Path(d)
+        scenario_base(repo)
+        git(repo, "checkout", "-q", "-b", "feature/match")
+        write(repo, "docs/canon/impact/21-the-feature.md", "## Contracts touched\nFoo")
+        write(
+            repo,
+            "packages/gallery/api/contracts.py",
+            "class Foo:\n    id: int\n    name: str\n    extra: bool\n",
+        )
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "add field, closes #21")
+        code, out = run_prepass(repo)
+        checks = {f["check"] for f in out.get("deterministic_findings", [])}
+        check("c1 satisfied by 21-*.md for slug 21", "C1" not in checks, str(out.get("deterministic_findings")))
+
+
+# ---------------------------------------------------------------------------
+# Test (regression): docstring labels are not treated as contract fields
+# ---------------------------------------------------------------------------
+def test_docstring_labels_not_fields() -> None:
+    with tempfile.TemporaryDirectory() as d:
+        repo = Path(d)
+        scenario_base(repo)
+        git(repo, "checkout", "-q", "-b", "feature/doc")
+        write(repo, "docs/canon/impact/feature/doc.md", "x")
+        # add only a docstring with section labels; remove nothing real
+        write(
+            repo,
+            "packages/gallery/api/contracts.py",
+            'class Foo:\n    """Summary.\n\n    Args:\n        note: whatever\n    Returns:\n        thing\n    """\n    id: int\n    name: str\n',
+        )
+        git(repo, "add", "-A")
+        git(repo, "commit", "-q", "-m", "add docstring")
+        code, out = run_prepass(repo)
+        c2 = out.get("sentinel_candidates", {}).get("c2_surface_changes", [])
+        fields = {c["field"] for c in c2}
+        check("docstring 'Args' not a field", "Args" not in fields and "args" not in fields, str(fields))
+        check("docstring 'Returns' not a field", "Returns" not in fields, str(fields))
+
+
 def main() -> int:
     for fn in [
         test_no_registry,
@@ -288,6 +387,10 @@ def main() -> int:
         test_c5_with_adr,
         test_lexicon_candidates,
         test_known_term_not_new,
+        test_long_line_snipped,
+        test_slug_no_false_positive,
+        test_slug_true_positive,
+        test_docstring_labels_not_fields,
     ]:
         try:
             fn()
