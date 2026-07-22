@@ -3,6 +3,13 @@ description: Run the contract-sentinel and lexicon-warden agents against the cur
 argument-hint: "[base-ref, default: main]"
 ---
 
+> **⚠️ TEMPORARILY DISABLED.** The `contract-sentinel` and `lexicon-warden`
+> agents are disabled pending a cost fix (an uncapped run consumed ~14M tokens
+> over 23 minutes; see CHANGELOG). **Do not dispatch either agent.** When this
+> command is invoked, tell the user the conformance gate is temporarily
+> disabled and stop — do not run the steps below. They are retained for when
+> the agents are re-enabled.
+
 Run the pre-merge conformance gate for this branch.
 
 Base ref: use `$ARGUMENTS` if provided, otherwise `main`.

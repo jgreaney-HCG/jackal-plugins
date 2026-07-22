@@ -1,5 +1,17 @@
 # Changelog
 
+## [jackal-director] 1.4.1
+
+Temporarily disable the `contract-sentinel` and `lexicon-warden` conformance
+agents pending a cost fix.
+
+**Changed:**
+- `contract-check` no longer dispatches either agent; it reports that the gate is temporarily disabled and stops.
+- Both agent definitions carry a `TEMPORARILY DISABLED` banner instructing them to emit a single `DISABLED:` line and stop if invoked directly (belt-and-braces with the command-level guard).
+
+**Fixed:**
+- Runaway cost: an uncapped `lexicon-warden` run consumed ~14.6M cache-read + ~168K output tokens over 23 minutes (84 sequential greps), and both agents ran on `claude-sonnet-5` despite `model: haiku` frontmatter. Disabling stops the bleed while a scoped/capped/Haiku-enforced rework is designed.
+
 ## [jackal-plan-and-execute] 3.6.0
 
 Test-artifact verification to cut redundant full-suite runs (#24, R8).
