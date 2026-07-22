@@ -87,6 +87,15 @@ the Director packet:
 - `registry-drift-checker` - exported schemas vs registry prose ->
   IN-SYNC/STALE/UNDOCUMENTED/ORPHANED
 
+`contract-sentinel` and `lexicon-warden` do **not** crawl the repo. A
+deterministic pre-pass (`scripts/conformance_prepass.py`, run by
+`/contract-check`) computes the diff, enforces a hard size cap, runs the
+mechanical checks, and hands each agent a small evidence packet inline; the
+agents are read-only adjudicators over that packet. This keeps the gate cheap
+and bounded — the earlier repo-wide crawl could run 20+ minutes. All five
+workers run on Haiku (delta-scribe, sentinel, warden, drift-checker) or Opus
+(director), pinned explicitly at every dispatch site.
+
 Treat a FLAG from these agents as a fact to be dispositioned, not an
 opinion to argue with. If a FLAG is wrong, the fix is usually to make canon
 more precise, and that is itself worth recording.

@@ -47,6 +47,16 @@ Reason: [tests failing / build broken]
 Output: [specific failure]
 ```
 
+**Work budget.** Review is bounded: verify once, then judge. Run the touched-area
+tests (or a cheap full suite) **once** — do not re-run the suite to explore, and do
+not repeatedly widen the run hoping to find something. If the suite is expensive and
+slow, that is the deep reviewer's full-suite responsibility, not yours; scope to the
+diff. If verification is genuinely inconclusive after one honest run (flaky suite,
+missing fixtures, environment you cannot stand up), return `BLOCKED` with what you
+observed rather than grinding through repeated runs. A reviewer that spends dozens of
+tool calls or several suite runs on one diff has lost the plot — one verification pass
+plus focused reading of the diff is the whole job.
+
 **Artifact verification.** If the implementor emitted a per-phase test-report artifact
 (worktree-local, gitignored — canonical example `.jackal/phase-<N>-report.xml`, format-agnostic:
 JUnit XML / JSON / etc.), locate and inspect it: confirm it exists, that it records a passing run,
