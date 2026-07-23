@@ -90,8 +90,16 @@ the planner's `test-requirements.md` a real gate instead of an orphaned artifact
 
 ### 3. Check for Issues
 
+**Reporting bar.** Report an issue only after verifying it against the actual code — read the
+file, check the call sites — never from pattern-matching the diff alone. Every **Critical** and
+**Important** finding must include a one-line **failure scenario**: the concrete input or state
+that produces the wrong behavior. If you cannot construct one, downgrade to Minor or drop it.
+Consolidate repeated instances into one finding with a list of locations. A false positive here
+costs a full fix-and-re-review cycle downstream.
+
 **Critical** (must fix):
-- Security vulnerabilities (injection, auth bypass, exposed secrets)
+- Security vulnerabilities (injection/XSS, auth bypass, exposed secrets, path traversal,
+  secrets/PII in logs, unvalidated input at trust boundaries)
 - Missing error handling on external calls
 - Data corruption risk
 - Tests that can't actually fail (tautological assertions)
@@ -99,8 +107,17 @@ the planner's `test-requirements.md` a real gate instead of an orphaned artifact
 **Important** (should fix):
 - Missing test coverage for a stated AC
 - Race conditions or concurrency issues
-- Performance problems (N+1 queries, unbounded loops)
+- Performance problems (N+1 queries, unbounded loops, missing timeouts on external calls)
 - Incorrect error messages that would mislead users
+- UI phase report silent on the visual gate (see below)
+
+**Visual-gate verification (UI phases).** If the diff touches UI files (`.tsx`/`.jsx`/`.vue`/
+CSS/SCSS or a rendered view/story), the implementor's report must carry the per-slice visual-gate
+outcome: rendered + screenshot inspected, compared against the phase's reference image when one is
+linked, or an explicitly surfaced capability gap (no dev server / no browser tools). A UI phase
+report that is silent on the visual gate is an **Important** issue — unverified pixels, same class
+as a missing test-report artifact. You do not re-render yourself; live visual re-verification
+belongs to `jackal-ui-verify` before finish.
 
 **Minor** (note but don't block):
 - Naming suggestions
