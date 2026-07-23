@@ -127,7 +127,7 @@ defect (see "Subagent discipline" above).
 | Dispatched agent | Tier | `model` param |
 |---|---|---|
 | `planner` | Opus | `opus` |
-| `implementor` | Sonnet | `sonnet` |
+| `implementor` | Sonnet (default) — Haiku for mechanical slices | `sonnet` / `haiku` |
 | `reviewer` | Sonnet | `sonnet` |
 | `reviewer-deep` | Opus | `opus` |
 | `contract-sentinel` | Haiku | `haiku` |
@@ -147,6 +147,47 @@ holder).
 > dispatch sites all now agree on `haiku`. (Earlier cycles promoted them to
 > Sonnet to compensate for an unbounded repo crawl that once ran 20+ minutes;
 > the reframe removed the crawl, so the promotion is gone.)
+
+### Choosing the `implementor` tier (Sonnet default, Haiku opt-in)
+
+**Sonnet is the default implementor tier and the safe choice — when unsure, pick
+Sonnet.** The orchestrator MAY drop a single phase to `model=haiku` only when the
+phase is *mechanical and fully specified* — a runaway-thinking session on a
+marathon Sonnet implementor was ~97% hidden thinking tokens, and a well-specified
+slice does not need that reasoning budget. A phase qualifies for Haiku only when
+**all** of these hold:
+
+- The phase file names its exact files to create/modify (no discovery required).
+- It carries a concrete spec the implementor executes rather than designs — for a
+  UI slice that means a linked reference image and/or an existing story/component
+  to mirror; for non-UI work, an unambiguous contract with no architectural
+  choice left open.
+- It touches **no** contract boundary, auth, payments, user data, or crypto (those
+  stay Sonnet regardless — same risk surface the review tiering guards).
+- It is not the integration/wiring phase that composes other phases' output.
+
+Dense integration slices, contract changes, and anything ambiguous stay on
+**Sonnet**. When the orchestrator picks Haiku, it MUST state a one-line reason in
+the dispatch (e.g. `model=haiku — S4 is a self-contained view slice with a linked
+reference PNG and an existing story to mirror; no contract surface`). An
+unexplained Haiku dispatch is a defect in the same sense a missing `model` param
+is. If a Haiku implementor stalls, produces a wrong deliverable, or its phase
+turns out larger than specified, re-dispatch that phase cold on **Sonnet** (the
+`-r2` fallback posture) — Haiku is an optimization for the easy case, never a
+floor to grind against.
+
+**The tier is chosen per *cold dispatch*, not mid-continuation.** A `SendMessage`
+continuation inherits the model of its cold dispatch and takes no `model` param
+(see "Model discipline" above), so the tier decision is made only when an agent
+is dispatched cold: a fresh trunk (phase 1 or an `-r2` reset) and every leaf
+(`implementor-<N>-pX`) each get their own tier choice. This maps cleanly onto the
+qualifying shapes: a **leaf** phase is independent and self-contained by
+construction, so it is the common Haiku candidate; the **trunk** carries warm
+cross-phase context and is usually the integration spine, so it typically stays
+Sonnet. Do not try to switch a warm trunk to Haiku for a single later phase —
+that would require abandoning the continuation (a fresh cold dispatch), which
+costs more context than the tier saves. If a later trunk phase is genuinely
+mechanical enough to want Haiku, prefer scheduling it as a leaf.
 
 ### Verifying the `reviewer` tier
 
@@ -374,9 +415,12 @@ Do not dispatch or invoke any subagents — do the work directly with your own t
 </invoke>
 ```
 
-`model=sonnet` is required (Model Tier Table — implementor = Sonnet; a missing `model` param is a
-defect, per "Subagent discipline" above), and the "Do not dispatch or invoke any subagents" line
-is required verbatim.
+An explicit `model` param is required (a missing one is a defect, per "Subagent discipline" above).
+The template shows `model=sonnet`, the safe default; a leaf may instead be dispatched
+`model=haiku` when it meets **all** the Haiku criteria in "Choosing the `implementor` tier" above
+(self-contained, exact file list, a reference image/story to mirror, no contract surface) — leaves
+are the common Haiku candidate. State the one-line reason in the prompt when you do. The "Do not
+dispatch or invoke any subagents" line is required verbatim regardless of tier.
 
 **Leaves are never continued across phases.** Each leaf is single-phase: it is dispatched cold for
 its one independent phase and returns. If a later phase depends on a leaf's phase, that later

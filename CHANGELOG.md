@@ -1,5 +1,18 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.9.0
+
+Front-end fidelity and implementor cost/speed: catch visual defects per-slice instead of at end-of-epic, give implementors a rendered target to match, and let well-specified mechanical slices run on Haiku.
+
+**New:**
+- **Per-slice visual gate** (`implementor`): UI phases must render the built view/story via the Playwright MCP browser, screenshot it, compare against the phase's reference image, and fix visible defects (occlusion, overflow, wrong spacing, incoherent numbers) *before* committing. A "green" unit test no longer counts as a verified UI phase.
+- **Reference screenshots at design time** (`design`): FE features with a static prototype/packet now render it once and commit reference PNGs to `docs/design-plans/assets/<slug>/`, so implementors translate against a rendered target rather than raw prototype source.
+
+**Changed:**
+- **Implementor model tiering** (`execute`): Sonnet remains the default and safe choice, but the orchestrator may drop a fully-specified mechanical slice to `model=haiku` (exact file list, a linked reference image / story to mirror, no contract surface, not the integration phase) with a one-line justification. Dense/ambiguous/contract slices stay Sonnet; a Haiku stall re-dispatches cold on Sonnet.
+- **Paste-don't-point** (`planner`): phases that depend on a region of a large source file must carry the extracted excerpt inline (with source path + line range), not an instruction to go read lines X–Y.
+- **Fixture-first ordering** (`planner` + `design`): the canonical fixture/demo dataset is identified and scheduled as an early phase the view phases depend on — views are never developed against empty data.
+
 ## [jackal-director] 1.5.0
 
 Reframe the conformance gate around a deterministic pre-pass so it stays cheap and bounded; re-enable the sentinel and warden as read-only adjudicators; pin every director agent's model at its dispatch site.
