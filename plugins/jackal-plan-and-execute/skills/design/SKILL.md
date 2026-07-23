@@ -211,6 +211,32 @@ git add docs/design-plans/
 git commit -m "docs: design plan for [slug]"
 ```
 
+### 5a. Capture Reference Screenshots (FE work with a static prototype)
+
+If the feature is front-end and there is a static design prototype/packet (an HTML mockup, a
+design-packet file, an exported Figma page), render it **once now** and commit reference
+screenshots — implementors translate prototype source into React far more faithfully when they can
+compare against a rendered target, and the alternative is discovering every visual defect at
+end-of-epic.
+
+- Open the prototype in the Playwright MCP browser (`browser_navigate` to the local file/URL) and
+  screenshot each distinct view/state (`browser_take_screenshot`).
+- Commit the PNGs to `docs/design-plans/assets/<slug>/` alongside the design doc, on the feature
+  branch.
+- In the design doc's Implementation Phases, note which reference image belongs to which view phase
+  so the planner can wire a `**Reference:**` line into each FE phase file (see the `planner`
+  agent's FE section).
+
+Also **name the canonical fixture/demo dataset** the views should render, and note in the design
+doc that seeding it must be scheduled *before* the view phases — never against empty data. This is
+the fixture-first constraint the planner enforces.
+
+If there is no static prototype (design is described in prose, or the UI is trivial), skip this
+step — do not fabricate a prototype to screenshot. If a prototype exists but no Playwright MCP
+browser tools are available in this environment, note in the design doc that reference screenshots
+still need capturing (so a later pass or the implementor's own render covers it) rather than
+silently dropping the fidelity target.
+
 ### 6. Hand Off
 
 ```

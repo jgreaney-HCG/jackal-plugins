@@ -63,6 +63,9 @@ For each design phase, write `phase_NN.md` to PLAN_DIR.
 **Depends on:** [optional — list of prior phase ids, e.g. `phase_01, phase_02`, that must
 complete before this phase may start. OMIT this line entirely for the sequential default
 (see schema note below).]
+**Reference:** [optional — for a UI/view phase, the reference image to match, e.g.
+`docs/design-plans/assets/<slug>/snapshot-view.png`. OMIT for non-UI phases. See the FE section
+below.]
 
 ---
 
@@ -127,6 +130,34 @@ mark phases that are safe to run out of strict order:
 - Include code when it's non-obvious. Describe behavior when it's straightforward.
 - Every functionality section maps to specific ACs.
 - Infrastructure phases (setup, config) verify operationally, not with unit tests.
+
+**Paste the excerpt, don't point at the file.** When a phase depends on a specific region of a
+large source file (a prototype/packet HTML, a long template, a big config), **extract the exact
+relevant excerpt into the phase file** — the specific template block, method, or type — instead of
+writing "read `packet.html` lines 812–983 and find the isSnapshot block." Pointing forces the
+implementor to spelunk and reason about a large file it should not have to read whole; a marathon
+implementor session spent its first ~73 minutes doing exactly that. You already read the codebase
+in step 2 — capture what the implementor needs while you have it open. Cite the source path and
+line range alongside the excerpt so it stays traceable, but the excerpt itself must be in the phase.
+
+### 4a. Front-End Phases: Reference Assets and Fixture-First Ordering
+
+When the plan implements UI against a static design prototype/packet (an HTML mockup, Figma export,
+or design-packet file):
+
+- **Link a reference image in every view/component phase.** The design step commits rendered
+  reference screenshots to `docs/design-plans/assets/` (see the `design` skill). In each FE phase
+  file, add a `**Reference:**` line pointing at the specific PNG for that view state, so the
+  implementor's per-slice visual gate has something concrete to compare against. If a reference
+  image for a view state does not exist yet, flag it in Notes rather than leaving the phase with no
+  visual target.
+- **Schedule the canonical fixture/demo dataset *first*.** Identify the canonical
+  fixture/seed/demo dataset the views are meant to render, and make seeding it an **early phase
+  that other view phases depend on** — never develop views against empty data. Views built against
+  an empty org hide layout, overflow, and number-coherence problems until the fixture lands last,
+  which is exactly the failure that spawned a late number-reconciliation scramble. If the fixture
+  work is large, it is its own phase; smaller seeds can ride the first view phase, but the seed
+  must precede the views that read it.
 
 ### 5. Write test-requirements.md
 

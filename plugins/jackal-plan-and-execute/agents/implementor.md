@@ -123,6 +123,32 @@ non-Python projects, run the project's configured formatter/linter (Prettier,
 gofmt, etc.) under the same rule. If no formatter is configured, skip this — do
 not introduce one.
 
+**Per-slice visual gate (UI phases only).** If the phase you just implemented touches UI (it
+creates/modifies `.tsx`/`.jsx`/`.vue`/`.css`/`.scss` or the phase file names a rendered view,
+component, or story), you must **look at the pixels before the phase's final (done) commit** — a
+passing unit/story test does not prove the view is correct. This gate runs once, gating the commit
+that completes the phase; it does not block the intermediate WIP commits that commit-early (step 5)
+still expects. Do this yourself with whatever Playwright MCP browser tools the project provides (do
+NOT dispatch a subagent). Tool names vary by which Playwright MCP server is configured — the
+Microsoft `@playwright/mcp` server exposes `browser_navigate` / `browser_take_screenshot` /
+`browser_console_messages`; other servers use `playwright_navigate` / `playwright_screenshot` /
+`playwright_console_logs`. Use whichever your available tools expose:
+
+1. Render the thing you built — its Storybook story if one exists, otherwise the live dev route.
+2. Screenshot it and actually inspect the image.
+3. If the phase file links a **reference image** (the `docs/design-plans/assets/` convention the
+   design step establishes — see the `design` skill), compare your screenshot against it side by
+   side. Fix anything that visibly differs — overlap/occlusion, overflow, wrong spacing, missing
+   elements, incoherent numbers — before the done commit.
+4. Check the console is clean of errors.
+
+This moves fidelity checking from end-of-epic discovery to the slice that introduced the problem.
+If no reference image exists and none can be inferred, still render and eyeball your own output for
+obvious breakage — an unrendered "green" UI phase is not verified. If the app cannot be rendered
+(no dev server, build-only phase) or no Playwright MCP browser tools are available in your
+environment, say so in your report rather than skipping silently — a missing capability is a
+surfaced gap, not a passed gate.
+
 **Per-phase test-report artifact (downstream projects).** When the downstream project has a real,
 non-trivial test suite — the kind where a full re-run is expensive (hundreds/thousands of tests) —
 write a machine-readable test-report artifact for the phase's test run, so the same-cycle per-phase
