@@ -36,34 +36,49 @@ Accept: design plan path, issue doc path, or issue ID.
 
 ## Step 2: Resolve Worktree
 
-**Read the `## Worktree` block from the issue doc.** Parse `branch:` and `path:` fields.
+**Git is the authoritative source for what worktree/branch exists** — not a committed doc block.
+Resolve by asking git directly for a worktree whose branch matches this issue number:
+
+```bash
+ISSUE="24"   # GitHub issue number for this work unit
+# Find an existing worktree whose branch is <type>/<issue#>-slug (bare-integer scheme).
+WORKTREE_PATH=$(git -C "$REPO_ROOT" worktree list --porcelain \
+  | awk -v n="$ISSUE" '
+      /^worktree /{p=$2}
+      /^branch /{ b=$2; if (b ~ ("/" n "-") || b ~ ("/" n "$")) print p }' \
+  | head -1)
+[ -n "$WORKTREE_PATH" ] && BRANCH=$(git -C "$WORKTREE_PATH" branch --show-current)
+```
+
+If that finds nothing, fall back to the on-disk `## Worktree` block in the issue doc (an
+uncommitted convenience written by `jackal-design-plan`; it may be absent):
 
 ```bash
 ISSUE_DOC="$REPO_ROOT/$ISSUE_DOCS/${ISSUE_ID}-${SLUG}.md"
-WORKTREE_REL=$(awk '/^## Worktree/{flag=1; next} /^## /{flag=0} flag && /- path:/{print $3}' "$ISSUE_DOC")
-BRANCH=$(awk '/^## Worktree/{flag=1; next} /^## /{flag=0} flag && /- branch:/{print $3}' "$ISSUE_DOC")
+[ -z "$WORKTREE_PATH" ] && WORKTREE_REL=$(awk '/^## Worktree/{flag=1; next} /^## /{flag=0} flag && /- path:/{print $3}' "$ISSUE_DOC")
+[ -z "$BRANCH" ] && BRANCH=$(awk '/^## Worktree/{flag=1; next} /^## /{flag=0} flag && /- branch:/{print $3}' "$ISSUE_DOC")
 ```
 
 **Three cases:**
 
-1. **Block found and `$REPO_ROOT/$WORKTREE_REL` exists** → reuse it.
+1. **Worktree resolved (via git, or via the doc block and `$REPO_ROOT/$WORKTREE_REL` exists)** →
+   reuse it.
    ```bash
-   WORKTREE_PATH="$REPO_ROOT/$WORKTREE_REL"
+   # If git already set an absolute WORKTREE_PATH, keep it; otherwise build from the doc block.
+   [ -z "$WORKTREE_PATH" ] && WORKTREE_PATH="$REPO_ROOT/$WORKTREE_REL"
+   cd "$WORKTREE_PATH" && git branch --show-current   # verify expected branch; warn on mismatch
    ```
-   Verify the worktree is on the expected branch:
-   ```bash
-   cd "$WORKTREE_PATH" && git branch --show-current
-   ```
-   If branch mismatches → warn but proceed.
 
-2. **Block found but path missing** (e.g., worktree was removed) → recreate at the same path/branch:
+2. **A doc block names a path that no longer exists** (worktree was removed, git found nothing) →
+   recreate at the same path/branch:
    ```bash
    cd "$REPO_ROOT"
    git worktree add "$REPO_ROOT/$WORKTREE_REL" "$BRANCH" || \
      git worktree add "$REPO_ROOT/$WORKTREE_REL" -b "$BRANCH" main
    ```
 
-3. **No block found** (Standard issue that skipped /jackal-design-plan) → run conflict gate, create worktree, persist `## Worktree` block to issue doc:
+3. **Nothing resolved** (Standard issue that skipped /jackal-design-plan) → run conflict gate,
+   create worktree, and record the assignment:
 
    ```bash
    cd "$REPO_ROOT"
@@ -90,13 +105,11 @@ BRANCH=$(awk '/^## Worktree/{flag=1; next} /^## /{flag=0} flag && /- branch:/{pr
    git worktree add "$WORKTREE_PATH" -b "$BRANCH" "$BASE"
    ```
 
-   Append `## Worktree` block to the issue doc with `branch:`, `path:`, `created:`. Set `**Status:** In Progress`. Commit the issue doc update from `$REPO_ROOT` so it lands on main:
-
-   ```bash
-   cd "$REPO_ROOT"
-   git add "$ISSUE_DOC"
-   git commit -m "chore: assign worktree for #${ISSUE}"
-   ```
+   Write the `## Worktree` block into the issue doc **on disk** (uncommitted, repo-root-relative
+   paths) with `branch:`, `path:`, `created:`, and set `**Status:** In Progress`. **Do not commit
+   it to `main`** — the durable assignment record is the GitHub issue comment + label in Step 3,
+   and git itself is the authority for what worktree exists. The old `chore: assign worktree for
+   #N` commit on the trunk is removed.
 
 **Critical:** never silently bail. If the worktree resolution fails for any reason, report exactly what was tried and what failed — the user shouldn't see "could not find worktree" with no detail.
 

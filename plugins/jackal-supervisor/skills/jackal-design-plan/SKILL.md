@@ -73,31 +73,34 @@ if [ ! -d "$WORKTREE_PATH" ]; then
 fi
 ```
 
-## Step 3: Persist Worktree to Issue Doc
+## Step 3: Record the Worktree Assignment
 
-Append (or replace) a `## Worktree` block in the issue doc. **This is the single source of truth** that `jackal-impl-plan` will read:
+**Do not commit anything to `main` here.** Worktree assignment and issue status are backlog
+metadata, and this project's backlog is GitHub Issues — the durable record is the issue comment +
+label written in Step 4, not a commit. Committing bookkeeping to `main` (the old behavior) left a
+trail of `chore: assign worktree for #N` commits on the trunk; that route is removed.
 
-```markdown
-## Worktree
+The **authoritative record of what worktree/branch exists is git itself** (`git worktree list`,
+`git branch`), which `jackal-impl-plan` reads back directly. So:
 
-- branch: feat/24-slug
-- path: .worktrees/24-slug
-- created: 2026-05-28
-```
+- Write the `## Worktree` block into the issue doc **on disk** as a local convenience for
+  same-session reads (uncommitted — it lives in the repo-root working tree):
 
-Use repo-root-relative paths in the doc so it's portable. Skills convert to absolute via `$REPO_ROOT/<path>` at read time.
+  ```markdown
+  ## Worktree
 
-Set `**Status:** In Progress` in the issue doc.
+  - branch: feat/24-slug
+  - path: .worktrees/24-slug
+  - created: 2026-05-28
+  ```
 
-Commit the issue-doc update from `$REPO_ROOT` (this commit lands on `main`, not the feature branch):
+  Use repo-root-relative paths so it's portable; skills convert to absolute via `$REPO_ROOT/<path>`.
+- Set `**Status:** In Progress` in the on-disk issue doc.
+- **Do not `git add`/`git commit` the issue doc on `main`.** If the issue doc itself needs to be
+  versioned, it rides along on the feature branch when the design/impl commits land inside the
+  worktree — never as a standalone bookkeeping commit on the trunk.
 
-```bash
-cd "$REPO_ROOT"
-git add "$ISSUE_DOCS/${ISSUE_ID}-${SLUG}.md"
-git commit -m "chore: assign worktree for ${ISSUE_ID}"
-```
-
-## Step 4: Update Backlog State
+## Step 4: Update Backlog State (the durable record)
 
 ```bash
 GH_ISSUE_NUM=$(echo "$ISSUE_ID" | grep -oE '[0-9]+$')

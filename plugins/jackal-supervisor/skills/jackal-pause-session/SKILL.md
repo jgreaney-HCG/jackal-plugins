@@ -60,6 +60,16 @@ ISSUE_ID=$(echo "$BRANCH" | grep -oE '(^|/)[0-9]+(-|$)' | grep -oE '[0-9]+' | he
 ls $REPO_ROOT/$ISSUE_DOCS/ | grep "PREFIX-XXX"
 ```
 
+**Resolve the worktree from git** (authoritative for what's on disk — same approach as
+`jackal-impl-plan`), so the resume command in Step 3 can locate the plan directory:
+```bash
+ISSUE=$(echo "$ISSUE_ID" | grep -oE '[0-9]+$')
+WORKTREE_PATH=$(git -C "$REPO_ROOT" worktree list --porcelain \
+  | awk -v n="$ISSUE" '/^worktree /{p=$2} /^branch /{b=$2; if (b ~ ("/" n "-") || b ~ ("/" n "$")) print p}' \
+  | head -1)
+WORKTREE_REL="${WORKTREE_PATH#$REPO_ROOT/}"
+```
+
 Confirm Status is "In Progress".
 
 ---
@@ -151,15 +161,17 @@ EOF
 
 ---
 
-## Step 6: Commit the Checkpoint
+## Step 6: Persist the Checkpoint (no commit on main)
 
-```bash
-cd $REPO_ROOT
-git add $ISSUE_DOCS/PREFIX-XXX-*.md
-git commit -m "chore: pause PREFIX-XXX — checkpoint: [brief phrase]"
-```
+The durable checkpoint is the GitHub issue comment + status label written in Step 5 — that is what
+the supervisor reads back to give the resume command. Update the issue doc's `**Status:**` and
+`**Last Checkpoint:**` fields **on disk** (Step 4) but **do not commit them to `main`.** A pause is
+backlog bookkeeping, not feature history; the old `chore: pause …` commit on the trunk is removed.
 
-Do NOT push — local checkpoint commit only.
+If work-in-progress exists in the worktree, that is preserved separately — the implementor's
+commit-early discipline keeps green checkpoints on the **feature branch** inside the worktree, and
+`git stash`/an uncommitted working tree in the worktree survives untouched. Nothing about pausing
+should write to `main`.
 
 ---
 
