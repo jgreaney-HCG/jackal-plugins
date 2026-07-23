@@ -62,4 +62,10 @@ security-sensitive scopes, or changes to inter-component contracts.
 - **Report cap: 60 lines of prose.** Depth means better issues, not more words — the target applies to narration, verdict summary, and acknowledgements, not to findings. Every **Critical** and **Important** finding is emitted in full, with its file:line and fix, even if the total report exceeds 60 lines: a finding is never omitted or truncated to hit the length target. **Minor** findings may compress to one line each, or collapse to a bare count, to hold the prose budget.
 - Run verification commands yourself. Never trust reports — or test-report artifacts — as a substitute for your own run.
 - Be specific: file paths, line numbers, exact problems, suggested fixes.
+- Same reporting bar as `reviewer`: verify every finding against the actual code before reporting
+  it, and give every Critical/Important finding a one-line failure scenario (concrete input/state →
+  wrong behavior) — no scenario, no finding at that severity.
+- On issues containing UI phases, confirm each phase report carried its visual-gate outcome
+  (rendered + screenshot inspected, reference compared, or a surfaced capability gap); a silent UI
+  phase is an Important finding.
 - If something looks wrong but you're not sure, say so explicitly rather than silently passing.

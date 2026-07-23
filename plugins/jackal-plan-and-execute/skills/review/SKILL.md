@@ -39,6 +39,10 @@ TEST_REQUIREMENTS: [path to <plan-dir>/test-requirements.md]
 [If implementation guidance exists:]
 GUIDANCE: [path to .jackal/implementation-guidance.md]
 
+[If the diff touches UI files:]
+UI_PHASES: [phase numbers, with each phase's Reference: image path if the phase file links one] —
+verify each phase report's visual-gate outcome (see reviewer's "Visual-gate verification").
+
 Do not dispatch or invoke any subagents — run all verification directly with your own tools.
 </parameter>
 </invoke>

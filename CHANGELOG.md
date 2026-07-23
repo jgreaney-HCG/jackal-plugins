@@ -1,5 +1,19 @@
 # Changelog
 
+## [jackal-plan-and-execute] 3.11.0
+
+Close the reviewer's remaining gaps from the code-reviewer consolidation review: a false-positive bar on findings, broader security bullets, and independent verification that UI phases actually ran their visual gate.
+
+**Changed:**
+- `reviewer` (step 3): new reporting bar — findings must be verified against the actual code (not pattern-matched from the diff), every Critical/Important finding requires a one-line failure scenario (concrete input/state → wrong behavior; no scenario → downgrade or drop), and repeated instances consolidate into one finding. Rationale: each false positive costs a full fix-and-re-review cycle.
+- `reviewer` (step 3): security bullets extended with path traversal, XSS, secrets/PII in logs, unvalidated trust-boundary input; missing timeouts on external calls added under Important.
+- `reviewer` (step 3): visual-gate verification — a UI phase whose implementor report is silent on the per-slice visual gate (no rendered/screenshot/reference-compare outcome and no surfaced capability gap) is an Important issue, same class as a missing test-report artifact. The reviewer checks the claim; live re-rendering stays with `jackal-ui-verify`.
+- `reviewer-deep` (rules): same reporting bar and UI visual-gate outcome check, stated at this tier.
+- `review` (dispatch template): optional `UI_PHASES` line so the orchestrator tells the reviewer which phases need visual-gate outcome checks and which reference images they cite.
+
+**New:**
+- `docs/reports/2026-07-23-code-reviewer-consolidation.md` — workstation code-reviewer inventory verdicts (retain the jackal reviewer pair; delete the ECC user-level agent and marketplace), reconciliation notes against 3.10.0, and remaining machine-side actions.
+
 ## [jackal-supervisor] 3.4.0
 
 Stop planning/bookkeeping commits from landing on `main`. Worktree assignment and issue status are backlog metadata; the backlog is GitHub Issues, so the durable record is the issue comment + label, and git itself is the authority for what worktree exists.
