@@ -290,7 +290,9 @@ PHASE_FILE: [path to phase_01.md]
 Working directory: [worktree path]
 
 Implement this phase: read the phase file fully and follow its Context, Goal, and AC
-Coverage exactly. Write code, tests where applicable, run the project's verification
+Coverage exactly. Before writing code, invoke the `jackal-house-style:coding-effectively` skill and
+follow the language sub-skill it routes you to (fall back to your own principles + project CLAUDE.md
+if it isn't installed). Write code, tests where applicable, run the project's verification
 commands, and commit your work.
 
 EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher is monitoring this
@@ -324,7 +326,9 @@ since your own writes changed them.
 PHASE_FILE: [path to phase_0N.md]
 
 Treat this phase file as the complete spec for this phase. Implement it, test it,
-verify it, and commit on the current branch.
+verify it, and commit on the current branch. The house-style guidance from
+`jackal-house-style:coding-effectively` still applies — re-invoke it if this phase writes code in a
+language you haven't touched yet this session.
 
 EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher is monitoring this
 worktree's HEAD; going silent past EXPECT triggers a STALLED recovery). If you cannot finish
@@ -396,7 +400,9 @@ PHASE_FILE: [path to phase_0<PHASE>.md]
 Working directory: [worktree path — same worktree as the trunk]
 
 Implement this phase: read the phase file fully and follow its Context, Goal, and AC
-Coverage exactly. Write code, tests where applicable, run the project's verification
+Coverage exactly. Before writing code, invoke the `jackal-house-style:coding-effectively` skill and
+follow the language sub-skill it routes you to (fall back to your own principles + project CLAUDE.md
+if it isn't installed). Write code, tests where applicable, run the project's verification
 commands, and commit your work on the current branch.
 
 EXPECT: commit a resumable checkpoint within `<expect-seconds>` (a watcher may be monitoring this

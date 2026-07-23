@@ -1,5 +1,29 @@
 # Changelog
 
+## [jackal-supervisor] 3.4.0
+
+Stop planning/bookkeeping commits from landing on `main`. Worktree assignment and issue status are backlog metadata; the backlog is GitHub Issues, so the durable record is the issue comment + label, and git itself is the authority for what worktree exists.
+
+**Changed:**
+- `jackal-design-plan` (Step 3) and `jackal-impl-plan` (Step 2, Standard path): no longer `git commit` the issue-doc / `## Worktree` block on `main`. The `## Worktree` block is still written to disk (uncommitted) as a same-session convenience; the assignment is recorded in GitHub via the existing issue comment + `status/in-progress` label.
+- `jackal-impl-plan` (Step 2): worktree resolution now asks **git** (`git worktree list`) for the issue's worktree first, falling back to the on-disk doc block — git is authoritative for what exists on disk, so a committed doc block is no longer needed.
+- `jackal-pause-session` (Step 6): no longer commits a `chore: pause …` checkpoint on `main`; the checkpoint lives in the GitHub issue comment + status label (Step 5) and the issue-doc edit stays uncommitted.
+
+**Fixed:**
+- Root cause of the `chore: assign worktree for #N` / `docs: issue doc + worktree for #N` / `chore: pause …` commits accumulating directly on `main`'s trunk (~one per issue). These were leftovers from the file-based-backlog era; with GitHub Issues as the backlog they were redundant bookkeeping.
+
+## [jackal-plan-and-execute] 3.10.0
+
+Wire the house-style coding skill into implementation so it actually fires, and depend on it explicitly.
+
+**Changed:**
+- `implementor` (step 2) now invokes `jackal-house-style:coding-effectively` before writing code and follows the language sub-skill it routes to; falls back to its inline principles + project CLAUDE.md if the plugin isn't installed, and defers to a project CLAUDE.md on conflict.
+- `execute` dispatch prompts (cold Phase-1, leaf, and continuation) repeat the coding-effectively invocation instruction — belt-and-braces, matching the repo's prompt-level reinforcement pattern.
+- Adds `jackal-house-style` to `jackal-plan-and-execute`'s `requires`.
+
+**Fixed:**
+- `coding-effectively` (`user-invocable: false`, auto-trigger only) had no wiring into the dispatched implementor's fresh context, so it silently stopped firing during dev cycles. A prior upstream `REQUIRED SKILL: coding-effectively` hardcode was removed in favor of "dynamic activation" that never actually reached the worker; this restores an explicit, resilient invocation path.
+
 ## [jackal-plan-and-execute] 3.9.0
 
 Front-end fidelity and implementor cost/speed: catch visual defects per-slice instead of at end-of-epic, give implementors a rendered target to match, and let well-specified mechanical slices run on Haiku.

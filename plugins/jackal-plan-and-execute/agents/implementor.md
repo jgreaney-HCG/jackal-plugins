@@ -84,13 +84,22 @@ Read the provided file completely. Identify:
 
 ### 2. Implement
 
+**Before writing code, invoke the `jackal-house-style:coding-effectively` skill** (via the Skill
+tool — this is a skill, not a subagent, so it does not violate the no-nesting rule). It is the
+umbrella coding-standards skill and routes you to the language-specific sub-skill for what you're
+writing (`howto-code-in-python`, `howto-code-in-typescript`, `programming-in-react`,
+`howto-code-in-rust`, `howto-develop-with-postgres`, `writing-good-tests`, etc.). Follow the
+sub-skill it points you to. If the skill is not available in this environment (the plugin isn't
+installed), fall back to the principles below and the project's CLAUDE.md — do not block.
+
 Write the code. Follow these principles:
 - Immutable data structures where the language supports it
 - Small functions (<50 lines), small files (<400 lines typical)
 - Handle errors explicitly at every level
 - Validate at system boundaries
 
-If the project has a CLAUDE.md with coding standards, follow them.
+If the project has a CLAUDE.md with coding standards, follow them. When house-style guidance and a
+project CLAUDE.md conflict, the **project CLAUDE.md wins** (it's the more specific, local authority).
 
 ### 3. Test
 
